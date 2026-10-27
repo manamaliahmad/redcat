@@ -1,0 +1,70 @@
+name: Build RedCat
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: ""
+          - os: ubuntu-22.04
+            args: ""
+          - os: macos-latest
+            args: ""
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri
+
+      - name: Install frontend deps
+        run: npm install
+
+      - name: Restore icons from base64
+        # Icons are binary, so the repo stores them as .b64 text files and
+        # this step decodes them back before the Tauri build runs. Works on
+        # Linux (GNU -d), macOS (BSD -D) and Windows (Git Bash, GNU -d).
+        shell: bash
+        run: |
+          cd src-tauri/icons
+          decode() { base64 -d "$1" > "$2" 2>/dev/null || base64 -D "$1" > "$2" 2>/dev/null || base64 --decode "$1" > "$2"; }
+          decode icon.png.b64 icon.png
+          decode icon.ico.b64 icon.ico
+          decode icon.icns.b64 icon.icns
+          ls -la
+
+      - name: Build with Tauri Action
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "RedCat ${{ github.ref_name }}"
+          releaseBody: "See the release notes below. Windows .exe + Linux binary attached."
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
