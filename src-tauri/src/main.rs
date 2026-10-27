@@ -17,6 +17,7 @@ use std::time::Duration;
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
+use wait_timeout::ChildExt;
 
 const SERVICE: &str = "redcat";
 
@@ -284,7 +285,7 @@ async fn chat_complete(
 #[tauri::command]
 fn get_system_info() -> String {
     format!(
-        "RedCat v0.3.0 · {} / {}",
+        "RedCat v0.3.1 · {} / {}",
         std::env::consts::OS,
         std::env::consts::ARCH
     )
@@ -931,7 +932,7 @@ fn main() {
             let quit = MenuItemBuilder::new("Quit").id("quit").build(app)?;
             let menu = MenuBuilder::new(app).items(&[&show, &quit]).build()?;
             let mut tray = TrayIconBuilder::new().menu(&menu).on_menu_event(|app, event| {
-                match event.id().0.as_str() {
+                match event.id().as_ref() {
                     "quit" => app.exit(0),
                     "show" => {
                         if let Some(w) = app.get_webview_window("main") {

@@ -126,7 +126,7 @@ pub fn start_session(server: &McpServer) -> Result<(), String> {
     });
     // Handshake on the fresh session.
     let init = json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
-        "protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"RedCat","version":"0.3.0"}}});
+        "protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"RedCat","version":"0.3.1"}}});
     let notif = json!({"jsonrpc":"2.0","method":"notifications/initialized"});
     send_line(&session.write_tx, &init)?;
     send_line(&session.write_tx, &notif)?;
@@ -209,7 +209,7 @@ fn rpc_once(server: &McpServer, method: &str, params: Value) -> Result<Value, St
         }
     });
     let init = json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
-        "protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"RedCat","version":"0.3.0"}}});
+        "protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"RedCat","version":"0.3.1"}}});
     let notif = json!({"jsonrpc":"2.0","method":"notifications/initialized"});
     let req = json!({"jsonrpc":"2.0","id":2,"method":method,"params":params});
     for msg in [init, notif, req] {

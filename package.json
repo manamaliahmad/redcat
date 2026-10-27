@@ -1,1 +1,1 @@
-{"description":"RedCat — your desktop cat that actually works. Local-first, BYOK, open source.","devDependencies":{"@tauri-apps/cli":"^2"},"license":"MIT","name":"redcat","scripts":{"build":"tauri build","dev":"tauri dev","tauri":"tauri"},"version":"0.3.0"}
+{"description":"RedCat — your desktop cat that actually works. Local-first, BYOK, open source.","devDependencies":{"@tauri-apps/cli":"^2"},"license":"MIT","name":"redcat","scripts":{"build":"tauri build","dev":"tauri dev","tauri":"tauri"},"version":"0.3.1"}

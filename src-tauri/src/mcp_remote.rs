@@ -106,7 +106,7 @@ async fn ensure_session(url: &str, name: &str) -> Result<String, String> {
         return Ok(sid);
     }
     let init = json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
-        "protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"RedCat","version":"0.3.0"}}});
+        "protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"RedCat","version":"0.3.1"}}});
     let (new_session, v) = post_rpc(url, &init, None).await?;
     check_error(&v)?;
     let sid = new_session.unwrap_or_default();
