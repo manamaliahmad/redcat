@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RedCat Pet</title>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+  #pet { width: 100%; height: 100%; cursor: grab; -webkit-app-region: drag; animation: bob 3.2s ease-in-out infinite; }
+  #pet:active { cursor: grabbing; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .lid { animation: blink 4.6s infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 94%, 96% { transform: scaleY(0.08); } }
+  .pupil { transition: transform 0.4s ease; }
+</style>
+</head>
+<body>
+<div id="pet">
+  <svg viewBox="0 0 200 170" width="100%" height="100%">
+    <defs>
+      <linearGradient id="face" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ff2e4d"/>
+        <stop offset="100%" stop-color="#ff5c74"/>
+      </linearGradient>
+    </defs>
+    <path d="M30 70 Q10 20 55 28 Q75 5 100 22 Q125 5 145 28 Q190 20 170 70 Q195 110 150 140 Q100 160 50 140 Q5 110 30 70Z" fill="url(#face)"/>
+    <path d="M42 62 Q38 32 58 38 Q66 52 60 66Z" fill="#ffb3ab"/>
+    <path d="M158 62 Q162 32 142 38 Q134 52 140 66Z" fill="#ffb3ab"/>
+    <g class="lid"><ellipse cx="72" cy="88" rx="26" ry="28" fill="#fff"/></g>
+    <g class="lid"><ellipse cx="128" cy="88" rx="26" ry="28" fill="#fff"/></g>
+    <ellipse class="pupil" cx="72" cy="90" rx="11" ry="16" fill="#d8112f"/>
+    <ellipse class="pupil" cx="128" cy="90" rx="11" ry="16" fill="#d8112f"/>
+    <g stroke="#e02340" stroke-width="5" stroke-linecap="round">
+      <line x1="22" y1="108" x2="4" y2="100"/>
+      <line x1="22" y1="120" x2="6" y2="122"/>
+      <line x1="178" y1="108" x2="196" y2="100"/>
+      <line x1="178" y1="120" x2="194" y2="122"/>
+    </g>
+  </svg>
+</div>
+<script>
+  // Click the pet -> bring the main window forward. Dragging moves the window
+  // (Tauri drag region is on #pet; a real click has almost no movement).
+  let downAt = null;
+  document.getElementById('pet').addEventListener('mousedown', (e) => { downAt = [e.clientX, e.clientY]; });
+  document.getElementById('pet').addEventListener('mouseup', async (e) => {
+    if (!downAt) return;
+    const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
+    downAt = null;
+    if (moved < 5) {
+      try { await window.__TAURI__.core.invoke('show_main'); } catch (err) { /* demo mode */ }
+    }
+  });
+  // Pet states broadcast by the main window (thinking / working / happy).
+  try {
+    window.__TAURI__.event.listen('redcat-pet-state', (ev) => {
+      const pet = document.getElementById('pet');
+      pet.style.animationDuration = ev.payload === 'thinking' ? '1.2s' : '3.2s';
+      pet.style.filter = ev.payload === 'working' ? 'brightness(1.08)' : 'none';
+    });
+  } catch (err) { /* demo mode */ }
+</script>
+</body>
+</html>

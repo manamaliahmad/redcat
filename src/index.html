@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RedCat</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="pet-mini" id="petMini" title="RedCat"></div>
+    <div>
+      <h1>RedCat</h1>
+      <p id="status">Your desktop cat that actually works.</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="tabbtn active" data-tab="chat">Chat</button>
+    <button class="tabbtn" data-tab="pipelines">Pipelines</button>
+    <button class="tabbtn" data-tab="connect">Connect</button>
+    <button class="tabbtn" data-tab="settings">Settings</button>
+  </header>
+
+  <section class="view active" id="view-chat">
+    <div class="row">
+      <select id="chatSession"></select>
+      <button id="newChatBtn">New chat</button>
+      <button id="agentModeBtn">Agent mode</button>
+    </div>
+    <div id="messages"></div>
+    <div id="approval" class="hidden">
+      <p><strong>Approval needed</strong> — RedCat wants to run:</p>
+      <code id="approvalCmd"></code>
+      <p class="hint">Read-only commands run instantly. Anything that writes, deletes, or sends needs your yes.</p>
+      <div class="row">
+        <button id="approveBtn" class="primary">Approve &amp; run</button>
+        <button id="denyBtn">Deny</button>
+      </div>
+    </div>
+    <form id="chatForm">
+      <input id="chatInput" type="text" placeholder="Ask RedCat… try: list files in this folder" autocomplete="off">
+      <button class="primary" type="submit">Send</button>
+    </form>
+    <p class="foot" id="backendNote"></p>
+  </section>
+
+  <section class="view" id="view-pipelines">
+    <h2>Pipelines</h2>
+    <p class="muted">Multi-step workflows. One click runs the whole chain — each step's output feeds the next via {{prev}}. Running a pipeline is your approval for its steps; the blocklist still refuses destructive commands.</p>
+    <div id="pipelineList"></div>
+    <div id="pipeResult"></div>
+    <h3>Build your own</h3>
+    <label>Pipeline name
+      <input id="pipeName" type="text" placeholder="e.g. Daily report">
+    </label>
+    <label>Steps (JSON array — tools: gmail_list, chat, run_command, mcp_call, zapier)
+      <textarea id="pipeSteps" rows="6" placeholder='[{"tool":"gmail_list","input":""},{"tool":"chat","input":"Summarize:\n{{prev}}"}]'></textarea>
+    </label>
+    <div class="row">
+      <button id="pipeSaveBtn" class="primary">Save pipeline</button>
+    </div>
+    <p id="pipeStatus" class="muted"></p>
+  </section>
+
+  <section class="view" id="view-connect">
+    <h2>Connect your tools</h2>
+    <p class="muted">Connections use your own accounts and keys. Tokens stay in your OS keychain.</p>
+    <div class="card">
+      <h3>📧 Gmail</h3>
+      <p class="muted">Read your inbox with your own Google OAuth client (desktop / PKCE flow). Read-only by default.</p>
+      <label>Google OAuth client ID
+        <input id="gmailClientId" type="text" placeholder="xxxx.apps.googleusercontent.com">
+      </label>
+      <div class="row">
+        <button id="gmailAuthBtn">Connect Gmail</button>
+        <button id="gmailInboxBtn">Show inbox</button>
+      </div>
+      <p id="gmailStatus" class="muted"></p>
+      <div id="gmailAuthBox" class="hidden">
+        <p>Open this link, sign in, then paste the code back here:</p>
+        <a id="gmailAuthLink" href="#" target="_blank" rel="noreferrer">Open Google sign-in</a>
+        <div class="row">
+          <input id="gmailCode" type="text" placeholder="Paste the code from Google">
+          <button id="gmailCodeBtn" class="primary">Finish connecting</button>
+        </div>
+      </div>
+      <div id="gmailInbox"></div>
+    </div>
+    <div class="card">
+      <h3>🧰 Tool catalog — one click, no commands</h3>
+      <p class="muted">Verified servers only. Enable one and its tools appear in chat, agent mode and pipelines. Nothing here is fake: archived packages are labeled as archived.</p>
+      <div id="catalogList"></div>
+    </div>
+    <div class="card">
+      <h3>⚡ Zapier</h3>
+      <p class="muted">Trigger any Zap with a webhook URL, from chat or a pipeline.</p>
+      <label>Zapier webhook URL
+        <input id="zapierUrl" type="text" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      </label>
+      <div class="row">
+        <button id="zapierTestBtn" class="primary">Send test trigger</button>
+      </div>
+      <p id="zapierStatus" class="muted"></p>
+    </div>
+    <div class="card">
+      <h3>🔌 MCP servers — the universal connector</h3>
+      <p class="muted">One MCP server opens dozens of tools: Zapier MCP, Notion, GitHub, Slack and more. Paste any server's command — RedCat speaks MCP (stdio) directly.</p>
+      <label>Server name
+        <input id="mcpName" type="text" placeholder="e.g. zapier">
+      </label>
+      <label>Command
+        <input id="mcpCommand" type="text" placeholder="e.g. npx">
+      </label>
+      <label>Arguments (space-separated)
+        <input id="mcpArgs" type="text" placeholder="e.g. -y @zapier/mcp-server">
+      </label>
+      <label>Environment (one KEY=VALUE per line, optional)
+        <input id="mcpEnv" type="text" placeholder="ZAPIER_MCP_KEY=…">
+      </label>
+      <div class="row">
+        <button id="mcpAddBtn" class="primary">Add server</button>
+        <button id="mcpRefreshBtn">Refresh list</button>
+      </div>
+      <div id="mcpList"></div>
+      <div class="row">
+        <select id="mcpServerSelect"></select>
+        <button id="mcpToolsBtn">List tools</button>
+      </div>
+      <div id="mcpTools"></div>
+      <div class="row">
+        <select id="mcpToolSelect"></select>
+        <input id="mcpToolArgs" type="text" placeholder='Tool arguments as JSON'>
+        <button id="mcpCallBtn" class="primary">Call tool</button>
+      </div>
+      <p id="mcpStatus" class="muted"></p>
+      <div id="mcpResult"></div>
+    </div>
+    <div class="card">
+      <h3>📅 Google Calendar <span class="badge">v0.3</span></h3>
+      <p class="muted">Same BYO-OAuth pattern as Gmail. Coming in v0.3.</p>
+    </div>
+    <div class="card">
+      <h3>💾 Google Drive <span class="badge">v0.3</span></h3>
+      <p class="muted">Browse and fetch your files, read first, write behind approval. Coming in v0.3.</p>
+    </div>
+    <div class="card">
+      <h3>🐙 GitHub <span class="badge">v0.3</span></h3>
+      <p class="muted">List repos, read issues, open PRs from chat. Coming in v0.3.</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-settings">
+    <h2>Settings</h2>
+    <p class="muted">Bring your own key. RedCat talks to the endpoint you choose — nothing else.</p>
+    <label>AI endpoint (OpenAI-compatible)
+      <input id="endpoint" type="text" value="https://api.openai.com/v1">
+    </label>
+    <label>Model
+      <input id="model" type="text" value="gpt-4o-mini">
+    </label>
+    <label>Provider
+      <select id="provider">
+        <option value="openai">OpenAI-compatible (endpoint + model above)</option>
+        <option value="anthropic">Claude (Anthropic)</option>
+      </select>
+    </label>
+    <label>API key (stored in your OS keychain, never shown again)
+      <input id="apiKey" type="password" placeholder="sk-…">
+    </label>
+    <label>Claude API key (only if provider is Claude — stored in the OS keychain)
+      <input id="claudeKey" type="password" placeholder="sk-ant-…">
+    </label>
+    <div class="row">
+      <button id="saveKeyBtn" class="primary">Save key</button>
+      <button id="saveClaudeKeyBtn">Save Claude key</button>
+      <button id="testChatBtn">Test chat</button>
+    </div>
+    <p id="settingsStatus" class="muted"></p>
+    <h3>Language</h3>
+    <p class="muted">RedCat's interface is English by default. It answers in whatever
+      language you speak to it — no setting needed.</p>
+    <h3>About</h3>
+    <p class="muted" id="sysInfo"></p>
+  </section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
