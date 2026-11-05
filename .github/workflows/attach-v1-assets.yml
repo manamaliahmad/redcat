@@ -6,6 +6,8 @@
 # the repository, so gh cannot resolve the repo from a local .git directory.
 # The macOS download is allowed to fail (macOS runners are capacity-constrained), so
 # the Linux files can be attached while the macOS build is still pending.
+# Only top-level FILES are uploaded: electron-builder's dist/ also contains the
+# unpacked app directory (linux-unpacked/ or mac-arm64/), which is not a release file.
 # Delete this file once the v1.0.0 release has the macOS + Linux files.
 name: Attach v1.0.0 release assets
 
@@ -42,8 +44,9 @@ jobs:
         run: |
           set -euo pipefail
           gh release view v1.0.0 --repo manamaliahmad/redcat --json tagName --jq .tagName
-          files=(linux/*)
-          if compgen -G "macos/*" > /dev/null; then files+=(macos/*); fi
+          mapfile -t files < <(find linux macos -maxdepth 1 -type f 2>/dev/null | sort)
+          if [ "${#files[@]}" -eq 0 ]; then echo "No files to upload"; exit 1; fi
+          printf 'Uploading: %s\n' "${files[@]}"
           gh release upload v1.0.0 "${files[@]}" --repo manamaliahmad/redcat --clobber
           echo '--- release assets ---'
           gh release view v1.0.0 --repo manamaliahmad/redcat --json assets --jq '.assets[] | .name + " (" + (.size | tostring) + " bytes)"'
