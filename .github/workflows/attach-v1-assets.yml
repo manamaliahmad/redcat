@@ -1,0 +1,46 @@
+# One-off helper: take the artifacts of a build run and attach them to release v1.0.0.
+# Created because a workflow_dispatch build (no tag) does not publish to the release.
+# Delete this file once the v1.0.0 release has the macOS + Linux files.
+name: Attach v1.0.0 release assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build run ID whose artifacts to attach"
+        required: true
+        default: "42064440527"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: redcat-macos
+          path: macos
+          run-id: ${{ inputs.run_id }}
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: redcat-linux
+          path: linux
+          run-id: ${{ inputs.run_id }}
+      - name: List downloaded files
+        run: |
+          set -euo pipefail
+          find macos linux -type f | sort
+      - name: Upload to release v1.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release view v1.0.0 --json tagName --jq .tagName
+          gh release upload v1.0.0 macos/* linux/* --clobber
+          echo '--- release assets ---'
+          gh release view v1.0.0 --json assets --jq '.assets[] | .name + " (" + (.size | tostring) + " bytes)"'
