@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat Logo Splash Screen Studio — React Native (Expo Go)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0F1015;
+      color: #F8FAFC;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #161821; }
+    ::-webkit-scrollbar-thumb { background: #2E3244; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #F72445; }
+
+    /* Phone Frame Styling */
+    .phone-bezel {
+      position: relative;
+      background: #FCFBF9;
+      border: 10px solid #1E202B;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 15px 35px -10px rgba(247, 36, 69, 0.22);
+      overflow: hidden;
+      transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.32s ease;
+      user-select: none;
+    }
+
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 96px;
+      height: 24px;
+      background: #12131A;
+      border-radius: 999px;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      pointer-events: none;
+    }
+    .dynamic-island::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #2a3950 0%, #0d1117 70%);
+    }
+
+    .home-indicator {
+      position: absolute;
+      bottom: 7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 34%;
+      height: 4px;
+      background: rgba(30, 27, 30, 0.22);
+      border-radius: 999px;
+      z-index: 60;
+      pointer-events: none;
+    }
+
+    /* Stage Active Pill Glow */
+    .stage-btn-active {
+      background: linear-gradient(135deg, #F41F3D 0%, #FF4B61 100%) !important;
+      color: #FFFFFF !important;
+      border-color: #FF6B7D !important;
+      box-shadow: 0 8px 20px -4px rgba(247, 36, 69, 0.5);
+    }
+
+    .device-btn-active {
+      background: rgba(247, 36, 69, 0.16) !important;
+      color: #FF6B7D !important;
+      border-color: #F72445 !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="sticky top-0 z-50 bg-[#13151C]/95 backdrop-blur-md border-b border-white/10 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand / Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#FCFBF9] p-1.5 flex items-center justify-center shadow-md border border-rose-500/30">
+          <svg viewBox="0 0 700 600" class="w-full h-full">
+            <path d="M 119.0 36.0 C 108.8 49.0, 95.5 67.3, 92.0 104.0 C 88.5 140.7, 100.7 212.7, 98.0 256.0 C 95.3 299.3, 77.0 335.8, 76.0 364.0 C 75.0 392.2, 84.2 406.8, 92.0 425.0 C 99.8 443.2, 104.5 455.5, 123.0 473.0 C 141.5 490.5, 170.5 517.0, 203.0 530.0 C 235.5 543.0, 275.3 549.2, 318.0 551.0 C 360.7 552.8, 419.0 551.3, 459.0 541.0 C 499.0 530.7, 535.2 505.7, 558.0 489.0 C 580.8 472.3, 586.0 460.5, 596.0 441.0 C 606.0 421.5, 617.2 398.5, 618.0 372.0 C 618.8 345.5, 601.7 322.0, 601.0 282.0 C 600.3 242.0, 614.2 165.7, 614.0 132.0 C 613.8 98.3, 606.0 91.0, 600.0 80.0 C 594.0 69.0, 588.5 67.2, 578.0 66.0 C 567.5 64.8, 565.3 57.5, 537.0 73.0 C 508.7 88.5, 444.3 145.0, 408.0 159.0 C 371.7 173.0, 354.2 176.2, 319.0 157.0 C 283.8 137.8, 224.7 65.8, 197.0 44.0 C 169.3 22.2, 166.0 27.3, 153.0 26.0 C 140.0 24.7, 129.2 23.0, 119.0 36.0 Z" fill="#F72445"/>
+            <path d="M 149.0 80.0 C 145.2 78.8, 142.8 79.7, 140.0 81.0 C 137.2 82.3, 135.0 81.7, 132.0 88.0 C 129.0 94.3, 124.0 103.2, 122.0 119.0 C 120.0 134.8, 119.2 166.8, 120.0 183.0 C 120.8 199.2, 119.5 216.3, 127.0 216.0 C 134.5 215.7, 152.3 191.3, 165.0 181.0 C 177.7 170.7, 197.2 160.8, 203.0 154.0 C 208.8 147.2, 203.3 147.2, 200.0 140.0 C 196.7 132.8, 189.2 119.7, 183.0 111.0 C 176.8 102.3, 168.7 93.2, 163.0 88.0 C 157.3 82.8, 152.8 81.2, 149.0 80.0 Z" fill="#FD8587"/>
+            <path d="M 569.0 123.0 C 565.2 122.5, 563.7 122.8, 558.0 127.0 C 552.3 131.2, 541.3 141.3, 535.0 148.0 C 528.7 154.7, 523.7 161.2, 520.0 167.0 C 516.3 172.8, 504.0 171.5, 513.0 183.0 C 522.0 194.5, 562.2 234.3, 574.0 236.0 C 585.8 237.7, 582.0 207.3, 584.0 193.0 C 586.0 178.7, 586.5 160.5, 586.0 150.0 C 585.5 139.5, 583.8 134.5, 581.0 130.0 C 578.2 125.5, 572.8 123.5, 569.0 123.0 Z" fill="#FE8789"/>
+            <ellipse cx="217" cy="359.3" rx="89.5" ry="106.7" transform="rotate(7.9 217 359.3)" fill="#FDFCFA"/>
+            <ellipse cx="478.1" cy="359" rx="90" ry="107.2" transform="rotate(-1.9 478.1 359)" fill="#FDFCFA"/>
+            <ellipse cx="248.6" cy="361.4" rx="39.5" ry="64.1" transform="rotate(8.2 248.6 361.4)" fill="#EE1D3A"/>
+            <ellipse cx="446.8" cy="361.4" rx="39.7" ry="63.8" transform="rotate(-3.3 446.8 361.4)" fill="#EE1D3A"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+            Cat Splash Screen Studio
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">Expo Go Ready</span>
+          </h1>
+          <p class="text-xs text-slate-400">Centered & Responsively Scaled across All Mobile Sizes</p>
+        </div>
+      </div>
+
+      <!-- Main View Switcher Tabs -->
+      <div class="flex items-center bg-[#1C1F2B] p-1 rounded-xl border border-white/10">
+        <button id="tabBtnPreview" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-[#F72445] text-white shadow">
+          📱 Live Splash Preview
+        </button>
+        <button id="tabBtnAllSizes" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-300 hover:text-white">
+          📐 Compare All Screen Sizes
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-5">
+    <section id="viewPreview" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Left Column: Controls, Device Switcher, Stage Breakdown -->
+      <div class="lg:col-span-5 space-y-4">
+
+        <!--Playback & Speed Controls Card -->
+        <div class="bg-[#161822] border border-white/10 rounded-2xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-rose-400">Animation Controls</span>
+            <span id="liveTimerBadge" class="mono text-xs px-2 py-0.5 rounded bg-white/5 text-slate-300">0.00s / 4.20s</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button id="btnReplayMain" class="flex-1 min-w-[140px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F41F3D] to-[#FF4B61] hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 transition">
+              <span>▶</span> Replay Full Splash
+            </button>
+            <button id="btnPauseResume" class="py-2.5 px-3.5 rounded-xl bg-[#222634] hover:bg-[#2B3042] text-slate-200 font-semibold text-xs border border-white/10 transition">
+              ⏸ Pause
+            </button>
+          </div>
+
+          <!-- Speed & Loop Options -->
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/5 text-xs">
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400">Speed:</span>
+              <button data-speed="1" class="speed-btn px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-semibold">1x</button>
+              <button data-speed="0.5" class="speed-btn px-2 py-1 rounded bg-[#222634] text-slate-300 border border-transparent hover:border-white/10">0.5x Slow</button>
+            </div>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 select-none">
+              <input type="checkbox" id="chkAutoLoop" class="accent-[#F72445] rounded" />
+              <span>Auto-Loop</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 5-Stage Stepper -->
+        <div class="bg-[#161822] border border-white/10 rounded-2xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">5-Stage Animation Sequence</span>
+            <span class="text-[11px] text-slate-400">Click to jump</span>
+          </div>
+
+          <div class="w-full h-2 bg-[#222634] rounded-full overflow-hidden mb-3">
+            <div id="timelineProgressBar" class="h-full bg-gradient-to-r from-[#F41F3D] to-[#FF7588] transition-all duration-75" style="width: 0%"></div>
+          </div>
+
+          <div class="space-y-2">
+            <button data-stage="1" class="stage-step-btn w-full text-left p-2.5 rounded-xl bg-[#1E2130] hover:bg-[#25293C] border border-white/5 transition flex items-center gap-3">
+              <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">1</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white">Full Screen Cat Red (#F72445)</div>
+                <div class="text-[11px] text-slate-400 truncate">Screen covers with vibrant RedCat color</div>
+              </div>
+              <span class="mono text-[10px] text-slate-400">0.0s–0.6s</span>
+            </button>
+
+            <button data-stage="2" class="stage-step-btn w-full text-left p-2.5 rounded-xl bg-[#1E2130] hover:bg-[#25293C] border border-white/5 transition flex items-center gap-3">
+              <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">2</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white">White Balls + Red Pupils Pop In</div>
+                <div class="text-[11px] text-slate-400 truncate">Exact Screen Centre: white balls & inner red pupils</div>
+              </div>
+              <span class="mono text-[10px] text-slate-400">0.6s–1.4s</span>
+            </button>
+
+            <button data-stage="3" class="stage-step-btn w-full text-left p-2.5 rounded-xl bg-[#1E2130] hover:bg-[#25293C] border border-white/5 transition flex items-center gap-3">
+              <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">3</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white">Cute Double Eye Blink</div>
+                <div class="text-[11px] text-slate-400 truncate">Eyes blink twice smoothly at dead center</div>
+              </div>
+              <span class="mono text-[10px] text-slate-400">1.4s–2.1s</span>
+            </button>
+
+            <button data-stage="4" class="stage-step-btn w-full text-left p-2.5 rounded-xl bg-[#1E2130] hover:bg-[#25293C] border border-white/5 transition flex items-center gap-3">
+              <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">4</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white">Cat Face Reveal (Ears + Whiskers)</div>
+                <div class="text-[11px] text-slate-400 truncate">Ears & whiskers spring out perfectly balanced</div>
+              </div>
+              <span class="mono text-[10px] text-slate-400">2.1s–3.3s</span>
+            </button>
+
+            <button data-stage="5" class="stage-step-btn w-full text-left p-2.5 rounded-xl bg-[#1E2130] hover:bg-[#25293C] border border-white/5 transition flex items-center gap-3">
+              <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">5</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white">Transition to App</div>
+                <div class="text-[11px] text-slate-400 truncate">Smooth zoom out to Home / Chat screen</div>
+              </div>
+              <span class="mono text-[10px] text-slate-400">3.3s–4.2s</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Device Selector -->
+        <div class="bg-[#161822] border border-white/10 rounded-2xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Device Screen Preset</span>
+            <span id="activeDeviceDims" class="mono text-xs text-rose-400 font-semibold">393 × 852 px</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <button data-device="se" class="device-select-btn p-2 rounded-xl bg-[#1E2130] border border-white/5 text-left transition hover:border-white/20">
+              <div class="text-xs font-bold text-white">iPhone SE</div>
+              <div class="text-[10px] text-slate-400 mono">375 × 667 (4.7")</div>
+            </button>
+            <button data-device="16pro" class="device-select-btn device-btn-active p-2 rounded-xl bg-[#1E2130] border border-white/5 text-left transition hover:border-white/20">
+              <div class="text-xs font-bold text-white">iPhone 16 Pro</div>
+              <div class="text-[10px] text-slate-400 mono">393 × 852 (6.3")</div>
+            </button>
+            <button data-device="16max" class="device-select-btn p-2 rounded-xl bg-[#1E2130] border border-white/5 text-left transition hover:border-white/20">
+              <div class="text-xs font-bold text-white">16 Pro Max</div>
+              <div class="text-[10px] text-slate-400 mono">440 × 956 (6.9")</div>
+            </button>
+            <button data-device="android" class="device-select-btn p-2 rounded-xl bg-[#1E2130] border border-white/5 text-left transition hover:border-white/20">
+              <div class="text-xs font-bold text-white">Android S24</div>
+              <div class="text-[10px] text-slate-400 mono">360 × 800 (6.2")</div>
+            </button>
+            <button data-device="small" class="device-select-btn p-2 rounded-xl bg-[#1E2130] border border-white/5 text-left transition hover:border-white/20">
+              <div class="text-xs font-bold text-white">Compact Mini</div>
+              <div class="text-[10px] text-slate-400 mono">320 × 568 (4.0")</div>
+            </button>
+            <button data-device="ipad" class="device-select-btn p-2 rounded-xl bg-[#1E2130] border border-white/5 text-left transition hover:border-white/20">
+              <div class="text-xs font-bold text-white">iPad Mini</div>
+              <div class="text-[10px] text-slate-400 mono">744 × 1133 (8.3")</div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Live Phone Canvas Simulator -->
+      <div class="lg:col-span-7 flex flex-col items-center justify-center bg-[#141620] border border-white/10 rounded-3xl p-4 sm:p-6 min-h-[640px] relative overflow-hidden">
+        <div class="absolute -top-24 -right-24 w-72 h-72 bg-rose-600/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex items-center gap-3 mb-4 z-10">
+          <span id="deviceLabelBadge" class="px-3 py-1 rounded-full bg-[#1F2332] border border-white/10 text-xs font-semibold text-slate-200">
+            iPhone 16 Pro • 393 × 852 pt
+          </span>
+          <span id="currentStagePill" class="px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-300">
+            Stage 1: Full Red Screen
+          </span>
+        </div>
+
+        <div id="phoneViewportWrapper" class="flex items-center justify-center w-full overflow-hidden py-1">
+          <div id="mainPhoneFrame" class="phone-bezel" style="width: 340px; height: 690px; border-radius: 46px;">
+            <div class="dynamic-island"></div>
+            <div class="home-indicator"></div>
+            <div id="mainPhoneMount" class="w-full h-full relative overflow-hidden"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Multi-Device Comparison Grid -->
+    <section id="viewAllSizes" class="hidden space-y-5">
+      <div class="bg-[#161822] border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white">Centered Multi-Device Preview</h2>
+          <p class="text-xs text-slate-400">Cat face centered mathematically on all aspect ratios.</p>
+        </div>
+        <button id="btnReplayGrid" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#F41F3D] to-[#FF4B61] text-white font-bold text-xs shadow-lg shadow-rose-600/30 flex items-center gap-2">
+          <span>▶</span> Replay All 4 Phones
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div class="bg-[#141620] border border-white/10 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-xs font-bold text-white mb-2">Compact Phone (320 × 568)</div>
+          <div class="phone-bezel" style="width: 240px; height: 426px; border-radius: 34px; border-width: 7px;">
+            <div class="dynamic-island" style="width: 68px; height: 16px; top: 7px;"></div>
+            <div class="home-indicator"></div>
+            <div id="gridMount1" class="w-full h-full relative overflow-hidden"></div>
+          </div>
+        </div>
+
+        <div class="bg-[#141620] border border-white/10 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-xs font-bold text-white mb-2">iPhone SE (375 × 667)</div>
+          <div class="phone-bezel" style="width: 255px; height: 454px; border-radius: 36px; border-width: 7px;">
+            <div class="dynamic-island" style="width: 72px; height: 17px; top: 7px;"></div>
+            <div class="home-indicator"></div>
+            <div id="gridMount2" class="w-full h-full relative overflow-hidden"></div>
+          </div>
+        </div>
+
+        <div class="bg-[#141620] border border-white/10 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-xs font-bold text-white mb-2">iPhone 16 Pro (393 × 852)</div>
+          <div class="phone-bezel" style="width: 262px; height: 530px; border-radius: 40px; border-width: 7px;">
+            <div class="dynamic-island" style="width: 76px; height: 18px; top: 8px;"></div>
+            <div class="home-indicator"></div>
+            <div id="gridMount3" class="w-full h-full relative overflow-hidden"></div>
+          </div>
+        </div>
+
+        <div class="bg-[#141620] border border-white/10 rounded-2xl p-4 flex flex-col items-center">
+          <div class="text-xs font-bold text-white mb-2">16 Pro Max (440 × 956)</div>
+          <div class="phone-bezel" style="width: 278px; height: 565px; border-radius: 42px; border-width: 7px;">
+            <div class="dynamic-island" style="width: 80px; height: 18px; top: 8px;"></div>
+            <div class="home-indicator"></div>
+            <div id="gridMount4" class="w-full h-full relative overflow-hidden"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const CAT_HEAD_PATH = "M 119.0 36.0 C 108.8 49.0, 95.5 67.3, 92.0 104.0 C 88.5 140.7, 100.7 212.7, 98.0 256.0 C 95.3 299.3, 77.0 335.8, 76.0 364.0 C 75.0 392.2, 84.2 406.8, 92.0 425.0 C 99.8 443.2, 104.5 455.5, 123.0 473.0 C 141.5 490.5, 170.5 517.0, 203.0 530.0 C 235.5 543.0, 275.3 549.2, 318.0 551.0 C 360.7 552.8, 419.0 551.3, 459.0 541.0 C 499.0 530.7, 535.2 505.7, 558.0 489.0 C 580.8 472.3, 586.0 460.5, 596.0 441.0 C 606.0 421.5, 617.2 398.5, 618.0 372.0 C 618.8 345.5, 601.7 322.0, 601.0 282.0 C 600.3 242.0, 614.2 165.7, 614.0 132.0 C 613.8 98.3, 606.0 91.0, 600.0 80.0 C 594.0 69.0, 588.5 67.2, 578.0 66.0 C 567.5 64.8, 565.3 57.5, 537.0 73.0 C 508.7 88.5, 444.3 145.0, 408.0 159.0 C 371.7 173.0, 354.2 176.2, 319.0 157.0 C 283.8 137.8, 224.7 65.8, 197.0 44.0 C 169.3 22.2, 166.0 27.3, 153.0 26.0 C 140.0 24.7, 129.2 23.0, 119.0 36.0 Z";
+    const LEFT_INNER_EAR_PATH = "M 149.0 80.0 C 145.2 78.8, 142.8 79.7, 140.0 81.0 C 137.2 82.3, 135.0 81.7, 132.0 88.0 C 129.0 94.3, 124.0 103.2, 122.0 119.0 C 120.0 134.8, 119.2 166.8, 120.0 183.0 C 120.8 199.2, 119.5 216.3, 127.0 216.0 C 134.5 215.7, 152.3 191.3, 165.0 181.0 C 177.7 170.7, 197.2 160.8, 203.0 154.0 C 208.8 147.2, 203.3 147.2, 200.0 140.0 C 196.7 132.8, 189.2 119.7, 183.0 111.0 C 176.8 102.3, 168.7 93.2, 163.0 88.0 C 157.3 82.8, 152.8 81.2, 149.0 80.0 Z";
+    const RIGHT_INNER_EAR_PATH = "M 569.0 123.0 C 565.2 122.5, 563.7 122.8, 558.0 127.0 C 552.3 131.2, 541.3 141.3, 535.0 148.0 C 528.7 154.7, 523.7 161.2, 520.0 167.0 C 516.3 172.8, 504.0 171.5, 513.0 183.0 C 522.0 194.5, 562.2 234.3, 574.0 236.0 C 585.8 237.7, 582.0 207.3, 584.0 193.0 C 586.0 178.7, 586.5 160.5, 586.0 150.0 C 585.5 139.5, 583.8 134.5, 581.0 130.0 C 578.2 125.5, 572.8 123.5, 569.0 123.0 Z";
+    const WHISKER_LT_PATH = "M 75.0 412.0 C 73.7 409.7, 71.2 404.7, 67.0 404.0 C 62.8 403.3, 55.5 406.2, 50.0 408.0 C 44.5 409.8, 37.5 412.7, 34.0 415.0 C 30.5 417.3, 29.8 419.7, 29.0 422.0 C 28.2 424.3, 28.2 426.8, 29.0 429.0 C 29.8 431.2, 31.7 433.8, 34.0 435.0 C 36.3 436.2, 37.0 437.7, 43.0 436.0 C 49.0 434.3, 64.7 428.0, 70.0 425.0 C 75.3 422.0, 74.2 420.2, 75.0 418.0 C 75.8 415.8, 76.3 414.3, 75.0 412.0 Z";
+    const WHISKER_LB_PATH = "M 86.0 449.0 C 84.3 446.0, 80.2 444.2, 77.0 444.0 C 73.8 443.8, 74.0 442.5, 67.0 448.0 C 60.0 453.5, 40.3 470.2, 35.0 477.0 C 29.7 483.8, 33.5 486.0, 35.0 489.0 C 36.5 492.0, 40.7 494.7, 44.0 495.0 C 47.3 495.3, 47.8 496.5, 55.0 491.0 C 62.2 485.5, 81.8 469.0, 87.0 462.0 C 92.2 455.0, 87.7 452.0, 86.0 449.0 Z";
+    const WHISKER_RT_PATH = "M 622.0 411.0 C 620.8 413.5, 621.2 416.7, 622.0 419.0 C 622.8 421.3, 621.7 422.2, 627.0 425.0 C 632.3 427.8, 648.2 434.2, 654.0 436.0 C 659.8 437.8, 659.5 437.2, 662.0 436.0 C 664.5 434.8, 667.8 431.3, 669.0 429.0 C 670.2 426.7, 669.7 424.2, 669.0 422.0 C 668.3 419.8, 668.7 418.3, 665.0 416.0 C 661.3 413.7, 653.0 410.0, 647.0 408.0 C 641.0 406.0, 633.2 403.5, 629.0 404.0 C 624.8 404.5, 623.2 408.5, 622.0 411.0 Z";
+    const WHISKER_RB_PATH = "M 614.0 446.0 C 611.0 447.2, 609.2 449.7, 609.0 453.0 C 608.8 456.3, 607.3 459.5, 613.0 466.0 C 618.7 472.5, 636.8 487.2, 643.0 492.0 C 649.2 496.8, 647.5 494.8, 650.0 495.0 C 652.5 495.2, 655.8 494.5, 658.0 493.0 C 660.2 491.5, 662.3 488.7, 663.0 486.0 C 663.7 483.3, 668.0 483.7, 662.0 477.0 C 656.0 470.3, 635.0 451.2, 627.0 446.0 C 619.0 440.8, 617.0 444.8, 614.0 446.0 Z";
+
+    function createPhoneScreenInstance(mountEl, uid, onReplayClicked) {
+      mountEl.innerHTML = `
+        <div id="homeLayer_${uid}" class="w-full h-full bg-[#FCFBF9] text-[#1E1B1E] flex flex-col justify-between pt-9 pb-5 px-4 overflow-y-auto" style="opacity: 0; transform: translateY(16px);">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-[#FFF0F2] border border-[#FFD5DC] flex items-center justify-center p-1.5 shadow-sm">
+                  <svg viewBox="0 0 700 600" class="w-full h-full">
+                    <path d="${CAT_HEAD_PATH}" fill="#F72445"/>
+                    <ellipse cx="217" cy="359.3" rx="89.5" ry="106.7" transform="rotate(7.9 217 359.3)" fill="#FDFCFA"/>
+                    <ellipse cx="478.1" cy="359" rx="90" ry="107.2" transform="rotate(-1.9 478.1 359)" fill="#FDFCFA"/>
+                    <ellipse cx="248.6" cy="361.4" rx="39.5" ry="64.1" transform="rotate(8.2 248.6 361.4)" fill="#EE1D3A"/>
+                    <ellipse cx="446.8" cy="361.4" rx="39.7" ry="63.8" transform="rotate(-3.3 446.8 361.4)" fill="#EE1D3A"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-sm font-extrabold tracking-tight text-[#1E1B1E] leading-none">RedCat Mobile</div>
+                  <div class="text-[11px] text-[#7D7478] mt-0.5">Welcome! 👋</div>
+                </div>
+              </div>
+              <button id="inPhoneReplayBtn_${uid}" class="px-2.5 py-1.5 rounded-full bg-[#FFF0F2] hover:bg-[#FFE0E5] border border-[#FFD5DC] text-[#F41F3D] text-[11px] font-bold transition shadow-sm">
+                ↻ Replay
+              </button>
+            </div>
+            <div class="rounded-3xl bg-gradient-to-br from-[#F41F3D] to-[#FF576D] p-4 text-white shadow-lg mb-4">
+              <span class="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 mb-1.5 inline-block">Splash Complete</span>
+              <h3 class="text-sm sm:text-base font-extrabold">Cat Face Centered Perfectly</h3>
+              <p class="text-[11px] text-white/90 mt-1">Both eyes and face sit right at the exact screen center.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="splashLayer_${uid}" class="absolute inset-0 bg-[#FCFBF9] flex items-center justify-center overflow-hidden z-30">
+          <!-- Optical vertical centering: translateY(-9%) offsets ears to center face -->
+          <div id="catStageBox_${uid}" class="relative flex items-center justify-center" style="width: 72%; aspect-ratio: 700 / 600; transform: translateY(-9%);">
+            <div id="redFlood_${uid}" class="absolute rounded-full pointer-events-none" style="width: 78%; height: 88%; background: linear-gradient(180deg, #F41F3D 0%, #F72445 55%, #FF4B61 100%); transform: scale(6.5);"></div>
+
+            <svg viewBox="0 0 700 600" class="w-full h-full overflow-visible relative z-10">
+              <defs>
+                <linearGradient id="headGrad_${uid}" x1="0.5" y1="0" x2="0.5" y2="1">
+                  <stop offset="0%" stop-color="#F41F3D"/>
+                  <stop offset="55%" stop-color="#F72445"/>
+                  <stop offset="100%" stop-color="#FF4D62"/>
+                </linearGradient>
+                <linearGradient id="pupilGrad_${uid}" x1="0.5" y1="0" x2="0.5" y2="1">
+                  <stop offset="0%" stop-color="#EB1C38"/>
+                  <stop offset="50%" stop-color="#F32744"/>
+                  <stop offset="100%" stop-color="#FB4B63"/>
+                </linearGradient>
+              </defs>
+
+              <g id="headGroup_${uid}" style="opacity: 0;">
+                <path d="${CAT_HEAD_PATH}" fill="url(#headGrad_${uid})"/>
+              </g>
+
+              <g id="earsGroup_${uid}" style="opacity: 0; transform-origin: 350px 160px; transform: scale(0.4);">
+                <path d="${LEFT_INNER_EAR_PATH}" fill="#FD8587"/>
+                <path d="${RIGHT_INNER_EAR_PATH}" fill="#FE8789"/>
+              </g>
+
+              <g id="whiskersGroup_${uid}" fill="#FD4A5F" style="opacity: 0; transform-origin: 350px 445px; transform: scale(0.4);">
+                <path d="${WHISKER_LT_PATH}"/>
+                <path d="${WHISKER_LB_PATH}"/>
+                <path d="${WHISKER_RT_PATH}"/>
+                <path d="${WHISKER_RB_PATH}"/>
+              </g>
+
+              <g id="blinkGroup_${uid}" style="transform-origin: 348px 359px; transform: scaleY(1);">
+                <g id="leftWhiteEye_${uid}" style="transform-origin: 217px 359.3px; transform: scale(0);">
+                  <ellipse cx="217" cy="359.3" rx="89.5" ry="106.7" transform="rotate(7.9 217 359.3)" fill="#FDFCFA"/>
+                  <g id="leftPupil_${uid}" style="transform-origin: 217px 361.4px; transform: translateX(0px) scale(0);">
+                    <ellipse cx="217" cy="361.4" rx="39.5" ry="64.1" transform="rotate(8.2 248.6 361.4)" fill="url(#pupilGrad_${uid})"/>
+                  </g>
+                </g>
+
+                <g id="rightWhiteEye_${uid}" style="transform-origin: 478.1px 359px; transform: scale(0);">
+                  <ellipse cx="478.1" cy="359" rx="90" ry="107.2" transform="rotate(-1.9 478.1 359)" fill="#FDFCFA"/>
+                  <g id="rightPupil_${uid}" style="transform-origin: 478.1px 361.4px; transform: translateX(0px) scale(0);">
+                    <ellipse cx="478.1" cy="361.4" rx="39.7" ry="63.8" transform="rotate(-3.3 446.8 361.4)" fill="url(#pupilGrad_${uid})"/>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+      `;
+
+      const btn = document.getElementById(`inPhoneReplayBtn_${uid}`);
+      if (btn) btn.addEventListener('click', onReplayClicked);
+
+      return {
+        uid,
+        homeLayer: document.getElementById(`homeLayer_${uid}`),
+        splashLayer: document.getElementById(`splashLayer_${uid}`),
+        redFlood: document.getElementById(`redFlood_${uid}`),
+        headGroup: document.getElementById(`headGroup_${uid}`),
+        earsGroup: document.getElementById(`earsGroup_${uid}`),
+        whiskersGroup: document.getElementById(`whiskersGroup_${uid}`),
+        blinkGroup: document.getElementById(`blinkGroup_${uid}`),
+        leftWhiteEye: document.getElementById(`leftWhiteEye_${uid}`),
+        rightWhiteEye: document.getElementById(`rightWhiteEye_${uid}`),
+        leftPupil: document.getElementById(`leftPupil_${uid}`),
+        rightPupil: document.getElementById(`rightPupil_${uid}`),
+      };
+    }
+
+    const TOTAL_DURATION = 4.20;
+
+    function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+    function easeOutBack(x) { const c1 = 1.70158; const c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); }
+    function easeInOutCubic(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+    function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+
+    function computeStateAtTime(t) {
+      const whiteProgress = clamp01((t - 0.55) / 0.37);
+      const whiteScale = whiteProgress === 0 ? 0 : easeOutBack(whiteProgress);
+
+      const pupilProgress = clamp01((t - 0.88) / 0.40);
+      const pupilScale = pupilProgress === 0 ? 0 : easeOutBack(pupilProgress);
+      const pupilShiftProgress = easeOutBack(clamp01((t - 0.92) / 0.38));
+      const leftPupilX = 31.6 * pupilShiftProgress;
+      const rightPupilX = -31.3 * pupilShiftProgress;
+
+      let blinkScaleY = 1;
+      if (t >= 1.42 && t <= 1.66) {
+        const bp = (t - 1.42) / 0.24;
+        const tri = bp < 0.45 ? bp / 0.45 : (1 - bp) / 0.55;
+        blinkScaleY = 1 - 0.94 * Math.sin(clamp01(tri) * Math.PI * 0.5);
+      } else if (t >= 1.76 && t <= 2.02) {
+        const bp = (t - 1.76) / 0.26;
+        const tri = bp < 0.45 ? bp / 0.45 : (1 - bp) / 0.55;
+        blinkScaleY = 1 - 0.94 * Math.sin(clamp01(tri) * Math.PI * 0.5);
+      }
+
+      const shrinkProgress = easeInOutCubic(clamp01((t - 2.12) / 0.58));
+      const redFloodScale = 6.5 - (6.5 - 0.55) * shrinkProgress;
+      const redFloodOpacity = 1 - easeOutCubic(clamp01((t - 2.38) / 0.32));
+
+      const headOpacity = easeOutCubic(clamp01((t - 2.22) / 0.28));
+      const earsProgress = clamp01((t - 2.32) / 0.42);
+      const earsScale = earsProgress === 0 ? 0.35 : 0.35 + 0.65 * easeOutBack(earsProgress);
+      const whiskersProgress = clamp01((t - 2.42) / 0.44);
+      const whiskersScale = whiskersProgress === 0 ? 0.3 : 0.3 + 0.7 * easeOutBack(whiskersProgress);
+
+      const exitProgress = easeInOutCubic(clamp01((t - 3.35) / 0.48));
+      const splashOpacity = 1 - exitProgress;
+      const splashScale = 1 + 0.16 * exitProgress;
+
+      const homeProgress = easeOutCubic(clamp01((t - 3.45) / 0.50));
+      const homeOpacity = homeProgress;
+      const homeTranslateY = 16 * (1 - homeProgress);
+
+      let stage = 1;
+      if (t >= 3.32) stage = 5;
+      else if (t >= 2.10) stage = 4;
+      else if (t >= 1.40) stage = 3;
+      else if (t >= 0.55) stage = 2;
+
+      return {
+        stage, whiteScale, pupilScale, leftPupilX, rightPupilX, blinkScaleY,
+        redFloodScale, redFloodOpacity, headOpacity, earsScale, whiskersScale,
+        splashOpacity, splashScale, homeOpacity, homeTranslateY
+      };
+    }
+
+    function applyStateToInstance(inst, state) {
+      inst.redFlood.style.transform = `scale(${state.redFloodScale.toFixed(3)})`;
+      inst.redFlood.style.opacity = state.redFloodOpacity.toFixed(3);
+      inst.headGroup.style.opacity = state.headOpacity.toFixed(3);
+      inst.earsGroup.style.opacity = state.headOpacity.toFixed(3);
+      inst.earsGroup.style.transform = `scale(${state.earsScale.toFixed(3)})`;
+      inst.whiskersGroup.style.opacity = state.headOpacity.toFixed(3);
+      inst.whiskersGroup.style.transform = `scale(${state.whiskersScale.toFixed(3)})`;
+      inst.blinkGroup.style.transform = `scaleY(${state.blinkScaleY.toFixed(3)})`;
+      inst.leftWhiteEye.style.transform = `scale(${state.whiteScale.toFixed(3)})`;
+      inst.rightWhiteEye.style.transform = `scale(${state.whiteScale.toFixed(3)})`;
+      inst.leftPupil.style.transform = `translateX(${state.leftPupilX.toFixed(1)}px) scale(${state.pupilScale.toFixed(3)})`;
+      inst.rightPupil.style.transform = `translateX(${state.rightPupilX.toFixed(1)}px) scale(${state.pupilScale.toFixed(3)})`;
+      inst.splashLayer.style.opacity = state.splashOpacity.toFixed(3);
+      inst.splashLayer.style.transform = `scale(${state.splashScale.toFixed(3)})`;
+      inst.splashLayer.style.pointerEvents = state.splashOpacity < 0.05 ? 'none' : 'auto';
+      inst.homeLayer.style.opacity = state.homeOpacity.toFixed(3);
+      inst.homeLayer.style.transform = `translateY(${state.homeTranslateY.toFixed(1)}px)`;
+    }
+
+    const mainInstance = createPhoneScreenInstance(document.getElementById('mainPhoneMount'), 'main', () => restartTimeline());
+    const gridInstances = [
+      createPhoneScreenInstance(document.getElementById('gridMount1'), 'g1', () => restartTimeline()),
+      createPhoneScreenInstance(document.getElementById('gridMount2'), 'g2', () => restartTimeline()),
+      createPhoneScreenInstance(document.getElementById('gridMount3'), 'g3', () => restartTimeline()),
+      createPhoneScreenInstance(document.getElementById('gridMount4'), 'g4', () => restartTimeline()),
+    ];
+
+    let currentTime = 0;
+    let isPlaying = true;
+    let playbackSpeed = 1;
+    let autoLoop = false;
+    let lastFrameTs = null;
+
+    const STAGE_LABELS = {
+      1: 'Stage 1: Full Screen Cat Red (#F72445)',
+      2: 'Stage 2: White Balls + Red Pupils Pop In (Dead Center)',
+      3: 'Stage 3: Cute Double Eye Blink',
+      4: 'Stage 4: Full Cat Face Reveal',
+      5: 'Stage 5: App Home Screen',
+    };
+
+    function renderAtTime(t) {
+      const state = computeStateAtTime(t);
+      applyStateToInstance(mainInstance, state);
+      gridInstances.forEach(inst => applyStateToInstance(inst, state));
+
+      document.getElementById('liveTimerBadge').textContent = `${t.toFixed(2)}s / ${TOTAL_DURATION.toFixed(2)}s`;
+      document.getElementById('timelineProgressBar').style.width = `${Math.min(100, (t / TOTAL_DURATION) * 100).toFixed(1)}%`;
+      document.getElementById('currentStagePill').textContent = STAGE_LABELS[state.stage];
+
+      document.querySelectorAll('.stage-step-btn').forEach(btn => {
+        const s = parseInt(btn.getAttribute('data-stage'), 10);
+        if (s === state.stage) btn.classList.add('stage-btn-active');
+        else btn.classList.remove('stage-btn-active');
+      });
+    }
+
+    function tick(now) {
+      if (!lastFrameTs) lastFrameTs = now;
+      const dt = ((now - lastFrameTs) / 1000) * playbackSpeed;
+      lastFrameTs = now;
+
+      if (isPlaying) {
+        currentTime += dt;
+        if (currentTime >= TOTAL_DURATION) {
+          if (autoLoop) {
+            currentTime = 0;
+          } else {
+            currentTime = TOTAL_DURATION;
+            isPlaying = false;
+            document.getElementById('btnPauseResume').textContent = '▶ Resume';
+          }
+        }
+        renderAtTime(currentTime);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function restartTimeline() {
+      currentTime = 0;
+      isPlaying = true;
+      lastFrameTs = null;
+      document.getElementById('btnPauseResume').textContent = '⏸ Pause';
+      renderAtTime(0);
+    }
+
+    renderAtTime(0);
+    requestAnimationFrame(tick);
+
+    const DEVICE_PRESETS = {
+      se: { name: 'iPhone SE', ptW: 375, ptH: 667, frameW: 310, frameH: 552, radius: 38 },
+      '16pro': { name: 'iPhone 16 Pro', ptW: 393, ptH: 852, frameW: 334, frameH: 685, radius: 46 },
+      '16max': { name: 'iPhone 16 Pro Max', ptW: 440, ptH: 956, frameW: 364, frameH: 730, radius: 50 },
+      android: { name: 'Samsung S24 / Pixel 9', ptW: 360, ptH: 800, frameW: 316, frameH: 660, radius: 36 },
+      small: { name: 'Compact Android Mini', ptW: 320, ptH: 568, frameW: 278, frameH: 494, radius: 32 },
+      ipad: { name: 'iPad Mini Tablet', ptW: 744, ptH: 1133, frameW: 460, frameH: 680, radius: 34 },
+    };
+
+    document.querySelectorAll('.device-select-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-device');
+        const preset = DEVICE_PRESETS[key];
+        if (!preset) return;
+        document.querySelectorAll('.device-select-btn').forEach(b => b.classList.remove('device-btn-active'));
+        btn.classList.add('device-btn-active');
+
+        const frame = document.getElementById('mainPhoneFrame');
+        frame.style.width = `${preset.frameW}px`;
+        frame.style.height = `${preset.frameH}px`;
+        frame.style.borderRadius = `${preset.radius}px`;
+
+        document.getElementById('activeDeviceDims').textContent = `${preset.ptW} × ${preset.ptH} pt`;
+        document.getElementById('deviceLabelBadge').textContent = `${preset.name} • ${preset.ptW} × ${preset.ptH} pt`;
+        restartTimeline();
+      });
+    });
+
+    document.getElementById('btnReplayMain').addEventListener('click', restartTimeline);
+    const btnReplayGrid = document.getElementById('btnReplayGrid');
+    if (btnReplayGrid) btnReplayGrid.addEventListener('click', restartTimeline);
+
+    document.getElementById('btnPauseResume').addEventListener('click', () => {
+      if (currentTime >= TOTAL_DURATION) { restartTimeline(); return; }
+      isPlaying = !isPlaying;
+      lastFrameTs = null;
+      document.getElementById('btnPauseResume').textContent = isPlaying ? '⏸ Pause' : '▶ Resume';
+    });
+
+    document.getElementById('chkAutoLoop').addEventListener('change', (e) => {
+      autoLoop = e.target.checked;
+      if (autoLoop && !isPlaying) restartTimeline();
+    });
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playbackSpeed = parseFloat(btn.getAttribute('data-speed'));
+        document.querySelectorAll('.speed-btn').forEach(b => {
+          b.className = 'speed-btn px-2 py-1 rounded bg-[#222634] text-slate-300 border border-transparent hover:border-white/10';
+        });
+        btn.className = 'speed-btn px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-semibold';
+      });
+    });
+
+    const STAGE_JUMP_TIMES = { 1: 0.25, 2: 1.25, 3: 1.54, 4: 2.95, 5: 4.10 };
+    document.querySelectorAll('.stage-step-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const st = parseInt(btn.getAttribute('data-stage'), 10);
+        currentTime = STAGE_JUMP_TIMES[st] || 0;
+        isPlaying = false;
+        document.getElementById('btnPauseResume').textContent = '▶ Resume';
+        renderAtTime(currentTime);
+      });
+    });
+
+    const tabPreview = document.getElementById('tabBtnPreview');
+    const tabAllSizes = document.getElementById('tabBtnAllSizes');
+    const viewPreview = document.getElementById('viewPreview');
+    const viewAllSizes = document.getElementById('viewAllSizes');
+
+    tabPreview.addEventListener('click', () => {
+      tabPreview.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-[#F72445] text-white shadow';
+      tabAllSizes.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-300 hover:text-white';
+      viewPreview.classList.remove('hidden');
+      viewAllSizes.classList.add('hidden');
+      restartTimeline();
+    });
+
+    tabAllSizes.addEventListener('click', () => {
+      tabAllSizes.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-[#F72445] text-white shadow';
+      tabPreview.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-300 hover:text-white';
+      viewAllSizes.classList.remove('hidden');
+      viewPreview.classList.add('hidden');
+      restartTimeline();
+    });
+  </script>
+</body>
+</html>

@@ -1,6 +1,25 @@
-node_modules/
-src-tauri/target/
-src-tauri/WixTools/
+# Build output
 dist/
+dist-backup-*/
+# Dependencies
+node_modules/
+# Backups (dated .bak files)
+*.bak*
+# Logs
 *.log
+# Environment / secrets (never commit)
+.env*
+# OS files
 .DS_Store
+Thumbs.db
+# User data — created at runtime on the user's own PC, never committed.
+# A fresh install starts with zero chats, runs, memory, or tokens.
+redcat-app/chats/
+redcat-app/runs/
+redcat-app/memory/
+redcat-app/uploads/
+redcat-app/videos/
+redcat-app/slash-uploads/
+redcat-app/sites/
+redcat-app/mcp-tokens.json
+redcat-app/schedules.json

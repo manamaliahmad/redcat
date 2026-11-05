@@ -1,0 +1,1 @@
+{"dependencies":{"gsap":"^3.12.5","three":"^0.160.0"},"description":"TEST ONLY template for the depth-portrait-scroll recipe. The agent edits src/config.json only.","devDependencies":{"vite":"^5.0.0"},"name":"depth-portrait-scroll-template","private":true,"scripts":{"build":"vite build","dev":"vite","preview":"vite preview"},"type":"module","version":"1.0.0"}

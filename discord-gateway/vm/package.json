@@ -1,0 +1,1 @@
+{"dependencies":{"@napi-rs/canvas":"^1.1.0","discord.js":"^14.16.3"},"description":"RedCat Discord gateway: relay + Discord bot on the Oracle VM. The PC poller asks the RedCat agent and posts replies back.","engines":{"node":">=20"},"main":"gateway.js","name":"redcat-discord-gateway","private":true,"scripts":{"start":"node gateway.js"},"version":"1.0.0"}

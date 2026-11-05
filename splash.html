@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedCat</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+  body { display: flex; align-items: center; justify-content: center; }
+  .splash-card {
+    width: min(560px, calc(100vw - 48px));
+    background: #0b0b10;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  }
+  .splash-video-container {
+    position: relative; width: 100%; aspect-ratio: 16 / 9;
+    display: flex; align-items: center; justify-content: center;
+    background: #000; overflow: hidden;
+  }
+  .splash-video {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center center; pointer-events: none;
+    display: block;
+  }
+  .splash-bottom-bar {
+    position: relative; width: 100%; padding: 16px 18px 18px;
+    display: flex; flex-direction: column; gap: 10px; z-index: 10; pointer-events: none;
+  }
+  .splash-status-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "JetBrains Mono", monospace;
+    font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .splash-tag {
+    display: flex; align-items: center; gap: 8px;
+    color: #f1f5f9; font-weight: 600; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+  .splash-pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ef4444; box-shadow: 0 0 10px #ef4444;
+    animation: splashPulse 1.2s infinite ease-in-out;
+  }
+  @keyframes splashPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.85); }
+  }
+  .splash-pct {
+    color: #ff4d6d; font-weight: 700; font-size: 12px;
+    font-variant-numeric: tabular-nums; text-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+  }
+  .splash-track {
+    width: 100%; height: 6px; background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px; overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.7);
+  }
+  .splash-fill {
+    width: 0%; height: 100%;
+    background: linear-gradient(90deg, #800020 0%, #e11d48 50%, #ff4d6d 100%);
+    border-radius: 999px; box-shadow: 0 0 14px rgba(225, 29, 72, 0.95);
+    transition: width 0.15s linear;
+  }
+  .splash-error {
+    color: #fca5a5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    font-size: 13px; letter-spacing: 0.02em; text-transform: none;
+  }
+</style>
+</head>
+<body>
+  <!-- Standard centred installer-style card (NOT full-screen). Shown once
+       per app launch by Electron main.js (createWindow) — a renderer
+       reload (Ctrl+Shift+R) never re-loads this page, so it cannot
+       re-appear on refresh. -->
+  <div class="splash-card">
+  <div class="splash-video-container">
+    <video id="splashVideo" class="splash-video" autoplay muted loop playsinline preload="auto">
+      <source src="redcat-app/public/assets/redcat-code-loading.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="splash-bottom-bar">
+    <div class="splash-status-row">
+      <span class="splash-tag">
+        <span class="splash-pulse"></span>
+        <span id="splashStatus">Starting RedCat server</span>
+      </span>
+      <span class="splash-pct" id="splashPct">0%</span>
+    </div>
+    <div class="splash-track">
+      <div class="splash-fill" id="splashFill"></div>
+    </div>
+  </div>
+  </div>
+  <script>
+    // Called by Electron main.js (via executeJavaScript) at real milestones.
+    // Progress is stage-based: each stage completes when a real event happens
+    // (server process started, server responding, page loading). No timer.
+    window.setSplashProgress = function (pct, status) {
+      var p = Math.max(0, Math.min(100, Math.round(pct)));
+      var pctEl = document.getElementById('splashPct');
+      var fillEl = document.getElementById('splashFill');
+      var statusEl = document.getElementById('splashStatus');
+      if (pctEl) pctEl.textContent = p + '%';
+      if (fillEl) fillEl.style.width = p + '%';
+      if (status && statusEl) statusEl.textContent = status;
+    };
+    window.setSplashError = function (message) {
+      var statusEl = document.getElementById('splashStatus');
+      if (statusEl) { statusEl.textContent = message; statusEl.classList.add('splash-error'); }
+      var pctEl = document.getElementById('splashPct');
+      if (pctEl) pctEl.textContent = '';
+      var video = document.getElementById('splashVideo');
+      if (video) { try { video.pause(); } catch (e) {} }
+    };
+    var video = document.getElementById('splashVideo');
+    if (video) { video.muted = true; video.loop = true; video.play().catch(function () {}); }
+  </script>
+</body>
+</html>

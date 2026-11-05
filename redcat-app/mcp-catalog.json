@@ -1,0 +1,3289 @@
+{
+  "note": "RedCat MCP catalog v2 (expansion, 2026-11-04). Source: research report 2026-11-03 (~/workspace/research_notes/top-100-mcp-servers-hermes-catalog-20261103-1403/report.md). Logos: all null in this slice; no vendor-official logo file could be obtained by text fetch, and third-party icon libraries were deliberately NOT reused as official logos. Cards render a neutral initials placeholder until a real vendor file is dropped into public/assets/mcp-logos/. Tier 2 cards are guidance + fields only; connecting from pasted credentials is NOT wired.",
+  "version": 2,
+  "servers": [
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://elevenlabs.io",
+      "desc": "Text to speech, voice cloning, sound effects, music, and voice agents.",
+      "id": "elevenlabs",
+      "logo": "elevenlabs.svg",
+      "name": "ElevenLabs",
+      "note": "Usage is billed to your own ElevenLabs account. Generation tools always need your approval in chat.",
+      "spending": true,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://api.elevenlabs.io/v1/mcp",
+      "category": "Design & media",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://higgsfield.ai",
+      "desc": "Image and video generation across 30+ models, including Seedance.",
+      "id": "higgsfield",
+      "logo": "higgsfield.svg",
+      "name": "Higgsfield",
+      "note": "Generations cost credits on your own Higgsfield account. Every generation needs your approval in chat.",
+      "spending": true,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.higgsfield.ai/mcp",
+      "category": "Design & media",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://notion.so",
+      "desc": "Search, read, create, and update pages and databases.",
+      "id": "notion",
+      "logo": "notion.svg",
+      "name": "Notion",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.notion.com/mcp",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://linear.app",
+      "desc": "Issues, projects, cycles, and comments.",
+      "id": "linear",
+      "logo": "linear.svg",
+      "name": "Linear",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.linear.app/mcp",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://atlassian.com",
+      "desc": "Jira issues and Confluence pages in one connection.",
+      "id": "atlassian",
+      "logo": "atlassian.svg",
+      "name": "Atlassian",
+      "note": "Some Atlassian flows reject dynamic registration. If sign-in fails, the card shows the manual setup steps.",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.atlassian.com/v2/mcp",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://todoist.com",
+      "desc": "Tasks, projects, due dates, and labels.",
+      "id": "todoist",
+      "logo": "todoist.svg",
+      "name": "Todoist",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://ai.todoist.net/mcp",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://airtable.com",
+      "desc": "Bases, tables, records, and schemas.",
+      "id": "airtable",
+      "logo": "airtable.svg",
+      "name": "Airtable",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.airtable.com/mcp",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://miro.com",
+      "desc": "Boards, diagrams, and documents.",
+      "id": "miro",
+      "logo": "miro.svg",
+      "name": "Miro",
+      "note": "Enterprise plans may need an admin to enable MCP first.",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.miro.com/",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://stripe.com",
+      "desc": "Payments, billing, and customers. Read-first: refunds and deletes are never offered.",
+      "excludeTools": [
+        "delete_customer",
+        "refund_payment"
+      ],
+      "id": "stripe",
+      "logo": "stripe.svg",
+      "name": "Stripe",
+      "note": "Money-moving tools are excluded from the tool list entirely, and any write still needs your approval.",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.stripe.com",
+      "category": "Payments, business & analytics",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://supabase.com",
+      "desc": "Postgres schema, queries, and logs, scoped to one project and read-only by default.",
+      "fields": [
+        {
+          "key": "project_ref",
+          "label": "Project ref",
+          "placeholder": "e.g. abcdefghijklmnop",
+          "required": true,
+          "secret": false
+        }
+      ],
+      "id": "supabase",
+      "logo": "supabase.svg",
+      "name": "Supabase",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "urlTemplate": "https://mcp.supabase.com/mcp?project_ref={project_ref}&read_only=true",
+      "category": "Databases & data",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "dashboardUrl": "https://sentry.io",
+      "desc": "Production errors, stack traces, and performance issues.",
+      "fields": [
+        {
+          "key": "org",
+          "label": "Organization slug (optional)",
+          "placeholder": "Leave empty for all organizations",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "project",
+          "label": "Project slug (optional)",
+          "placeholder": "Leave empty for all projects",
+          "required": false,
+          "secret": false
+        }
+      ],
+      "id": "sentry",
+      "logo": "sentry.svg",
+      "name": "Sentry",
+      "note": "Leave both fields empty to connect without scoping, or fill them to scope to one project.",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "urlTemplate": "https://mcp.sentry.dev/mcp/{org}/{project}",
+      "category": "Code & developer tools",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "none",
+      "dashboardUrl": "https://exa.ai",
+      "desc": "AI-native web search and clean page fetch. No account needed for the free tier.",
+      "id": "exa",
+      "logo": "exa.svg",
+      "name": "Exa",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "category": "Files, search & browser",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "none",
+      "dashboardUrl": "https://context7.com",
+      "desc": "Current, version-specific library docs and code examples.",
+      "id": "context7",
+      "logo": "context7.svg",
+      "name": "Context7",
+      "note": "Shipped as the remote server only. Two different local package names circulate for Context7 and could not be settled, so neither is shipped.",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "category": "Files, search & browser",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "key-url",
+      "dashboardUrl": "https://zapier.com",
+      "desc": "Thousands of app actions through your own Zapier MCP URL.",
+      "fields": [
+        {
+          "key": "mcpUrl",
+          "label": "Your Zapier MCP URL",
+          "placeholder": "https://actions.zapier.com/mcp/...",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "id": "zapier",
+      "logo": "zapier.svg",
+      "name": "Zapier",
+      "note": "Paste a Streamable HTTP URL from Zapier (Agentic). Classic /sse URLs are not supported by this client. The URL itself is a credential and is stored only in the local token file, never in logs.",
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "category": "Automation",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "{dir}"
+      ],
+      "auth": "none",
+      "command": "npx",
+      "dashboardUrl": null,
+      "desc": "Read and write files inside one folder you choose. Nothing outside that folder is visible.",
+      "fields": [
+        {
+          "key": "dir",
+          "label": "Folder to allow",
+          "placeholder": "Leave empty for the RedCat project folder",
+          "required": false,
+          "secret": false
+        }
+      ],
+      "id": "filesystem",
+      "logo": "filesystem.svg",
+      "name": "Filesystem",
+      "note": "Writes inside the allowed folder still need your approval in chat.",
+      "spending": false,
+      "tier": 1,
+      "transport": "stdio",
+      "category": "Files, search & browser",
+      "kind": "mcp",
+      "official": "reference"
+    },
+    {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "auth": "none",
+      "command": "npx",
+      "dashboardUrl": null,
+      "desc": "A small knowledge graph that persists across chats on this PC.",
+      "id": "memory",
+      "logo": "memory.svg",
+      "name": "Memory",
+      "spending": false,
+      "tier": 1,
+      "transport": "stdio",
+      "category": "Files, search & browser",
+      "kind": "mcp",
+      "official": "reference"
+    },
+    {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "auth": "none",
+      "command": "npx",
+      "dashboardUrl": null,
+      "desc": "Structured, revisable step-by-step reasoning.",
+      "id": "thinking",
+      "logo": "thinking.svg",
+      "name": "Sequential Thinking",
+      "spending": false,
+      "tier": 1,
+      "transport": "stdio",
+      "category": "Files, search & browser",
+      "kind": "mcp",
+      "official": "reference"
+    },
+    {
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ],
+      "auth": "none",
+      "command": "npx",
+      "dashboardUrl": "https://playwright.dev",
+      "desc": "Drive a real browser: navigate, click, fill forms, read pages.",
+      "id": "playwright",
+      "logo": "playwright.svg",
+      "name": "Playwright",
+      "note": "Needs Playwright browsers on this PC. Clicking, filling, and navigating always need your approval in chat.",
+      "spending": false,
+      "tier": 1,
+      "transport": "stdio",
+      "category": "Files, search & browser",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "own-app",
+      "dashboardUrl": "https://github.com",
+      "desc": "Repos, issues, pull requests, and code search.",
+      "id": "github",
+      "logo": "github.svg",
+      "name": "GitHub",
+      "note": "GitHub deliberately has no one-click MCP: generic dynamic registration is rejected.",
+      "setupSteps": [
+        "Open https://github.com/settings/developers and create a new OAuth App.",
+        "Set its Authorization callback URL to http://127.0.0.1:37429/callback.",
+        "Copy the Client ID and Client Secret into RedCat, then press Connect.",
+        "Alternative: create a Personal Access Token (classic) with read:user scope and paste it as a bearer token."
+      ],
+      "spending": false,
+      "tier": 2,
+      "transport": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "category": "Code & developer tools",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "own-app",
+      "dashboardUrl": "https://api.slack.com/apps",
+      "desc": "Search messages, files, users, and channels; send messages.",
+      "id": "slack",
+      "logo": "slack.svg",
+      "name": "Slack",
+      "note": "Slack does not accept dynamic client registration, so one-click sign-in is not possible.",
+      "setupSteps": [
+        "Create an app at https://api.slack.com/apps.",
+        "In your Slack app, under OAuth & Permissions, add http://127.0.0.1:37429/callback as a Redirect URL (Slack requires an exact match; Slack normally requires https URLs, so a loopback URL is only accepted for certain app distribution types - if Slack rejects it, this connection cannot complete from a loopback callback yet).",
+        "Only directory-published or internal Slack apps can call its MCP server.",
+        "Have a workspace admin approve and install the app, then paste its credentials into RedCat."
+      ],
+      "spending": false,
+      "tier": 2,
+      "transport": "remote",
+      "url": "https://mcp.slack.com/mcp",
+      "category": "Communication",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "own-app",
+      "dashboardUrl": "https://asana.com",
+      "desc": "Tasks, projects, portfolios, and status updates.",
+      "id": "asana",
+      "logo": "asana.svg",
+      "name": "Asana",
+      "note": "Asana V1 (mcp.asana.com/sse) was shut down in May 2026. Only V2 works, and it needs a pre-registered client. Asana currently rejects localhost callbacks, so the loopback sign-in cannot complete yet.",
+      "setupSteps": [
+        "Asana does not accept localhost loopback redirects: it only accepts https URLs for web apps and the out-of-band code flow for native apps, so a localhost callback cannot be registered.",
+        "Until Asana supports loopback redirects or RedCat adds a hosted redirect or code paste-back, this card stays in setup state."
+      ],
+      "spending": false,
+      "tier": 2,
+      "transport": "remote",
+      "url": "https://mcp.asana.com/v2/mcp",
+      "category": "Productivity & knowledge",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "own-app",
+      "dashboardUrl": "https://shopify.com",
+      "desc": "Merchant orders, customers, products, and analytics for one store.",
+      "id": "shopify",
+      "logo": "shopify.svg",
+      "name": "Shopify — merchant",
+      "note": "Shopify MCP is store-specific: it is installed per store, not as one global login.",
+      "setupSteps": [
+        "In your Shopify admin (or Partner dashboard), create a custom app for your store.",
+        "Give it the scopes RedCat needs and install it on the store.",
+        "Paste the store URL and access token into RedCat, then press Connect."
+      ],
+      "spending": false,
+      "tier": 2,
+      "transport": "remote",
+      "category": "Payments, business & analytics",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "oauth",
+      "oauthKind": "pre-registered",
+      "oauth": {
+        "authorize": "https://discord.com/oauth2/authorize",
+        "token": "https://discord.com/api/oauth2/token",
+        "scopes": "identify guilds",
+        "verify": "https://discord.com/api/users/@me"
+      },
+      "dashboardUrl": "https://discord.com/developers/applications",
+      "desc": "Discord user sign-in: verify who you are and which servers you are in. Discord has no official MCP server.",
+      "fields": [
+        {
+          "key": "clientId",
+          "label": "Client ID (from your Discord app's OAuth2 page)",
+          "placeholder": "From the Developer Portal OAuth2 page",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "clientSecret",
+          "label": "Client Secret (from your Discord app's OAuth2 page)",
+          "placeholder": "Stored only in the local token file",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "id": "discord",
+      "logo": "discord.svg",
+      "name": "Discord",
+      "note": "The old community bot-token route does not authenticate (stored tokens were rejected by Discord) and is not offered as a Connect. Reading or sending server messages needs bot/channel work, which is a separate slice. Your Client Secret is stored only in the local token file on this PC and never ships in the app.",
+      "setupSteps": [
+        "Muse applies the Redirect URI and scopes to your RedCat Discord application via the browser (no action needed from you here).",
+        "In RedCat, paste the Client ID and Client Secret from your Discord app's OAuth2 page into the fields below. The secret is stored only in the local token file on this PC.",
+        "Press Connect, then Allow on Discord's screen.",
+        "If Discord shows an invalid redirect_uri error, the Redirect URI has not been applied yet — tell Muse and it will re-apply it."
+      ],
+      "spending": false,
+      "tier": 1,
+      "transport": "remote",
+      "category": "Communication",
+      "kind": "connector",
+      "official": "official"
+    },
+    {
+      "auth": "own-app",
+      "dashboardUrl": "https://figma.com",
+      "desc": "Design context (frames, components, variables) for code.",
+      "id": "figma",
+      "logo": "figma.svg",
+      "name": "Figma",
+      "note": "Figma only accepts catalog-listed clients. A generic RedCat sign-in is rejected with HTTP 403.",
+      "setupSteps": [
+        "Figma's MCP server only accepts catalog-listed clients. Apply for listing at https://developers.figma.com/docs/figma-mcp-server/.",
+        "Until RedCat is listed, Figma may reject sign-in.",
+        "Alternative: use the Figma desktop local server at http://127.0.0.1:3845/mcp when Figma desktop is running."
+      ],
+      "spending": false,
+      "tier": 2,
+      "transport": "remote",
+      "url": "https://mcp.figma.com/mcp",
+      "category": "Design & media",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "auth": "own-app",
+      "dashboardUrl": "https://vercel.com",
+      "desc": "Projects, deployments, and build logs.",
+      "id": "vercel",
+      "logo": "vercel.svg",
+      "name": "Vercel",
+      "note": "Vercel only accepts reviewed clients (Claude Code, Codex, Cursor, Claude Desktop). Endpoint from secondary coverage, not vendor docs: verify before first live connect.",
+      "setupSteps": [
+        "Vercel only accepts reviewed clients. Apply for reviewed-client status with Vercel before expecting one-click connect.",
+        "Until then, this card stays in setup state."
+      ],
+      "spending": false,
+      "tier": 2,
+      "transport": "remote",
+      "url": "https://mcp.vercel.com",
+      "category": "DevOps, cloud & observability",
+      "kind": "mcp",
+      "official": "official"
+    },
+    {
+      "id": "gmail",
+      "name": "Gmail (Connector)",
+      "desc": "Gmail connector (OAuth-pending). Google's Workspace Gmail MCP is in Developer Preview and needs your own Google Cloud OAuth client; it is not a one-click official MCP.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "own-app",
+      "kind": "connector",
+      "category": "Connectors",
+      "official": "official",
+      "logo": "gmail.svg",
+      "dashboardUrl": "https://console.cloud.google.com",
+      "url": "https://gmailmcp.googleapis.com/mcp/v1",
+      "note": "This is the existing RedCat Gmail connector (OAuth-pending), listed here as a Connector, never as a one-click official Gmail MCP. It reads threads and labels; it has no send or delete tool.",
+      "setupSteps": [
+        "Create a project in Google Cloud Console and enable the Gmail API.",
+        "Configure the OAuth consent screen and create an OAuth client ID.",
+        "Create the client as a Desktop app: desktop clients accept loopback redirects on any port, so no exact callback URL needs registering.",
+        "Enrol in the Google Workspace MCP Developer Preview.",
+        "Because the app is not verified by Google, the consent screen will say \"Google hasn't verified this app\". Expect that screen and only continue for your own project.",
+        "Paste the client ID and secret into RedCat, then press Connect when that flow is wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "google-drive",
+      "name": "Google Drive",
+      "desc": "Find, read, create, copy and download Drive files, metadata and permissions. Official Google Workspace MCP server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "own-app",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "googledrive.svg",
+      "dashboardUrl": "https://developers.google.com/workspace/guides/configure-mcp-servers",
+      "url": "https://drivemcp.googleapis.com/mcp/v1",
+      "note": "Google Workspace MCP is in Developer Preview and needs your own OAuth client. Dynamic client registration returns 400 for Drive, and its tool list can look alive while real calls time out.",
+      "setupSteps": [
+        "Create a project in Google Cloud Console and enable the Drive API.",
+        "Configure the OAuth consent screen and create an OAuth client ID as a Desktop app.",
+        "Enrol in the Google Workspace MCP Developer Preview.",
+        "Because the app is not verified by Google, expect the \"Google hasn't verified this app\" screen during sign-in.",
+        "Paste the client ID and secret into RedCat, then press Connect when that flow is wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "google-calendar",
+      "name": "Google Calendar",
+      "desc": "List, search, create, update, delete and respond to events, and suggest times. Official Google Workspace MCP server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "own-app",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "googlecalendar.svg",
+      "dashboardUrl": "https://developers.google.com/workspace/guides/configure-mcp-servers",
+      "url": "https://calendarmcp.googleapis.com/mcp/v1",
+      "note": "Google Workspace MCP is in Developer Preview and needs your own OAuth client.",
+      "setupSteps": [
+        "Create a project in Google Cloud Console and enable the Calendar API.",
+        "Configure the OAuth consent screen and create an OAuth client ID as a Desktop app.",
+        "Enrol in the Google Workspace MCP Developer Preview.",
+        "Because the app is not verified by Google, expect the \"Google hasn't verified this app\" screen during sign-in.",
+        "Paste the client ID and secret into RedCat, then press Connect when that flow is wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "google-docs",
+      "name": "Google Docs, Sheets & Slides",
+      "desc": "Docs, Sheets and Slides through Google's Workspace servers. Each product is its own server; this card covers all three.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "own-app",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "googledocs.svg",
+      "dashboardUrl": "https://developers.google.com/workspace/guides/configure-mcp-servers",
+      "note": "Google Workspace MCP is in Developer Preview and needs your own OAuth client. Each product (Docs, Sheets, Slides) is its own server endpoint.",
+      "setupSteps": [
+        "Create a project in Google Cloud Console and enable the Docs, Sheets and Slides APIs.",
+        "Configure the OAuth consent screen and create an OAuth client ID as a Desktop app.",
+        "Enrol in the Google Workspace MCP Developer Preview.",
+        "Because the app is not verified by Google, expect the \"Google hasn't verified this app\" screen during sign-in.",
+        "Paste the client ID and secret into RedCat, then press Connect when that flow is wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "telegram",
+      "name": "Telegram (Connector)",
+      "desc": "Telegram connector with the existing BotFather pairing flow. This is a connector, not an MCP server, and there is no official Telegram MCP.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "bot-token",
+      "kind": "connector",
+      "category": "Connectors",
+      "official": "official",
+      "logo": "telegram.svg",
+      "dashboardUrl": "https://telegram.org",
+      "fields": [
+        {
+          "key": "botToken",
+          "label": "Bot token",
+          "placeholder": "Paste the token from @BotFather",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "note": "Same BotFather flow as the existing Telegram connector card. No official Telegram MCP exists.",
+      "setupSteps": [
+        "Open @BotFather in Telegram and run /newbot.",
+        "Copy the bot token BotFather gives you.",
+        "Paste the token into the bot token field below.",
+        "Keep the token private: anyone with it can control your bot.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "fetch",
+      "name": "Fetch",
+      "desc": "Fetch a URL and convert it to LLM-friendly markdown. MCP-project reference server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "reference",
+      "logo": null,
+      "unverified": true,
+      "setupSteps": [
+        "The reference Fetch server package name could not be verified in research (a guessed package name returns npm 404), so no command is shipped here.",
+        "Take the current package name from the official reference-server docs, then add it with + Add MCP (local command).",
+        "No account or key is needed for the server itself.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "time",
+      "name": "Time",
+      "desc": "Current time and timezone conversion. MCP-project reference server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "reference",
+      "logo": null,
+      "unverified": true,
+      "setupSteps": [
+        "The reference Time server package name could not be verified in research (a guessed package name returns npm 404), so no command is shipped here.",
+        "Take the current package name from the official reference-server docs, then add it with + Add MCP (local command).",
+        "No account or key is needed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "desc": "Read, search and commit in a local git repo. MCP-project reference server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "reference",
+      "logo": "git.svg",
+      "unverified": true,
+      "setupSteps": [
+        "The reference Git server package name was not given in research, so no command is shipped here.",
+        "Take the current package name from the official reference-server docs, then add it with + Add MCP (local command), pointing it at one repository.",
+        "No account or key is needed for local repos.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "brave",
+      "name": "Brave Search",
+      "desc": "Web, image, video, news and local search from Brave's independent index. Brave's official server, not an MCP-project reference server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "brave.svg",
+      "dashboardUrl": "https://brave.com",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Brave Search API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Create a Brave Search API subscription at api.search.brave.com and copy your API key.",
+        "Paste the key into the API key field below, then press Connect. RedCat spawns the official Brave server locally (npx) with the key as BRAVE_API_KEY.",
+        "Note: the server runs on your PC; Brave's HTTP transport option is unauthenticated and is not used."
+      ],
+      "command": "npx",
+      "args": [
+        "-y",
+        "@brave/brave-search-mcp-server"
+      ],
+      "envMap": {
+        "apiKey": "BRAVE_API_KEY"
+      },
+      "note": "Official Brave Search MCP server, self-hosted over stdio (Brave runs no hosted MCP endpoint). Connect spawns @brave/brave-search-mcp-server locally with your key as BRAVE_API_KEY. Connect success proves the package runs and lists tools; key validity itself is proven by the first search call, not by Connect — a bad key fails that call with Brave's error."
+    },
+    {
+      "id": "tavily",
+      "name": "Tavily",
+      "desc": "Web search, extract, crawl and map for research agents. Official Tavily remote server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "tavily.svg",
+      "url": "https://mcp.tavily.com/mcp/",
+      "dashboardUrl": "https://tavily.com",
+      "note": "Free tier needs no account. Paid tiers use an API key, which is not wired yet."
+    },
+    {
+      "id": "firecrawl",
+      "name": "Firecrawl",
+      "desc": "Search, scrape, crawl and extract structured data from sites. Official Firecrawl hosted server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "firecrawl.svg",
+      "url": "https://mcp.firecrawl.dev/v2/mcp",
+      "dashboardUrl": "https://firecrawl.dev",
+      "note": "Hosted tier also offers no-account and API-key modes; the API-key path is not wired yet."
+    },
+    {
+      "id": "jina",
+      "name": "Jina AI",
+      "desc": "Read URLs, screenshots, and web, arXiv and image search. Official Jina remote server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "jina.svg",
+      "dashboardUrl": "https://jina.ai",
+      "note": "Official Jina remote MCP (Streamable HTTP). The /v1 endpoint is the recommended one; /sse is kept as a backward-compatibility alias. A key is optional: the free tier answers without one at lower limits, a key raises limits. Auth is a Bearer token when a key is given.",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Jina API key (optional, raises limits)",
+          "placeholder": "Leave empty for the free tier",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Optional: create a free Jina account at jina.ai and copy an API key for higher limits.",
+        "Paste the key into the key field below, or leave it empty for the free tier, then press Connect."
+      ],
+      "url": "https://mcp.jina.ai/v1"
+    },
+    {
+      "id": "deepwiki",
+      "name": "DeepWiki",
+      "desc": "Ask questions about public GitHub repos from their docs. Official Cognition / Devin server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "deepwiki.svg",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "dashboardUrl": "https://deepwiki.com",
+      "note": "No sign-in needed per research."
+    },
+    {
+      "id": "chrome-devtools",
+      "name": "Chrome DevTools",
+      "desc": "Live Chrome: traces, network, console and performance. Official Google / Chrome DevTools team server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "chromedevtools.svg",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp"
+      ],
+      "dashboardUrl": "https://developer.chrome.com",
+      "note": "You sign in to sites inside the browser; the server itself needs no account."
+    },
+    {
+      "id": "browserbase",
+      "name": "Browserbase",
+      "desc": "Cloud browsers for automation at scale. Official Browserbase server, the hosted alternative to local Playwright / Chrome DevTools.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "browserbase.svg",
+      "dashboardUrl": "https://browserbase.com",
+      "note": "Official Browserbase hosted MCP. Per Browserbase's own MCP config, the key travels as the ?browserbaseApiKey= query parameter. Tools list answers without a key; tool calls require the key. Connect also sends a Bearer header the server ignores.",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Browserbase API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Create a Browserbase account and copy an API key.",
+        "Paste the key into the API key field below, then press Connect. Cloud browser runs are billed to your Browserbase account."
+      ],
+      "urlTemplate": "https://mcp.browserbase.com/mcp?browserbaseApiKey={apiKey}"
+    },
+    {
+      "id": "obsidian",
+      "name": "Obsidian",
+      "desc": "Search, read and edit an Obsidian vault through the Local REST API plugin. Community server by Markus Pfundstein.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "community",
+      "logo": "obsidian.svg",
+      "dashboardUrl": "https://obsidian.md",
+      "community": true,
+      "setupSteps": [
+        "In Obsidian, install and enable the Local REST API community plugin.",
+        "Note the plugin's local port and API key.",
+        "Add the server with + Add MCP (local command) using the community server's documented command, pointed at your vault.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "box",
+      "name": "Box",
+      "desc": "Search Box files, ask questions and extract data. Official Box server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "box.svg",
+      "dashboardUrl": "https://box.com",
+      "setupSteps": [
+        "A Box admin enables the Box MCP server in the Box Admin Console: Integrations > search Box MCP server > Configure.",
+        "In Additional Configuration, click + Add Integration Credentials, name it, save, and expand it to copy the Client ID and Client Secret.",
+        "Set the Redirect URI to http://127.0.0.1:37429/callback and select the Access Scopes for file search and Box AI (root_readwrite, ai.readwrite).",
+        "Paste the Client ID and Client Secret into the fields on this card, then press Connect and Allow on Box's screen.",
+        "If Box shows an invalid redirect_uri error, the Redirect URI in step 3 does not match yet — check it character for character."
+      ],
+      "url": "https://mcp.box.com",
+      "oauthKind": "pre-registered",
+      "oauth": {
+        "authorize": "https://account.box.com/api/oauth2/authorize",
+        "token": "https://api.box.com/oauth2/token",
+        "scopes": "root_readwrite ai.readwrite",
+        "verify": "https://api.box.com/2.0/users/me"
+      },
+      "fields": [
+        {
+          "key": "clientId",
+          "label": "Client ID (from Box Admin Console Integration Credentials)",
+          "placeholder": "From Box Admin Console > Integrations",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "clientSecret",
+          "label": "Client Secret (from Box Admin Console Integration Credentials)",
+          "placeholder": "Stored only in the local token file",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "note": "Box does not support dynamic client registration (Box Support confirms), so this entry uses your own Box app credentials instead of one-click sign-in. After the admin steps below, the Connect button on this card signs you in and loads the real Box MCP tools. Your Client Secret is stored only in the local token file on this PC and never ships in the app. The docgen.readwrite scope (document generation, Enterprise Advanced licence) is not requested.",
+      "manualConnect": true
+    },
+    {
+      "id": "markitdown",
+      "name": "MarkItDown",
+      "desc": "Convert many file formats to Markdown for LLMs. Official Microsoft server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Files, search & browser",
+      "official": "official",
+      "logo": "markitdown.svg",
+      "unverified": true,
+      "setupSteps": [
+        "The MarkItDown MCP package name was not given in research, so no command is shipped here.",
+        "Take the current package name from Microsoft's MarkItDown docs, then add it with + Add MCP (local command).",
+        "No account or key is needed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "gitlab",
+      "name": "GitLab",
+      "desc": "Projects, merge requests, issues and pipelines. Official GitLab server with a built-in endpoint on GitLab.com, Self-Managed and Dedicated.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "gitlab.svg",
+      "dashboardUrl": "https://gitlab.com",
+      "url": "https://gitlab.com/api/v4/mcp",
+      "note": "GitLab.com by default, OAuth with scope mcp (dynamic registration verified live). Self-managed instances: use + Add MCP with your own https://<host>/api/v4/mcp URL. If your top-level group has not allowed MCP access, GitLab refuses sign-in (403) — that is a GitLab-side setting."
+    },
+    {
+      "id": "serena",
+      "name": "Serena",
+      "desc": "Semantic code navigation: definitions, references and callers at LSP quality. Widely adopted community server by oraios.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "community",
+      "logo": "serena.svg",
+      "community": true,
+      "setupSteps": [
+        "The Serena package and command were not given in research, so no command is shipped here.",
+        "Take the current install command from the Serena repo docs, then add it with + Add MCP (local command).",
+        "No account or key is needed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "postman",
+      "name": "Postman",
+      "desc": "Collections, API specs and running requests. Official Postman server. Filter its tool set: the full set exceeds 100 tools.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "postman.svg",
+      "dashboardUrl": "https://postman.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Postman's screen."
+      ],
+      "url": "https://mcp.postman.com/minimal",
+      "fields": [],
+      "note": "Official Postman remote MCP (Minimal server). DCR verified live (201, RedCat client registered, loopback callback accepted). US server only — the EU server is API-key only, not OAuth."
+    },
+    {
+      "id": "docker-hub",
+      "name": "Docker Hub",
+      "desc": "Search Docker Hub repos and Hardened Images through the Docker MCP catalog. Official Docker server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "dockerhub.svg",
+      "dashboardUrl": "https://hub.docker.com",
+      "unverified": true,
+      "setupSteps": [
+        "Docker Hub MCP is local, not hosted: use Docker Desktop Toolkit, a cloned build, or the mcp/dockerhub image.",
+        "Authenticated access uses Docker Hub username + PAT (HUB_USERNAME, HUB_PAT_TOKEN); public search needs none.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "fields": [
+        {
+          "key": "hubUsername",
+          "label": "Docker Hub username (optional for public search)",
+          "placeholder": "Your Docker Hub username",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "hubPat",
+          "label": "Docker Hub Personal Access Token (optional for public search)",
+          "placeholder": "Paste your Docker Hub PAT",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "note": "Official Docker Hub MCP is LOCAL stdio, not remote OAuth — the old oauth/remote shape was wrong and is corrected here. Official routes: Docker Desktop MCP Toolkit (Catalog tab, username + PAT), OR clone + build hub-mcp and run node dist/index.js --transport=stdio with HUB_USERNAME + HUB_PAT_TOKEN, OR docker run -i --rm -e HUB_PAT_TOKEN mcp/dockerhub --transport=stdio --username=<username>. No npx/uvx one-liner exists, so this stays manual. Public repository search works without credentials."
+    },
+    {
+      "id": "netlify",
+      "name": "Netlify",
+      "desc": "Sites, deploys and logs. Official Netlify server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "netlify.svg",
+      "dashboardUrl": "https://netlify.com",
+      "url": "https://mcp.netlify.com/mcp",
+      "note": "Official remote MCP (docs.netlify.com agent setup). Dynamic registration verified live: DCR 201, and the registered redirect echoes RedCat's loopback callback exactly. An older alternate URL (netlify-mcp.netlify.app/mcp) also verified but is not used."
+    },
+    {
+      "id": "railway",
+      "name": "Railway",
+      "desc": "Deployments and services. Official Railway server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "railway.svg",
+      "dashboardUrl": "https://railway.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Railway's screen."
+      ],
+      "url": "https://mcp.railway.com",
+      "fields": [],
+      "note": "Official Railway remote MCP. DCR verified live (201, RedCat client registered, loopback callback accepted)."
+    },
+    {
+      "id": "render",
+      "name": "Render",
+      "desc": "Deployments and services. Official Render server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "render.svg",
+      "dashboardUrl": "https://render.com",
+      "unverified": true,
+      "setupSteps": [
+        "Render MCP uses OAuth sign-in; dynamic registration is not supported by its metadata.",
+        "One-click sign-in is not enabled yet: a pre-registered Render OAuth app is needed first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Render remote MCP (https://mcp.render.com/mcp). Live probe: 401 + resource metadata, but the authorization metadata publishes NO registration endpoint, so RedCat discovery cannot complete DCR. One-click sign-in is not enabled yet; a pre-registered Render OAuth app is needed first."
+    },
+    {
+      "id": "semgrep",
+      "name": "Semgrep",
+      "desc": "Static analysis and security findings for code. Official Semgrep server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "semgrep.svg",
+      "dashboardUrl": "https://semgrep.dev",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Semgrep API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "unverified": true,
+      "setupSteps": [
+        "Confirm the MCP-request header in Semgrep's official docs before use; it is not stated there today.",
+        "Sign in with Semgrep Cloud Platform login; AppSec tools need a Semgrep token.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Endpoint https://mcp.semgrep.ai/mcp (Streamable HTTP; legacy /sse). Semgrep Cloud Platform login + Semgrep token required for AppSec tools; the MCP-request header name is NOT stated in official docs — do not assume Bearer. The standalone semgrep-mcp repo is archived; the server now ships in the main semgrep binary."
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "desc": "Models, datasets and Spaces discovery. Official Hugging Face server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "huggingface.svg",
+      "dashboardUrl": "https://huggingface.co",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Hugging Face token",
+          "placeholder": "Paste your token here",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Optional: create a Hugging Face account and copy a user access token for higher limits and private resources.",
+        "Paste the token into the token field below, or leave it empty for anonymous use, then press Connect."
+      ],
+      "url": "https://huggingface.co/mcp",
+      "note": "Official Hugging Face MCP (Streamable HTTP). Works without a token with an anonymous tool set at lower limits; a user access token raises limits and unlocks private resources. Auth is a Bearer token when one is given. The ?login URL variant is the OAuth login flow and is not used here."
+    },
+    {
+      "id": "codebase-memory",
+      "name": "Codebase Memory",
+      "desc": "Semantic search over a codebase with persistent memory. Community server by DeusData.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "community",
+      "logo": null,
+      "community": true,
+      "setupSteps": [
+        "Press Connect. No account or key needed.",
+        "Index a project first (index_repository), then query the graph."
+      ],
+      "command": "npx",
+      "args": [
+        "-y",
+        "codebase-memory-mcp"
+      ],
+      "fields": [],
+      "note": "Community Codebase Memory MCP by DeusData, local stdio. No API key, no runtime dependencies. Spawn probe proved 17 tools (index_repository, search_graph, query_graph, trace_path, get_code_snippet, get_file_outline, get_graph_schema, compare_graphs, get_architecture, search_code, list_projects, delete_project, and more). Index a project before useful results; native binary alternative via the official install.sh."
+    },
+    {
+      "id": "algolia",
+      "name": "Algolia",
+      "desc": "Search and index tooling plus DevEx docs tooling. Official Algolia server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "algolia.svg",
+      "dashboardUrl": "https://algolia.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect, then Allow on Algolia's screen."
+      ],
+      "url": "https://mcp.algolia.com/mcp",
+      "note": "Official Algolia Productivity MCP (search and index tooling). DCR verified (201). DocSearch and DevEx anonymous servers and the Public per-app server are separate future entries."
+    },
+    {
+      "id": "nextjs-devtools",
+      "name": "Next.js DevTools",
+      "desc": "Next.js runtime diagnostics, routes, dev logs and upgrade guides. Official Vercel server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "nextjsdevtools.svg",
+      "dashboardUrl": "https://nextjs.org",
+      "unverified": true,
+      "setupSteps": [
+        "The Next.js DevTools package name was not given in research, so no command is shipped here.",
+        "Take the current package name from Vercel's Next.js DevTools docs, then add it with + Add MCP (local command).",
+        "No account or key is needed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "bitrise",
+      "name": "Bitrise",
+      "desc": "Mobile CI: apps, builds and artifacts. Official Bitrise server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "bitrise.svg",
+      "dashboardUrl": "https://bitrise.io",
+      "fields": [],
+      "unverified": true,
+      "setupSteps": [
+        "Bitrise MCP uses OAuth sign-in; dynamic registration is not supported, so one-click sign-in is not enabled yet.",
+        "A Personal Access Token fallback exists but its header form is unconfirmed — do not paste a PAT expecting header auth.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Bitrise remote MCP. OAuth is primary; DCR is NOT supported (the server publishes authorize https://oauth.bitrise.io/oauth2/authorize and token https://oauth.bitrise.io/oauth2/token but no registration endpoint). Bitrise Personal Access Token fallback header is unconfirmed."
+    },
+    {
+      "id": "circleci",
+      "name": "CircleCI",
+      "desc": "Pipelines, jobs and test results. Official CircleCI server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "circleci.svg",
+      "dashboardUrl": "https://circleci.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect, then Allow on CircleCI's screen."
+      ],
+      "url": "https://mcp.circleci.com/v1/mcp",
+      "note": "Official CircleCI remote MCP. DCR verified (201). The old local npx + CIRCLECI_TOKEN server is deprecated."
+    },
+    {
+      "id": "buildkite",
+      "name": "Buildkite",
+      "desc": "Pipelines and builds. Official Buildkite server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "buildkite.svg",
+      "dashboardUrl": "https://buildkite.com",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Buildkite API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Create a Buildkite API token and copy it.",
+        "Paste the token into the API token field below, then press Connect."
+      ],
+      "url": "https://mcp.buildkite.com/direct",
+      "note": "Official Buildkite remote MCP, header-auth route. Without a key the /direct endpoint answers 401 with 'Authorization: Bearer <buildkite-api-token> required', confirming Bearer header auth. The /mcp endpoint is the OAuth route and is not used here. Key validity is proven by the Connect test (initialize + tools/list with your token)."
+    },
+    {
+      "id": "n8n-mcp",
+      "name": "n8n-MCP (knowledge)",
+      "desc": "n8n node and template knowledge so the agent can design and validate workflows. Community server by czlonkowski. This is NOT n8n itself.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "community",
+      "logo": "n8nmcp.svg",
+      "fields": [
+        {
+          "key": "instanceUrl",
+          "label": "n8n instance URL (optional)",
+          "placeholder": "https://your-n8n-instance",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "apiKey",
+          "label": "n8n API key (optional)",
+          "placeholder": "Paste your n8n API key",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "community": true,
+      "setupSteps": [
+        "Press Connect (documentation and search tools work without credentials).",
+        "Optional: paste your n8n instance URL + API key for workflow-management tools, then press Connect."
+      ],
+      "command": "npx",
+      "args": [
+        "n8n-mcp"
+      ],
+      "envMap": {
+        "apiKey": "N8N_API_KEY",
+        "instanceUrl": "N8N_API_URL"
+      },
+      "note": "Community n8n-MCP server by czlonkowski (NOT n8n official). Spawn probe proved live: 7 tools with NO credentials (tools_documentation, search_nodes, get_node, validate_node, get_template, search_templates, validate_workflow) — MCP_MODE=stdio is not required for RedCat's spawn (same 7 tools with and without it). N8N_API_URL + N8N_API_KEY add workflow-management tools. The official per-instance n8n server is a separate entry."
+    },
+    {
+      "id": "neon",
+      "name": "Neon",
+      "desc": "Serverless Postgres branches and queries. Official Neon server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "neon.svg",
+      "dashboardUrl": "https://neon.tech",
+      "setupSteps": [
+        "Press Connect, then Allow on Neon's screen."
+      ],
+      "url": "https://mcp.neon.tech/mcp",
+      "fields": [],
+      "note": "Official Neon remote MCP. DCR verified live (200, RedCat client registered). URL parameters (?readonly=true, ?projectId, ?category) can restrict access; they are not part of this entry."
+    },
+    {
+      "id": "prisma-postgres",
+      "name": "Prisma Postgres",
+      "desc": "Postgres through the Prisma platform. Official Prisma server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "prismapostgres.svg",
+      "dashboardUrl": "https://prisma.io",
+      "setupSteps": [
+        "Press Connect, then Allow on Prisma's screen."
+      ],
+      "url": "https://mcp.prisma.io/mcp",
+      "fields": [],
+      "note": "Official Prisma Postgres remote MCP. DCR verified live (201, RedCat client registered). Sign in, then select a workspace."
+    },
+    {
+      "id": "toolbox-databases",
+      "name": "MCP Toolbox for Databases",
+      "desc": "One Google server with pre-defined tools for Postgres, MySQL, SQL Server, BigQuery, MongoDB, Redis, Neo4j, Snowflake and about 30 systems. Official Google server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "toolboxdatabases.svg",
+      "fields": [],
+      "setupSteps": [
+        "Toolbox needs a tools.yaml file with per-source database credentials — not a pasted key.",
+        "Run npx @toolbox-sdk/server --config tools.yaml (older: --tools-file tools.yaml).",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Google GenAI Toolbox (now MCP Toolbox) is a YAML-configured gateway, NOT an API-key entry: run npx @toolbox-sdk/server --config tools.yaml, and database credentials live per-source inside tools.yaml (or --prebuilt=<db>). The old connectionString field was the wrong shape and is removed. This stays manual until a tools.yaml flow exists."
+    },
+    {
+      "id": "postgres-pro",
+      "name": "Postgres MCP Pro",
+      "desc": "Postgres schema, EXPLAIN, health and industrial-strength index tuning. Community server by crystaldba.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "community",
+      "logo": "postgrespro.svg",
+      "fields": [
+        {
+          "key": "connectionString",
+          "label": "Postgres connection string",
+          "placeholder": "postgres://user:password@host:5432/db",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "community": true,
+      "setupSteps": [
+        "The uvx postgres-mcp form is reported broken (yanked pglast dependency) and timed out even with a real database.",
+        "The postgres-mcp2 fork is the maintained alternative — it needs its own probe before wiring.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "CrystalDBA Postgres MCP (uvx postgres-mcp --access-mode=restricted, DATABASE_URI). NOT proven: spawn probe TIMES OUT at initialize with a dummy DSN AND with a REAL reachable Postgres DSN — the server does not answer initialize in this probe at all. This matches the reported breakage (uvx postgres-mcp broke after 2026-10-18 when pinned pglast==7.2.0 was yanked); the postgres-mcp2 fork is the maintained alternative and is unproven here. Do not promote the broken form."
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "desc": "Atlas management, queries and 50+ tools, plus embedding generation. Official MongoDB server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "mongodb.svg",
+      "dashboardUrl": "https://mongodb.com",
+      "fields": [
+        {
+          "key": "connectionString",
+          "label": "MongoDB connection string / Atlas credentials",
+          "placeholder": "Paste your connection string",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Run or reach a MongoDB instance and copy its connection string (or client ID + secret).",
+        "Paste a connection string for a REACHABLE MongoDB below, then press Connect — dummy/unreachable strings time out at initialize.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official MongoDB MCP server (npx mongodb-mcp-server, MDB_MCP_CONNECTION_STRING or client ID + secret). NOT proven: spawn probe TIMES OUT at initialize with a dummy connection string, and no real MongoDB was available for a real-connection probe. The README says the server will not start unless configured. Connect cannot be proven without a reachable MongoDB, so this stays manual. The connection-string shape in the fields is the correct one."
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "desc": "All Redis data structures and key management. Official Redis server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "redis.svg",
+      "dashboardUrl": "https://redis.io",
+      "fields": [
+        {
+          "key": "connectionString",
+          "label": "Redis URL (optional; defaults to local Redis)",
+          "placeholder": "redis://host:6379/0",
+          "required": false,
+          "secret": false
+        }
+      ],
+      "setupSteps": [
+        "Press Connect (works with a local Redis; no URL needed).",
+        "Optional: paste a remote Redis URL for a non-local instance, then press Connect."
+      ],
+      "command": "uvx",
+      "args": [
+        "--from",
+        "redis-mcp-server@latest",
+        "redis-mcp-server"
+      ],
+      "envMap": {
+        "connectionString": "REDIS_URL"
+      },
+      "note": "Official Redis MCP server. Spawn probe proved live: 53 tools via both the --url form and the REDIS_URL env form (the env form is what this entry uses). The server defaults to local Redis, so no URL is needed for a local instance; paste a URL only for a remote or authenticated instance. Tools list does not prove data access — tool calls need a reachable Redis."
+    },
+    {
+      "id": "dbhub",
+      "name": "DBHub",
+      "desc": "One server for MySQL, Postgres, SQL Server, MariaDB and SQLite. Official Bytebase server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "dbhub.svg",
+      "dashboardUrl": "https://bytebase.com",
+      "fields": [
+        {
+          "key": "connectionString",
+          "label": "Database DSN",
+          "placeholder": "postgres://user:password@host:5432/dbname?sslmode=disable",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Copy a DSN for a reachable database (Postgres shown; other databases per DbHub docs).",
+        "Paste the DSN into the field below, then press Connect."
+      ],
+      "command": "npx",
+      "args": [
+        "@bytebase/dbhub",
+        "--transport",
+        "stdio",
+        "--dsn",
+        "{connectionString}"
+      ],
+      "envMap": {},
+      "note": "Bytebase DbHub MCP server. Spawn probe proved live with a REAL Postgres DSN: 2 tools (execute_sql, search_objects). The DSN travels as a --dsn argument (this entry substitutes your pasted DSN into it). A DSN for an UNREACHABLE database hangs at initialize until timeout — paste a DSN for a reachable database. --demo mode (no DSN) is separate and not this entry; the env-var form (TRANSPORT/DSN) is unconfirmed in official docs."
+    },
+    {
+      "id": "clickhouse",
+      "name": "ClickHouse",
+      "desc": "Analytical SQL on ClickHouse Cloud. Official ClickHouse server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "clickhouse.svg",
+      "dashboardUrl": "https://clickhouse.com",
+      "setupSteps": [
+        "Press Connect, then Allow on ClickHouse's screen."
+      ],
+      "url": "https://mcp.clickhouse.cloud/mcp",
+      "fields": [],
+      "note": "Official ClickHouse Cloud remote MCP. DCR verified live (201). MCP must be enabled per service in the console (permission control-plane:service:manage-mcp). ClickStack is a separate server."
+    },
+    {
+      "id": "motherduck",
+      "name": "MotherDuck",
+      "desc": "DuckDB analytics in the cloud. Official MotherDuck server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "motherduck.svg",
+      "dashboardUrl": "https://motherduck.com",
+      "setupSteps": [
+        "Press Connect, then Allow on MotherDuck's screen."
+      ],
+      "url": "https://api.motherduck.com/mcp",
+      "fields": [],
+      "note": "Official MotherDuck remote MCP. DCR verified live (201). Tool-level access: query (read-only) vs query_rw (read-write); use a read-only token if you only want reads."
+    },
+    {
+      "id": "chroma",
+      "name": "Chroma",
+      "desc": "Local and cloud vector retrieval. Official Chroma server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "chroma.svg",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Chroma API key (optional for local use)",
+          "placeholder": "Leave empty for local use",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "unverified": true,
+      "setupSteps": [
+        "Decide your Chroma client: ephemeral (in-memory), persistent (local directory), self-hosted HTTP, or Chroma Cloud (needs CHROMA_API_KEY).",
+        "The exact working client configuration is unproven in probe — default and ephemeral both timed out at initialize.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "command": "uvx",
+      "args": [
+        "chroma-mcp-server"
+      ],
+      "envMap": {
+        "apiKey": "CHROMA_API_KEY"
+      },
+      "note": "Chroma MCP (uvx chroma-mcp-server, local stdio only — there is NO remote Chroma MCP HTTP endpoint). Spawn probe TIMES OUT at initialize in BOTH forms: default and --client-type ephemeral, with and without a Cloud key. The server does not list tools without a working client configuration (persist directory / server URL / Cloud client to api.trychroma.com), so Connect cannot be proven from this probe. The Cloud key (CHROMA_API_KEY) is for the Cloud client only, not a remote MCP header. This stays manual until a working client configuration is proven."
+    },
+    {
+      "id": "pinecone",
+      "name": "Pinecone Assistant",
+      "desc": "Retrieve context from Pinecone's knowledge engine. Official Pinecone server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "pinecone.svg",
+      "dashboardUrl": "https://pinecone.io",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Pinecone API key (optional for search-docs; required for index tools)",
+          "placeholder": "Leave empty for docs search only",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Optional: create a Pinecone account and copy an API key for index tools.",
+        "Press Connect (docs search works without a key)."
+      ],
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pinecone-database/mcp"
+      ],
+      "envMap": {
+        "apiKey": "PINECONE_API_KEY"
+      },
+      "note": "Official Pinecone Developer MCP, local stdio. Spawn probe proved 12 tools with no key (search-docs, list-indexes, describe-index, upsert/search records, rerank, cascading-search). Index tools need a key; search-docs works without one per the official README. Nexus and Assistant are per-deployment servers and separate entries."
+    },
+    {
+      "id": "couchbase",
+      "name": "Couchbase",
+      "desc": "Capella and self-managed document operations plus SQL++ queries. Official Couchbase server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "couchbase.svg",
+      "dashboardUrl": "https://couchbase.com",
+      "fields": [
+        {
+          "key": "connectionString",
+          "label": "Couchbase connection string",
+          "placeholder": "couchbase://host",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "username",
+          "label": "Couchbase username",
+          "placeholder": "Your Couchbase username",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "password",
+          "label": "Couchbase password",
+          "placeholder": "Your Couchbase password",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "unverified": true,
+      "setupSteps": [
+        "Create a Couchbase cluster (Capella or self-hosted) and copy its connection string + credentials.",
+        "Paste the connection string + username + password below, then press Connect — a reachable cluster is required.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "envMap": {
+        "connectionString": "CB_CONNECTION_STRING",
+        "password": "CB_PASSWORD",
+        "username": "CB_USERNAME"
+      },
+      "note": "Current official Couchbase MCP server (uvx couchbase-mcp-server). Requires a REAL cluster: CB_CONNECTION_STRING + CB_USERNAME + CB_PASSWORD (or mTLS cert/key instead of user/password). Spawn probe with dummy credentials TIMES OUT at initialize — the server does not list tools without a reachable cluster, so Connect cannot be proven without real credentials. Do NOT use the old @couchbasedatabase/couchbase-mcp vars (COUCHBASE_URL/BUCKET/USERNAME/PASSWORD) with this server — the current vars are CB_*."
+    },
+    {
+      "id": "aiven",
+      "name": "Aiven",
+      "desc": "Postgres, Kafka, ClickHouse and OpenSearch services. Official Aiven server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Databases & data",
+      "official": "official",
+      "logo": "aiven.svg",
+      "dashboardUrl": "https://aiven.io",
+      "fields": [],
+      "unverified": true,
+      "setupSteps": [
+        "Aiven MCP uses browser OAuth 2.0 with PKCE.",
+        "One-click sign-in is not enabled yet (no discoverable authorization metadata); a pre-registered Aiven OAuth app is needed first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Aiven remote MCP. Auth is OAuth 2.0 with PKCE (browser sign-in, no token to manage) per Aiven docs, but the server publishes no authorization metadata RedCat discovery can use, so DCR is not enabled. Local runs use AIVEN_TOKEN env — a separate local server."
+    },
+    {
+      "id": "google-chat",
+      "name": "Google Chat",
+      "desc": "Chat spaces and messages. Official Google Workspace MCP server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "own-app",
+      "kind": "mcp",
+      "category": "Communication",
+      "official": "official",
+      "logo": "googlechat.svg",
+      "url": "https://chatmcp.googleapis.com/mcp/v1",
+      "dashboardUrl": "https://developers.google.com/workspace/guides/configure-mcp-servers",
+      "note": "The endpoint follows the Workspace MCP URL pattern from research; confirm it in Google's docs. Needs your own OAuth client.",
+      "setupSteps": [
+        "Create a project in Google Cloud Console and enable the Chat API.",
+        "Configure the OAuth consent screen and create an OAuth client ID as a Desktop app.",
+        "Enrol in the Google Workspace MCP Developer Preview.",
+        "Because the app is not verified by Google, expect the \"Google hasn't verified this app\" screen during sign-in.",
+        "Paste the client ID and secret into RedCat, then press Connect when that flow is wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "intercom",
+      "name": "Intercom",
+      "desc": "Search conversations and tickets, and read contacts. Official Intercom server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Communication",
+      "official": "official",
+      "logo": "intercom.svg",
+      "dashboardUrl": "https://intercom.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Intercom's screen."
+      ],
+      "url": "https://mcp.intercom.com/mcp",
+      "fields": [],
+      "note": "Official Intercom remote MCP. DCR verified live (201). EU endpoint (mcp.eu.intercom.com) is separate; AU is not supported."
+    },
+    {
+      "id": "helpscout",
+      "name": "Help Scout",
+      "desc": "Search conversations and customers, and read Docs articles. Official Help Scout server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Communication",
+      "official": "official",
+      "logo": "helpscout.svg",
+      "dashboardUrl": "https://helpscout.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Help Scout's screen."
+      ],
+      "url": "https://mcp.helpscout.net/mcp",
+      "fields": [],
+      "note": "Official Help Scout remote MCP. DCR verified live (201). New connections are read-only; Standard/Plus/Pro plans only; report tools need Plus/Pro; Docs tools need a separate Docs API key."
+    },
+    {
+      "id": "twilio-docs",
+      "name": "Twilio Docs",
+      "desc": "Search Twilio documentation only. Official Twilio server. This server does NOT send SMS or voice.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Communication",
+      "official": "official",
+      "logo": "twiliodocs.svg",
+      "dashboardUrl": "https://twilio.com",
+      "note": "Official Twilio Docs MCP. Anonymous: initialize + tools/list proved live (2 tools: twilio__retrieve, twilio__search). Docs-only scope — this server does NOT send SMS or voice.",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect. No account or key needed."
+      ],
+      "url": "https://mcp.twilio.com/docs"
+    },
+    {
+      "id": "granola",
+      "name": "Granola",
+      "desc": "Search meeting notes and read transcripts and summaries. Official Granola server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Communication",
+      "official": "official",
+      "logo": "granola.svg",
+      "dashboardUrl": "https://granola.ai",
+      "setupSteps": [
+        "Press Connect, then Allow on Granola's screen."
+      ],
+      "url": "https://mcp.granola.ai/mcp",
+      "fields": [],
+      "note": "Official Granola remote MCP. DCR verified live (201, auth server mcp-auth.granola.ai). Access scopes are Personal notes + Public notes (Enterprise admin chooses); toggles control transcript access and writes."
+    },
+    {
+      "id": "atlassian-community",
+      "name": "Atlassian (community)",
+      "desc": "Jira and Confluence for Cloud and Server / Data Center. Community server by sooperset. Prefer the official Atlassian card for beginners.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "community",
+      "logo": "atlassiancommunity.svg",
+      "fields": [
+        {
+          "key": "jiraUrl",
+          "label": "Jira URL (if using Jira)",
+          "placeholder": "https://your-site.atlassian.net",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "jiraUsername",
+          "label": "Jira username (email)",
+          "placeholder": "Your Atlassian email",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "jiraToken",
+          "label": "Jira API token",
+          "placeholder": "Paste your Jira API token",
+          "required": false,
+          "secret": true
+        },
+        {
+          "key": "confluenceUrl",
+          "label": "Confluence URL (if using Confluence)",
+          "placeholder": "https://your-site.atlassian.net/wiki",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "confluenceUsername",
+          "label": "Confluence username (email)",
+          "placeholder": "Your Atlassian email",
+          "required": false,
+          "secret": false
+        },
+        {
+          "key": "confluenceToken",
+          "label": "Confluence API token",
+          "placeholder": "Paste your Confluence API token",
+          "required": false,
+          "secret": true
+        }
+      ],
+      "community": true,
+      "setupSteps": [
+        "Create Atlassian API tokens for Jira and/or Confluence and copy your site URLs.",
+        "Paste at least one product set (URL + username + token) below, then press Connect — a real site is required.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "envMap": {
+        "confluenceToken": "CONFLUENCE_API_TOKEN",
+        "confluenceUrl": "CONFLUENCE_URL",
+        "confluenceUsername": "CONFLUENCE_USERNAME",
+        "jiraToken": "JIRA_API_TOKEN",
+        "jiraUrl": "JIRA_URL",
+        "jiraUsername": "JIRA_USERNAME"
+      },
+      "note": "Community Atlassian MCP by sooperset — explicitly NOT official Atlassian. Requires URL + username + token SETS (Cloud: JIRA_URL + JIRA_USERNAME + JIRA_API_TOKEN, and/or the Confluence equivalents; Server/DC: personal tokens). A single apiKey field cannot express this shape, so the fields are corrected here. Spawn probe with dummy credentials TIMES OUT at initialize — the server does not list tools without a real Atlassian site, so Connect cannot be proven without real credentials. OAuth is an alternative route, not a single key."
+    },
+    {
+      "id": "clickup",
+      "name": "ClickUp",
+      "desc": "Search the workspace: tasks, comments, tags, time tracking, Docs and Chat. Official ClickUp server, OAuth only.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "clickup.svg",
+      "url": "https://mcp.clickup.com/mcp",
+      "dashboardUrl": "https://clickup.com"
+    },
+    {
+      "id": "monday",
+      "name": "monday.com",
+      "desc": "Boards, items, columns, docs, dashboards and dev sprints. Official monday.com server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "monday.svg",
+      "url": "https://mcp.monday.com",
+      "dashboardUrl": "https://monday.com",
+      "note": "A local stdio package with an API token also exists; this card is the remote OAuth server."
+    },
+    {
+      "id": "dropbox",
+      "name": "Dropbox",
+      "desc": "Files and folders. Official Dropbox server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "dropbox.svg",
+      "dashboardUrl": "https://dropbox.com",
+      "setupSteps": [
+        "The core Dropbox MCP endpoint (https://mcp.dropbox.com/mcp) is live-verified, but its registered redirect set does not include RedCat's loopback callback, so one-click sign-in is not enabled yet.",
+        "If you want to test it: tell Muse to flip this entry to the grid temporarily, then press Connect and Allow — a successful sign-in proves the redirect works and the entry stays in the grid; a redirect error proves it does not.",
+        "Dropbox Dash (cross-app search, Business plans) lives at https://mcp.dropbox.com/dash and would be a separate entry."
+      ],
+      "url": "https://mcp.dropbox.com/mcp",
+      "note": "Core files endpoint live-verified (401 + resource metadata + DCR 201), but the DCR response returns a fixed redirect set that does NOT include RedCat's loopback callback port (37429), so the post-login redirect step is unproven and this entry stays manual rather than risking a failed grid Connect. Dropbox documents DCR for listed clients only (ChatGPT Codex, ChatGPT Web, Claude Code, Claude Web/Desktop, Cursor) — RedCat still received DCR 201. The Dash server (https://mcp.dropbox.com/dash, cross-app search, Business) is a separate future entry."
+    },
+    {
+      "id": "calendly",
+      "name": "Calendly",
+      "desc": "Scheduling links, events and invitees. Official Calendly server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "calendly.svg",
+      "dashboardUrl": "https://calendly.com",
+      "setupSteps": [
+        "The Calendly MCP endpoint is https://mcp.calendly.com (the /mcp path returns 404).",
+        "One-click sign-in is blocked: Calendly's registration refuses http loopback redirect URIs (it demands https in Production), so RedCat's local callback cannot complete registration.",
+        "A future route is a pre-registered Calendly OAuth app with an https redirect, which a local-only app cannot offer today — this entry stays manual until then."
+      ],
+      "url": "https://mcp.calendly.com",
+      "note": "Endpoint verified (official Calendly pages + live 401 with resource metadata), but Calendly's dynamic registration REJECTS RedCat's loopback callback: DCR returns 400 invalid_client_metadata, redirect_uri must start with https in Production. A local http callback cannot one-click here; this entry stays manual until Calendly allows loopback http or RedCat gains an https redirect. The /mcp path variant returns 404 — the root URL is the correct endpoint."
+    },
+    {
+      "id": "canva",
+      "name": "Canva",
+      "desc": "Search and export designs, and create from templates. Official Canva server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "canva.svg",
+      "dashboardUrl": "https://canva.com",
+      "unverified": true,
+      "setupSteps": [
+        "Canva AI Connector does not accept a custom RedCat client.",
+        "The developer route needs your own Canva Developer Portal app; CIMD is waitlist-only.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Canva has TWO distinct MCP servers. The AI Connector (https://mcp.canva.com/mcp) accepts listed clients only — no custom RedCat client. The developer server (https://api.canva.com/connect/v1/mcp) requires your own Canva Developer Portal app (client ID + secret + redirect URLs); CIMD clients are only via the Canva MCP waitlist. Neither route is one-click for RedCat today."
+    },
+    {
+      "id": "webflow",
+      "name": "Webflow",
+      "desc": "CMS collections, pages and publishing. Official Webflow server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "webflow.svg",
+      "dashboardUrl": "https://webflow.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Webflow's screen."
+      ],
+      "url": "https://mcp.webflow.com/mcp",
+      "fields": [],
+      "note": "Official Webflow remote MCP. DCR verified live (201). Authorization is per-workspace/site plus your site role (any role except Reviewer can connect). A beta endpoint exists separately."
+    },
+    {
+      "id": "framer",
+      "name": "Framer",
+      "desc": "CMS collections and pages. Official Framer server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "framer.svg",
+      "dashboardUrl": "https://framer.com",
+      "unverified": true,
+      "setupSteps": [
+        "Framer MCP uses OAuth sign-in; its authorization metadata could not be read in probe.",
+        "One-click sign-in is not enabled yet: discovery must succeed before DCR can be attempted.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Framer remote MCP (https://mcp.framer.com/mcp). Live probe (twice): 401 + resource metadata, but the authorization-server metadata document is unreadable, so RedCat discovery cannot complete DCR. One-click sign-in is not enabled yet."
+    },
+    {
+      "id": "gamma",
+      "name": "Gamma",
+      "desc": "Presentations and docs generation. Official Gamma server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "gamma.svg",
+      "dashboardUrl": "https://gamma.app",
+      "unverified": true,
+      "setupSteps": [
+        "Gamma MCP uses OAuth with a redirect-URI allowlist: register RedCat's callback with Gamma first.",
+        "One-click sign-in is not enabled yet: onboarding must confirm the loopback callback is allowlisted.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Gamma remote MCP (https://mcp.gamma.app/mcp). Gamma docs gate dynamic registration on an allowlisted redirect-URI pattern: clients must register URIs with Gamma via an access-request form before first connection. Probe note: DCR registration answered 201 in this round, but the allowlist gate may still apply at consent, so one-click is NOT claimed until Gamma onboarding confirms RedCat's loopback callback is allowlisted."
+    },
+    {
+      "id": "wordpress-com",
+      "name": "WordPress.com",
+      "desc": "Posts, pages and site content. Official Automattic server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Productivity & knowledge",
+      "official": "official",
+      "logo": "wordpresscom.svg",
+      "dashboardUrl": "https://wordpress.com",
+      "setupSteps": [
+        "Press Connect, then Allow on WordPress.com's screen."
+      ],
+      "url": "https://public-api.wordpress.com/wpcom/v2/mcp/v1",
+      "fields": [],
+      "note": "Official WordPress.com remote MCP. DCR verified live (201). MCP access must be enabled in account settings; covers Jetpack-connected self-hosted sites too; paid plans (free sites first 30 days)."
+    },
+    {
+      "id": "runway",
+      "name": "Runway (hosted)",
+      "desc": "Generate images and video, charged to Runway credits. Official hosted Runway server; sign in with your Runway account, no API key.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Design & media",
+      "official": "official",
+      "logo": "runway.svg",
+      "dashboardUrl": "https://runwayml.com",
+      "note": "Official Runway Generation remote MCP. DCR verified live (200). Generations bill the account's credits (Credits Mode only via MCP). The Dev coding-agent server is separate.",
+      "spending": true,
+      "setupSteps": [
+        "Press Connect, then Allow on Runway's screen."
+      ],
+      "url": "https://mcp.runwayml.com/mcp",
+      "fields": []
+    },
+    {
+      "id": "adobe",
+      "name": "Adobe Express",
+      "desc": "Creative generation and editing through Adobe's MCP endpoint. Official Adobe server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Design & media",
+      "official": "official",
+      "logo": "adobe.svg",
+      "url": "https://adobe-creativity.adobe.io/mcp",
+      "dashboardUrl": "https://adobe.com",
+      "note": "A local no-auth DevEx variant also exists; this card is the remote OAuth endpoint verified in research. Confirm the flavour before first live use."
+    },
+    {
+      "id": "cloudinary",
+      "name": "Cloudinary",
+      "desc": "Image and video asset management and transformation. Official Cloudinary server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Design & media",
+      "official": "official",
+      "logo": "cloudinary.svg",
+      "dashboardUrl": "https://cloudinary.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect, then Allow on Cloudinary's screen."
+      ],
+      "url": "https://asset-management.mcp.cloudinary.com/mcp",
+      "note": "Official Cloudinary Asset Management MCP server. DCR verified (201). Env Config, Structured Metadata, MediaFlows, and Analysis are separate Cloudinary servers and future entries."
+    },
+    {
+      "id": "excalidraw",
+      "name": "Excalidraw",
+      "desc": "Hand-drawn-style diagrams, exported to Excalidraw. Official Excalidraw server. No account required.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Design & media",
+      "official": "official",
+      "logo": "excalidraw.svg",
+      "dashboardUrl": "https://excalidraw.com",
+      "unverified": true,
+      "setupSteps": [
+        "The exact Excalidraw MCP endpoint was not stated in research, although research says no account is required: confirm the endpoint in Excalidraw's official docs first.",
+        "Once confirmed, add it with + Add MCP (Remote URL). No account is needed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "screenweaver",
+      "name": "ScreenWeaver",
+      "desc": "Script to breakdown to shot list and storyboard preparation for video. Official ScreenWeaver server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Design & media",
+      "official": "official",
+      "logo": null,
+      "dashboardUrl": "https://screenweaver.ai",
+      "setupSteps": [
+        "Press Connect, then Allow on ScreenWeaver's screen."
+      ],
+      "url": "https://app.screenweaver.ai/api/mcp",
+      "fields": [],
+      "note": "Official ScreenWeaver remote MCP. DCR verified live (201). OAuth 2.1, no API key; you pick which projects to share; Auteur/Studio plans only."
+    },
+    {
+      "id": "shopify-storefront",
+      "name": "Shopify — Storefront",
+      "desc": "Shopper-facing catalog search, cart, checkout and store policies and FAQs. Official Shopify server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "shopifystorefront.svg",
+      "url": "https://catalog.shopify.com/api/ucp/mcp",
+      "dashboardUrl": "https://shopify.com",
+      "note": "This card is the global catalog endpoint, which needs no store login. A single store uses its own {shop}/api/mcp endpoint instead."
+    },
+    {
+      "id": "shopify-dev",
+      "name": "Shopify Dev",
+      "desc": "Search Shopify dev docs and API schemas, and validate GraphQL, Liquid and extensions. Official Shopify server. No store data.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "shopifydev.svg",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@shopify/dev-mcp"
+      ],
+      "dashboardUrl": "https://shopify.com",
+      "note": "Package name unchanged; the repo moved from Shopify/dev-mcp to Shopify/Shopify-AI-Toolkit."
+    },
+    {
+      "id": "paypal",
+      "name": "PayPal",
+      "desc": "Payments, orders and invoicing. Official PayPal server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "paypal.svg",
+      "dashboardUrl": "https://paypal.com",
+      "setupSteps": [
+        "Press Connect, then Allow on PayPal's screen."
+      ],
+      "url": "https://mcp.paypal.com/mcp",
+      "fields": [],
+      "note": "Official PayPal remote MCP (production). DCR verified live (201) at the /mcp path (the /sse and /http paths are other transports, not Streamable HTTP). Sandbox is a separate environment."
+    },
+    {
+      "id": "square",
+      "name": "Square",
+      "desc": "Payments, orders and catalog. Official Square (Block) server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "square.svg",
+      "dashboardUrl": "https://squareup.com",
+      "unverified": true,
+      "setupSteps": [
+        "Square MCP uses OAuth login; unlisted clients are reported as not accepted.",
+        "One-click sign-in is not enabled yet: allowlist status must be confirmed first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Square remote MCP (https://mcp.squareup.com/mcp, Beta). Secondary analysis says Square only accepts MCP clients on its allowlist. Probe note: DCR registration answered 201 in this round, but the allowlist may still apply at consent, so one-click is NOT claimed until allowlist status is confirmed. Production data only; legacy /sse path still served."
+    },
+    {
+      "id": "plaid",
+      "name": "Plaid",
+      "desc": "Bank and financial account connectivity data. Official Plaid server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "plaid.svg",
+      "dashboardUrl": "https://plaid.com",
+      "fields": [],
+      "unverified": true,
+      "setupSteps": [
+        "Plaid MCP needs a Production account and a Production secret (client credentials, not a user key).",
+        "This entry is not wired for the client-credentials flow yet. Production data only, no end-user bank data.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Plaid MCP (dashboard). Auth is OAuth 2.0 Client Credentials, scope mcp:dashboard, token from https://production.plaid.com/oauth/token with client_id + Production secret (15-minute token). Production account and Production data only. This connector carries NO end-user bank data. The MCP-request header name is unconfirmed."
+    },
+    {
+      "id": "attio",
+      "name": "Attio",
+      "desc": "CRM records, lists, notes and tasks. Official Attio server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "attio.svg",
+      "dashboardUrl": "https://attio.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Attio's screen."
+      ],
+      "url": "https://mcp.attio.com/mcp",
+      "fields": [],
+      "note": "Official Attio remote MCP. DCR verified live (201). OAuth only, no API keys; read auto-approved, writes ask confirmation; acts as the signed-in user."
+    },
+    {
+      "id": "close",
+      "name": "Close",
+      "desc": "CRM calls, emails and deals. Official Close server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "close.svg",
+      "dashboardUrl": "https://close.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Close's screen."
+      ],
+      "url": "https://mcp.close.com/mcp",
+      "fields": [],
+      "note": "Official Close remote MCP. DCR verified live (201). Minimal scope mcp.read (read-only); mcp.write_safe adds writes, mcp.write_destructive adds deletes — the consent screen shows the scope."
+    },
+    {
+      "id": "klaviyo",
+      "name": "Klaviyo",
+      "desc": "Email and SMS marketing, flows and profiles. Official Klaviyo server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "klaviyo.svg",
+      "dashboardUrl": "https://klaviyo.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect, then Allow on Klaviyo's screen."
+      ],
+      "url": "https://mcp.klaviyo.com/mcp",
+      "note": "Official Klaviyo remote MCP. DCR verified (201, RedCat client registered, loopback callback accepted). Klaviyo account with Owner, Admin, or Manager role required."
+    },
+    {
+      "id": "semrush",
+      "name": "Semrush",
+      "desc": "Keywords, rankings, domains and backlinks. Official Semrush server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "semrush.svg",
+      "dashboardUrl": "https://semrush.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Semrush's screen."
+      ],
+      "url": "https://mcp.semrush.com/v2/mcp",
+      "fields": [],
+      "note": "Official Semrush remote MCP (v2). DCR verified live (201). Access is governed by account plan + API-unit subscription (read-only SEO/Trends/Projects)."
+    },
+    {
+      "id": "similarweb",
+      "name": "Similarweb",
+      "desc": "Traffic, engagement and competitor comparison. Official Similarweb server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "similarweb.svg",
+      "dashboardUrl": "https://similarweb.com",
+      "setupSteps": [
+        "Create a Similarweb account and copy an API key.",
+        "Paste the key into the API key field below, then press Connect."
+      ],
+      "url": "https://mcp.similarweb.com",
+      "keyHeader": "api-key",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Similarweb API key",
+          "placeholder": "Paste your Similarweb API key",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "note": "Official Similarweb remote MCP. API-key header form proven live: the server itself says to provide an 'api-key' header or Bearer token, and a dummy key is rejected as invalid credentials — so the header is parsed and validated at request time. Key validity is proven by the Connect test with a real key."
+    },
+    {
+      "id": "posthog",
+      "name": "PostHog",
+      "desc": "Product analytics, feature flags and error insights. Official PostHog server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "posthog.svg",
+      "dashboardUrl": "https://posthog.com",
+      "unverified": true,
+      "setupSteps": [
+        "PostHog MCP uses OAuth; docs recommend CIMD (hosted metadata document), which does not exist yet.",
+        "One-click sign-in is not enabled yet: settle CIMD vs DCR first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official PostHog remote MCP (https://mcp.posthog.com/mcp, US; EU at mcp-eu.posthog.com). PostHog docs recommend CIMD: the client_id is a hosted metadata-document URL on your own domain, and no such document exists for RedCat. Probe note: DCR registration answered 201 in this round, but the docs' CIMD route and the DCR route are unsettled, so one-click is NOT claimed until the route is settled."
+    },
+    {
+      "id": "amplitude",
+      "name": "Amplitude",
+      "desc": "Events, charts, experiments and dashboards. Official Amplitude server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "amplitude.svg",
+      "dashboardUrl": "https://amplitude.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Amplitude's screen."
+      ],
+      "url": "https://mcp.amplitude.com/mcp",
+      "fields": [],
+      "note": "Official Amplitude remote MCP. DCR verified live (200). EU endpoint is separate; access follows your role actions (Use MCP read / write) — minimal is read-only."
+    },
+    {
+      "id": "mixpanel",
+      "name": "Mixpanel",
+      "desc": "Funnels, segmentation and reports. Official Mixpanel server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Payments, business & analytics",
+      "official": "official",
+      "logo": "mixpanel.svg",
+      "dashboardUrl": "https://mixpanel.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Mixpanel's screen."
+      ],
+      "url": "https://mcp.mixpanel.com/mcp",
+      "fields": [],
+      "note": "Official Mixpanel remote MCP. DCR verified live (201). EU and IN endpoints are separate; access follows your project permissions; org admin must enable MCP."
+    },
+    {
+      "id": "make",
+      "name": "Make",
+      "desc": "Turn Make scenarios into callable agent tools. Official Make server, the same role as Zapier.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Automation",
+      "official": "official",
+      "logo": "make.svg",
+      "dashboardUrl": "https://make.com",
+      "fields": [],
+      "unverified": true,
+      "setupSteps": [
+        "Make MCP offers OAuth sign-in or an MCP-token URL (zone + token in the URL path).",
+        "One-click OAuth is not enabled yet (metadata 404); the token-URL paste route needs a code slice first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Make remote MCP. OAuth route is https://mcp.make.com, but its authorization metadata document returns 404 in probe, so DCR is not enabled. Alternative: MCP-token URL https://<zone>.make.com/mcp/u/<MCP_TOKEN>/stateless (token in path, not a header) — pasting a full URL is not wired yet."
+    },
+    {
+      "id": "n8n-official",
+      "name": "n8n (official)",
+      "desc": "Connect to n8n Cloud or self-hosted over HTTP, and run or inspect workflows. Official n8n server, the successor to the retired third-party bridge.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Automation",
+      "official": "official",
+      "logo": "n8nofficial.svg",
+      "dashboardUrl": "https://n8n.io",
+      "fields": [
+        {
+          "key": "instanceUrl",
+          "label": "n8n server URL",
+          "placeholder": "https://your-instance.../mcp-server/http",
+          "required": true,
+          "secret": false
+        }
+      ],
+      "setupSteps": [
+        "n8n's official server lives on YOUR instance, not a shared vendor URL.",
+        "Enable Instance-level MCP on the instance and enable workflows one by one.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "No vendor-hosted shared endpoint: the official n8n MCP server is per-instance at https://<your-n8n-instance>/mcp-server/http (Cloud or self-hosted). The instance owner/admin must enable Instance-level MCP and enable workflows one by one. The instanceUrl field is the shape, but a shared-endpoint Connect cannot be verified — so this stays manual."
+    },
+    {
+      "id": "pipedream",
+      "name": "Pipedream",
+      "desc": "Thousands of app actions as agent tools, a Zapier-class aggregator. Official Pipedream server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Automation",
+      "official": "official",
+      "logo": "pipedream.svg",
+      "dashboardUrl": "https://pipedream.com",
+      "unverified": true,
+      "setupSteps": [
+        "Pipedream end-user connections are managed inside Pipedream (sign in, pick apps, authorize).",
+        "One-click sign-in is not enabled yet: the resource/AS host split plus app-picking must be proven first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Pipedream end-user MCP (https://mcp.pipedream.net/v2). Probe note: DCR registration answered 201, but at a DIFFERENT host (mcp.pipedream.com) than the resource (mcp.pipedream.net), and Pipedream's end-user flow requires picking apps inside Pipedream — so the generic one-click flow is unproven up to Allow and is NOT claimed. The developer remote host is a separate route requiring a workspace OAuth client."
+    },
+    {
+      "id": "google-maps-community",
+      "name": "Google Maps (community)",
+      "desc": "Geocoding, routes, place search, elevation, timezone and air quality, 18 tools. Community server by cablate. Google has no official live-data Maps MCP server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "community",
+      "logo": "googlemapscommunity.svg",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Google Maps API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "community": true,
+      "setupSteps": [
+        "The canonical community Google Maps server is unconfirmed — do not pick one from listings alone.",
+        "All candidates need a Google Maps API key; the Maps Grounding Lite entry is the proven Google route.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "UNCONFIRMED canonical server: multiple community Google Maps MCP candidates exist and no single canonical choice is proven. All candidates need GOOGLE_MAPS_API_KEY. No canonical choice is promoted until one is live-proven."
+    },
+    {
+      "id": "mapbox",
+      "name": "Mapbox",
+      "desc": "Places, directions and maps data. Official Mapbox server, with a hosted option and a DevKit server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "mapbox.svg",
+      "dashboardUrl": "https://mapbox.com",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Mapbox API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Create a Mapbox access token and copy it.",
+        "Paste the token into the API token field below, then press Connect."
+      ],
+      "url": "https://mcp.mapbox.com/mcp",
+      "note": "Official Mapbox remote MCP, programmatic route. Without a token the server answers 401 with 'Bearer <redacted> required', confirming Bearer header auth. The interactive route is OAuth and the DevKit server (mcp-devkit.mapbox.com) is separate."
+    },
+    {
+      "id": "baidu-maps",
+      "name": "Baidu Maps",
+      "desc": "Maps, places and routing for China. Official Baidu server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "baidumaps.svg",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Baidu Maps API key",
+          "placeholder": "Paste your Baidu Maps API key",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Create a Baidu Maps API key and copy it.",
+        "Paste the key into the API key field below, then press Connect."
+      ],
+      "command": "npx",
+      "args": [
+        "-y",
+        "@baidumap/mcp-server-baidu-map"
+      ],
+      "envMap": {
+        "apiKey": "BAIDU_MAP_API_KEY"
+      },
+      "note": "Official Baidu Maps MCP server (TypeScript implementation). Spawn probe proved live: 10 tools with a dummy key (geocode, reverse geocode, place search/details, distance matrix, directions, weather, IP location, road traffic, POI extract) — the key is validated at tool-call time, not at Connect, so key validity is proven by the first real tool call, not by Connect. Note the env var is BAIDU_MAP_API_KEY (the Python implementation uses BAIDU_MAPS_API_KEY instead — this entry uses the TS one)."
+    },
+    {
+      "id": "maps-grounding-lite",
+      "name": "Google Maps Grounding Lite",
+      "desc": "Place search, weather and routes for grounding LLM answers, not the full Maps API. Official Google server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "mapsgroundinglite.svg",
+      "note": "Official Google Maps Grounding Lite MCP. Auth is X-Goog-Api-Key per Google docs, plus a GCP project with the Maps Grounding Lite API enabled. Tools list answers without a key, so key validity is proven by the first tool call, not by Connect. (Header fix: the r1a entry sent X-Api-Key, which Google does not accept; this entry now sends the documented X-Goog-Api-Key header.)",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Google API key",
+          "placeholder": "Paste your key here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "In Google Cloud, enable the Maps Grounding Lite API and create an API key.",
+        "Paste the key into the API key field below, then press Connect."
+      ],
+      "url": "https://mapstools.googleapis.com/mcp",
+      "keyHeader": "X-Goog-Api-Key"
+    },
+    {
+      "id": "wolfram",
+      "name": "Wolfram",
+      "desc": "Computational knowledge, math and data. Official Wolfram server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "wolfram.svg",
+      "dashboardUrl": "https://wolfram.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect. No account or key needed."
+      ],
+      "url": "https://agenttools.wolfram.com/mcp",
+      "note": "Official Wolfram Cloud MCP. Anonymous and free per Wolfram Support: initialize + tools/list proved live (3 tools: WolframContext, WolframLanguageEvaluator, WolframAlpha). The local Wolfram MCP is a separate licensed-desktop product."
+    },
+    {
+      "id": "twelve-data",
+      "name": "Twelve Data",
+      "desc": "Stock, forex and crypto market data. Official Twelve Data server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "twelvedata.svg",
+      "dashboardUrl": "https://twelvedata.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect, then Allow on Twelve Data's screen."
+      ],
+      "url": "https://mcp.twelvedata.com/mcp",
+      "note": "Official Twelve Data remote MCP. DCR verified (201). The official route is OAuth browser login; the third-party 'Authorization: apikey' header claim is unconfirmed and not used."
+    },
+    {
+      "id": "hex",
+      "name": "Hex",
+      "desc": "Ask questions against your warehouse through Hex projects. Official Hex server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "hex.svg",
+      "dashboardUrl": "https://hex.tech",
+      "setupSteps": [
+        "Press Connect, then Allow on Hex's screen."
+      ],
+      "url": "https://app.hex.tech/mcp",
+      "fields": [],
+      "note": "Official Hex remote MCP. DCR verified live (201). Team/Enterprise only; workspace role governs (Explorer+ for knowledge tools, Editor+ for project edits). EU/HIPAA/single-tenant hosts are separate."
+    },
+    {
+      "id": "productboard",
+      "name": "Productboard",
+      "desc": "Customer feedback notes, features and roadmaps. Official Productboard server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "productboard.svg",
+      "dashboardUrl": "https://productboard.com",
+      "setupSteps": [
+        "Press Connect, then Allow on Productboard's screen."
+      ],
+      "url": "https://mcp.productboard.com",
+      "fields": [],
+      "note": "Official Productboard remote MCP. DCR + PKCE verified live (201, register endpoint confirmed). The client does not choose scopes; the token gets the signed-in user's role scopes. Workspace admin must enable MCP."
+    },
+    {
+      "id": "strava",
+      "name": "Strava",
+      "desc": "Activities, routes and athlete data. Official Strava server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "strava.svg",
+      "dashboardUrl": "https://strava.com",
+      "unverified": true,
+      "setupSteps": [
+        "Strava publishes no official remote MCP server.",
+        "Community wrappers are not official and are not wired here.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "No official remote Strava MCP server found — only community/local wrappers. Strava's API OAuth (strava.com/settings/api, pre-registered app + callback domain) is NOT an MCP server. Do not list Strava as an official MCP vendor."
+    },
+    {
+      "id": "globalping",
+      "name": "GlobalPing",
+      "desc": "Network measurements from global probes. Official GlobalPing server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "official",
+      "logo": "globalping.svg",
+      "dashboardUrl": "https://globalping.io",
+      "unverified": true,
+      "setupSteps": [
+        "The exact GlobalPing MCP endpoint was not stated in research, although research says no account or only an optional key is needed: confirm the endpoint in GlobalPing's official docs first.",
+        "Once confirmed, add it with + Add MCP (Remote URL).",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "desc": "Workers, KV, R2, D1, Pages and more. Official Cloudflare server. Filter aggressively: about 3,300 auto-generated API tools.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "cloudflare.svg",
+      "url": "https://mcp.cloudflare.com/mcp",
+      "dashboardUrl": "https://cloudflare.com",
+      "note": "About 3,300 tools. Keep the enabled tool set small; docs, bindings, builds and observability are sibling servers."
+    },
+    {
+      "id": "aws",
+      "name": "AWS (awslabs suite)",
+      "desc": "A suite of servers for AWS services and resources. Official AWS servers. The Hermes catalog entry aws-knowledge covers docs only.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "aws.svg",
+      "dashboardUrl": "https://aws.amazon.com",
+      "fields": [],
+      "setupSteps": [
+        "The canonical awslabs server for a generic 'AWS' entry is unconfirmed.",
+        "AWS credentials are a key pair / boto3 chain, not a connection string.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "UNCONFIRMED which awslabs server: the most plausible generic is awslabs.aws-api-mcp-server (uvx), but awslabs publishes many servers and no single canonical 'AWS' server is proven. Credentials are the AWS key pair / boto3 chain (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN, profile) — NOT a connection string, so the old connectionString field is removed. This stays manual."
+    },
+    {
+      "id": "azure",
+      "name": "Azure",
+      "desc": "Storage, Cosmos DB and Azure Monitor. Official Microsoft server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "azure.svg",
+      "dashboardUrl": "https://azure.microsoft.com",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Azure credentials (OAuth or key)",
+          "placeholder": "Paste your credential reference here",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "unverified": true,
+      "setupSteps": [
+        "Use the self-hosted Azure MCP Server for Storage, Cosmos DB and Azure Monitor; it is not a vendor-hosted remote.",
+        "Azure DevOps remote access is a separate entry (org URL + Microsoft Entra ID).",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Label is ambiguous: this entry describes the generic Azure MCP Server (Storage, Cosmos DB, Azure Monitor), which is self-hosted/local, not a vendor remote endpoint. The Azure DevOps remote (https://mcp.dev.azure.com/{organization}) is Entra-gated and org-specific — a separate future entry."
+    },
+    {
+      "id": "terraform",
+      "name": "Terraform",
+      "desc": "Provider discovery, module analysis and Registry API for infrastructure as code. Official HashiCorp server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "terraform.svg",
+      "dashboardUrl": "https://hashicorp.com",
+      "unverified": true,
+      "setupSteps": [
+        "The Terraform MCP package and command were not given in research, and the API-key detail was UNCONFIRMED: take the install command from HashiCorp's official docs, then add it with + Add MCP (local command).",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "desc": "Dashboards, incidents and datasource queries. Official Grafana server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "grafana.svg",
+      "dashboardUrl": "https://grafana.com",
+      "fields": [
+        {
+          "key": "grafanaUrl",
+          "label": "Grafana URL",
+          "placeholder": "https://your-grafana-instance",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "serviceAccountToken",
+          "label": "Grafana service account token",
+          "placeholder": "Paste your Grafana service account token",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "setupSteps": [
+        "Create a Grafana service account token and copy it.",
+        "Paste your Grafana URL + service account token below, then press Connect."
+      ],
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "envMap": {
+        "grafanaUrl": "GRAFANA_URL",
+        "serviceAccountToken": "GRAFANA_SERVICE_ACCOUNT_TOKEN"
+      },
+      "note": "Official Grafana MCP server. Spawn probe proved live: 80 tools with dummy credentials (credentials are validated at tool-call time, not at Connect, so validity is proven by the first real tool call). Requires GRAFANA_URL + a service-account token — NOT the deprecated GRAFANA_API_KEY. A username/password alternative exists but this entry uses the service-account token."
+    },
+    {
+      "id": "datadog",
+      "name": "Datadog",
+      "desc": "Logs, metrics and traces. Official Datadog server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "datadog.svg",
+      "dashboardUrl": "https://datadoghq.com",
+      "fields": [],
+      "unverified": true,
+      "setupSteps": [
+        "Datadog MCP uses OAuth 2.0; pick the URL for your Datadog site (US1 default).",
+        "One-click sign-in is not enabled yet: the authorization metadata document returns 404, so a pre-registered Datadog OAuth app is needed first.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Datadog remote MCP (US1 default https://mcp.datadoghq.com/v1/mcp; other sites have their own URLs — wrong site fails at login; US1-FED/US2-FED unsupported). OAuth 2.0 per docs, but the authorization-server metadata document returns 404 in probe, so RedCat discovery cannot complete DCR."
+    },
+    {
+      "id": "betterstack",
+      "name": "Better Stack",
+      "desc": "Uptime, incidents and logs. Official Better Stack server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "betterstack.svg",
+      "dashboardUrl": "https://betterstack.com",
+      "fields": [],
+      "setupSteps": [
+        "Press Connect, then Allow on Better Stack's screen."
+      ],
+      "url": "https://mcp.betterstack.com",
+      "note": "Official Better Stack remote MCP. DCR verified (201). No /mcp suffix in official configs."
+    },
+    {
+      "id": "microsoft-learn",
+      "name": "Microsoft Learn",
+      "desc": "Search Microsoft documentation. Official Microsoft server.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "microsoftlearn.svg",
+      "dashboardUrl": "https://learn.microsoft.com",
+      "unverified": true,
+      "setupSteps": [
+        "The exact Microsoft Learn MCP endpoint was not stated in research, although research says no account is needed: confirm the endpoint in Microsoft's official docs first.",
+        "Once confirmed, add it with + Add MCP (Remote URL). No account is needed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "desc": "Time-series queries for v3 Core, Enterprise and Cloud. Official InfluxData server.",
+      "tier": 1,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "influxdb.svg",
+      "dashboardUrl": "https://influxdata.com",
+      "fields": [
+        {
+          "key": "instanceUrl",
+          "label": "InfluxDB instance URL",
+          "placeholder": "https://your-influxdb-instance",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "token",
+          "label": "InfluxDB token",
+          "placeholder": "Paste your InfluxDB token",
+          "required": true,
+          "secret": true
+        },
+        {
+          "key": "productType",
+          "label": "Product type (core, enterprise, cloud-serverless, cloud-dedicated)",
+          "placeholder": "core",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "clusterId",
+          "label": "Cluster ID (only for Cloud Dedicated)",
+          "placeholder": "Only for Cloud Dedicated",
+          "required": false,
+          "secret": false
+        }
+      ],
+      "setupSteps": [
+        "Create an InfluxDB 3 token and copy it.",
+        "Paste your instance URL + token + product type below, then press Connect."
+      ],
+      "command": "npx",
+      "args": [
+        "-y",
+        "@influxdata/influxdb3-mcp-server"
+      ],
+      "envMap": {
+        "clusterId": "INFLUX_DB_CLUSTER_ID",
+        "instanceUrl": "INFLUX_DB_INSTANCE_URL",
+        "productType": "INFLUX_DB_PRODUCT_TYPE",
+        "token": "INFLUX_DB_TOKEN"
+      },
+      "note": "Official InfluxDB 3 MCP server (scoped @influxdata package). Spawn probe proved live: 25 tools with dummy credentials (validated at tool-call time, not at Connect). This is NOT the unscoped community influxdb-mcp-server v2 (different server, INFLUXDB_TOKEN). Cloud Dedicated also needs a cluster ID (optional field above); a management token is not collected by this entry."
+    },
+    {
+      "id": "appwrite",
+      "name": "Appwrite",
+      "desc": "Databases, auth, users, functions, storage and messaging. Official Appwrite server.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "appwrite.svg",
+      "dashboardUrl": "https://appwrite.io",
+      "fields": [
+        {
+          "key": "projectId",
+          "label": "Appwrite project ID",
+          "placeholder": "Your Appwrite project ID",
+          "required": true,
+          "secret": false
+        },
+        {
+          "key": "apiKey",
+          "label": "Appwrite API key",
+          "placeholder": "Paste your Appwrite API key",
+          "required": true,
+          "secret": true
+        },
+        {
+          "key": "endpoint",
+          "label": "Appwrite endpoint",
+          "placeholder": "https://your-appwrite-instance/v1",
+          "required": true,
+          "secret": false
+        }
+      ],
+      "unverified": true,
+      "setupSteps": [
+        "Run your own Appwrite instance (or use a hosted one) and copy its endpoint + project ID + API key.",
+        "Paste the endpoint + project ID + API key below, then press Connect — a reachable instance is required.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "envMap": {
+        "apiKey": "APPWRITE_API_KEY",
+        "endpoint": "APPWRITE_ENDPOINT",
+        "projectId": "APPWRITE_PROJECT_ID"
+      },
+      "note": "Official Appwrite MCP, LOCAL/self-hosted route (uvx mcp-server-appwrite). Requires a REAL endpoint + project ID + API key. Spawn probe with dummy credentials TIMES OUT at initialize — the server does not list tools without a reachable Appwrite instance, so Connect cannot be proven without real credentials. Appwrite Cloud is now a separate remote OAuth server (https://mcp.appwrite.io/) with no API key — do not use this local entry for Cloud."
+    },
+    {
+      "id": "apify",
+      "name": "Apify",
+      "desc": "Find and run Actors (scrapers and automations) and read datasets. Official Apify server.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "official",
+      "logo": "apify.svg",
+      "dashboardUrl": "https://apify.com",
+      "note": "Official Apify remote MCP. DCR verified live (201). An Authorization: Bearer APIFY_TOKEN fallback also exists for other clients.",
+      "spending": true,
+      "setupSteps": [
+        "Press Connect, then Allow on Apify's screen."
+      ],
+      "url": "https://mcp.apify.com",
+      "fields": []
+    },
+    {
+      "id": "alltrails",
+      "name": "AllTrails",
+      "desc": "Trail maps and outdoor routes. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "alltrails.svg",
+      "dashboardUrl": "https://alltrails.com",
+      "unverified": true,
+      "setupSteps": [
+        "AllTrails publishes no official remote MCP server.",
+        "Community scrapers are deprecated and ToS-blocked; they are not wired here.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "No official remote AllTrails MCP server found. Only community scrapers exist, and the main one was deprecated/archived 25 Jan 2026 after AllTrails asked for scraping to be disabled for a ToS violation."
+    },
+    {
+      "id": "craft-do",
+      "name": "Craft.do",
+      "auth": "oauth",
+      "transport": "remote",
+      "tier": 2,
+      "unverified": true,
+      "fields": [],
+      "desc": "Documents and notes (Craft.do).",
+      "note": "Craft.do (notes app) — NOT Craft CMS. Each MCP Connection created in Craft.do generates a UNIQUE endpoint for that connection/space; there is no single fixed vendor endpoint. A third-party listing gives https://mcp.craft.do/my/mcp, but that URL is NOT confirmed on Craft.do's official Help Center page. Sign in + approve access per connection; access is per-connection document/space selection.",
+      "setupSteps": [
+        "Create an MCP Connection inside Craft.do; it generates a unique endpoint for that connection/space.",
+        "The third-party https://mcp.craft.do/my/mcp URL is unconfirmed on the official page — do not hardcode it.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "kind": "mcp",
+      "official": "unconfirmed",
+      "category": "DevOps, cloud & observability",
+      "logo": "craftdo.svg"
+    },
+    {
+      "id": "craft-cms",
+      "name": "Craft CMS",
+      "auth": "api-key",
+      "transport": "remote",
+      "tier": 2,
+      "unverified": true,
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "Craft CMS bearer token",
+          "placeholder": "Paste the per-site bearer token",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "desc": "Content management (Craft CMS).",
+      "note": "Craft CMS — a DIFFERENT product from Craft.do. Third-party Stimmt plugin, per-site HTTP + bearer tokens, not a vendor remote OAuth server. Each site has its own endpoint and token; there is no shared vendor endpoint to one-click.",
+      "setupSteps": [
+        "Install the MCP plugin on your Craft CMS site and create a per-site bearer token.",
+        "Each site has its own endpoint + token; there is no shared vendor endpoint.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "kind": "mcp",
+      "official": "unconfirmed",
+      "category": "DevOps, cloud & observability",
+      "logo": "craftcms.svg"
+    },
+    {
+      "id": "indeed",
+      "name": "Indeed",
+      "desc": "Job search and listings. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "indeed.svg",
+      "dashboardUrl": "https://indeed.com",
+      "unverified": true,
+      "setupSteps": [
+        "Indeed publishes no open official MCP route.",
+        "Third-party mcp.indeed.com claims are unverified and are not wired here.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "No official remote Indeed MCP server found — do not use mcp.indeed.com claims from third-party setup pages; they are unverified. A HasData third-party server exists, and its own comparison states Indeed publishes no open official route (access is partner/ATS approval)."
+    },
+    {
+      "id": "kiwi",
+      "name": "Kiwi",
+      "desc": "Travel search and booking. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "kiwi.svg",
+      "dashboardUrl": "https://kiwi.com",
+      "setupSteps": [
+        "Press Connect. No account or key needed."
+      ],
+      "url": "https://mcp.kiwi.com",
+      "fields": [],
+      "note": "Official Kiwi.com remote MCP. Anonymous: initialize + tools/list proved live (2 tools: search-flight, feedback-to-devs). Flight search only; booking happens on kiwi.com, not via MCP."
+    },
+    {
+      "id": "rentahuman",
+      "name": "RentAHuman",
+      "desc": "Hire a human for a task. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "rentahuman.svg",
+      "setupSteps": [
+        "Create a RentAHuman API key (rah_ + 32 hex characters) and copy it.",
+        "Paste the key into the API key field below, then press Connect."
+      ],
+      "url": "https://rentahuman.ai/api/mcp",
+      "keyHeader": "X-Api-Key",
+      "fields": [
+        {
+          "key": "apiKey",
+          "label": "RentAHuman API key (rah_ + 32 hex)",
+          "placeholder": "Paste your RentAHuman API key",
+          "required": true,
+          "secret": true
+        }
+      ],
+      "note": "Official RentAHuman remote MCP, API-key route. X-API-Key form proven live: a dummy key is rejected with the exact format rule (rah_ followed by 32 hex characters). Anonymous initialize answers but exposes 0 tools, so a key is required for useful tools. OAuth sign-in and a local npx server are alternative routes."
+    },
+    {
+      "id": "trivago",
+      "name": "Trivago",
+      "desc": "Hotel search and comparison. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "none",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "trivago.svg",
+      "dashboardUrl": "https://trivago.com",
+      "setupSteps": [
+        "Press Connect. No account or key needed."
+      ],
+      "url": "https://mcp.trivago.com/mcp",
+      "fields": [],
+      "note": "Official Trivago remote MCP. Anonymous: initialize + tools/list proved live (3 tools: accommodation search, radius search, destination price trends). Public hotel search only."
+    },
+    {
+      "id": "unreal-engine",
+      "name": "Unreal Engine",
+      "desc": "Game-engine tooling. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "unrealengine.svg",
+      "dashboardUrl": "https://unrealengine.com",
+      "unverified": true,
+      "setupSteps": [
+        "This entry is known only from the Hermes catalog folder listing. Its manifest (transport, auth, endpoint) was NOT verified in research.",
+        "Read the vendor's official MCP docs and the Hermes manifest before connecting anything.",
+        "Do not paste any credential until the vendor endpoint is confirmed.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ]
+    },
+    {
+      "id": "robinhood",
+      "name": "Robinhood",
+      "desc": "Stocks and crypto trading data. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 2,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "robinhood.svg",
+      "dashboardUrl": "https://robinhood.com",
+      "unverified": true,
+      "setupSteps": [
+        "Robinhood MCP needs its authorization metadata to verify before any OAuth wiring.",
+        "Third-party DCR/scope claims are unverified — do not treat them as official.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Official Robinhood agent-trading MCP (https://agent.robinhood.com/mcp/trading). Third-party reports claim DCR + PKCE, but those claims are NOT verified against Robinhood's own metadata: live probe (twice) returns 401 + resource metadata with an unreadable authorization-server metadata document. Do not ship as OAuth until metadata verifies. Trades only in a dedicated, separately funded MCP/Agentic account."
+    },
+    {
+      "id": "comfy-cloud",
+      "name": "Comfy Cloud",
+      "desc": "Cloud ComfyUI workflows. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "comfycloud.svg",
+      "setupSteps": [
+        "Press Connect, then Allow on Comfy Cloud's screen."
+      ],
+      "url": "https://cloud.comfy.org/mcp",
+      "fields": [],
+      "note": "Official Comfy Cloud remote MCP. DCR verified live (201). Active subscription required to run generations; an API-key fallback (comfyui- keys) exists for other clients."
+    },
+    {
+      "id": "fireflies",
+      "name": "Fireflies",
+      "desc": "Meeting transcription and notes. Hermes catalog entry; vendor details not verified in research.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "DevOps, cloud & observability",
+      "official": "unconfirmed",
+      "logo": "fireflies.svg",
+      "dashboardUrl": "https://fireflies.ai",
+      "setupSteps": [
+        "Press Connect, then Allow on Fireflies' screen."
+      ],
+      "url": "https://api.fireflies.ai/mcp",
+      "fields": [],
+      "note": "Official Fireflies remote MCP. DCR verified live (201). The OAuth connector surfaces a read-focused subset (user, transcript, search); an API-key Bearer fallback exists for other clients."
+    },
+    {
+      "id": "google-analytics-community",
+      "name": "Google Analytics (community)",
+      "desc": "Analytics reporting. Community server; Google ships no official Analytics MCP in this research.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "community",
+      "logo": "googleanalyticscommunity.svg",
+      "community": true,
+      "setupSteps": [
+        "GA community servers need service-account credentials, not an API key.",
+        "A credentials-file field must exist before this can be wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "UNCONFIRMED implementation + credential shape: candidate (a) google-analytics-mcp needs GOOGLE_APPLICATION_CREDENTIALS (service-account JSON path) + GA4_PROPERTY_ID; candidate (b) mcp-server-google-analytics needs GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY + GA_PROPERTY_ID. Both need service-account credentials, NOT an API key, and the catalog has no credentials-file field — so this stays manual."
+    },
+    {
+      "id": "search-console-community",
+      "name": "Search Console (community)",
+      "desc": "Search Console reporting. Community server; Google ships no official Search Console MCP in this research.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "community",
+      "logo": "searchconsolecommunity.svg",
+      "community": true,
+      "setupSteps": [
+        "Search Console community servers need a service-account JSON file, not an API key.",
+        "A credentials-file field must exist before this can be wired.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "Search Console community servers (uvx google-search-console-mcp or npx @surendranb/google-search-console-mcp) need GOOGLE_APPLICATION_CREDENTIALS (service-account JSON path) + GSC_SITE_URL. A service-account file is not an API key and the catalog has no credentials-file field — so this stays manual."
+    },
+    {
+      "id": "google-ads-community",
+      "name": "Google Ads (community)",
+      "desc": "Ads reporting. Community server; Google ships no official Ads MCP in this research.",
+      "tier": 2,
+      "transport": "stdio",
+      "auth": "api-key",
+      "kind": "mcp",
+      "category": "Maps, data & research",
+      "official": "community",
+      "logo": "googleadscommunity.svg",
+      "community": true,
+      "setupSteps": [
+        "The cohnen community server is stale (developer tokens sunset, API v19 off).",
+        "The official route is pipx-from-git + OAuth/ADC, read-only — not a pasted-key entry.",
+        "Note: these steps are guidance plus the fields below. RedCat does not complete this connection yet; connecting from pasted credentials is a separate slice that is not wired."
+      ],
+      "note": "STALE — do not publish the cohnen route: Google sunset developer tokens 2026-09-09 and cohnen reportedly still targets Ads API v19 (switched off 2026-02-11). The official route is googleads/google-ads-mcp, pipx-from-git, OAuth/ADC, read-only, with NO developer token — not a pasted-key entry, so this stays manual."
+    },
+    {
+      "id": "lovable",
+      "name": "Lovable",
+      "desc": "Create, edit, manage and deploy Lovable apps through prompts. Official Lovable remote server (OAuth). Prompt-based app building only — it cannot deploy locally-written code or import an existing repo. Available on all plans including Free; sensitive project/workspace scopes need Business/Enterprise.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "lovable.svg",
+      "url": "https://mcp.lovable.dev",
+      "dashboardUrl": "https://lovable.dev",
+      "note": "Loopback clients auto-register (no Lovable approval needed); DCR verified 2026-11-04 (HTTP 201). Custom OAuth clients possible via registered callback URL + client ID/secret."
+    },
+    {
+      "id": "replit",
+      "name": "Replit",
+      "desc": "Create, find, inspect, update and publish Replit Apps through prompts. Official Replit remote server (OAuth via protected-resource discovery). Prompt-based only — tools create/change apps through prompts to Replit Agent; no tool uploads local files.",
+      "tier": 1,
+      "transport": "remote",
+      "auth": "oauth",
+      "kind": "mcp",
+      "category": "Code & developer tools",
+      "official": "official",
+      "logo": "replit.svg",
+      "url": "https://mcp.replit.com/server/mcp",
+      "dashboardUrl": "https://replit.com",
+      "note": "Protected-resource discovery + DCR verified 2026-11-04 (HTTP 201). Do not create a custom OAuth server — the client reads Replit protected-resource metadata, then prompts Replit sign-in."
+    }
+  ]
+}

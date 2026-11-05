@@ -1,0 +1,30 @@
+{
+  "dist": "C:\\Users\\HOME\\Desktop\\redcat\\recipes\\depth-portrait-scroll\\template\\dist",
+  "base": "http://127.0.0.1:53684/",
+  "checks": {
+    "desktop": {
+      "canvasVisible": true,
+      "centred": true,
+      "fps": 13,
+      "consoleErrors": []
+    },
+    "mobile": {
+      "scrollWidth": 400,
+      "centred": true,
+      "consoleErrors": []
+    },
+    "fallback": {
+      "fallback": {
+        "present": true,
+        "visible": true,
+        "noWebglClass": true
+      },
+      "consoleErrors": []
+    }
+  },
+  "failures": [],
+  "warnings": [
+    "desktop: fps low (13) — software GL on this PC"
+  ],
+  "pass": true
+}

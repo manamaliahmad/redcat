@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REDCAT AI AGENT</title>
+  <link rel="icon" type="image/png" href="assets/redcatlogo.png">
+  <link rel="stylesheet" href="style.css?v=2.29">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Container for Full Web App -->
+  <div id="appContainer" class="app-container app-mode">
+
+    <!-- Main Web Application (REDCAT AI AGENT) -->
+    <div class="web-application">
+
+      <!-- 1. Leftmost Icon Rail (Thin Dock) -->
+      <nav class="nav-rail" aria-label="Primary Navigation">
+        <div class="rail-top">
+          <!-- Active Chat Icon -->
+          <button class="rail-icon-btn active" id="btnNavChat" title="Chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+          </button>
+
+          
+
+          <!-- Document / Notes Icon -->
+          <button class="rail-icon-btn" id="btnNavNotes" title="Documents & Notes">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="8" y1="13" x2="16" y2="13" />
+              <line x1="8" y1="17" x2="13" y2="17" />
+            </svg>
+          </button>
+
+          
+
+          <!-- Browser Icon (above Connectors) -->
+          <button class="rail-icon-btn" id="btnNavBrowser" title="Browser">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+          </button>
+
+          <!-- Cable Icon (Connectors) -->
+          <button class="rail-icon-btn" id="btnNavConnectors" title="Connectors">
+            <img src="/assets/connector-icon.svg" alt="" class="rail-img-icon">
+          </button>
+        </div>
+
+        <div class="rail-bottom">
+          
+
+          <!-- Settings Icon (direct: click opens Settings, no menu) -->
+          <button class="rail-icon-btn" id="btnNavSettings" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+
+        </div>
+      </nav>
+
+      <!-- 2. Left Sidebar (Chats) -->
+      <aside class="sidebar-chats" id="sidebarChats">
+
+        <!-- Search Pill Bar -->
+        <div class="sidebar-search-box">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input type="text" id="chatSearchInput" placeholder="Search" autocomplete="off">
+            <button class="search-dots-btn" title="More options">···</button>
+          </div>
+        </div>
+
+
+        <!-- Chat List Navigation -->
+        <div class="sidebar-nav-list">
+
+          <!-- All chats, one list: Main first, then side chats in creation order -->
+          <button class="nav-chat-item active" data-chat-id="main">
+            <span class="chat-item-text">Main chat</span>
+            <span class="chat-item-time" id="mainChatTime"></span>
+          </button>
+
+          <!-- Discord chats (PINNED, 2026-11-05): directly below Main chat and
+               above "+ Create agent". It is a static section, never inside a
+               list container, so new agents or re-renders can never push it down. -->
+          <div id="discordSection" class="discord-section">
+            <div class="discord-section-header">
+              <img src="/assets/mcp-logos/discord.svg" class="discord-section-icon" alt="Discord">
+              <span class="discord-section-label">Discord</span>
+              <button type="button" class="discord-connect-btn" id="discordConnectBtn" title="Connect Discord">+</button>
+            </div>
+            <div id="discordChatsList"></div>
+            <div id="discordChatsEmpty" class="discord-section-empty" style="display:none;">No Discord chats yet — send a DM to RedCat on Discord.</div>
+          </div>
+
+          <button type="button" class="sidebar-new-chat-btn" id="btnCreateUserAgent" title="Create agent">＋ Create agent</button>
+
+          <!-- Task agents: lottie + stop only, no card (below Create agent) -->
+          <div id="leftAgentList"></div>
+
+          <!-- User agents: persistent agent chats created by the user -->
+          <div id="userAgentList"></div>
+
+          <!-- DISCORD SECTION FIX (2026-11-05): this container was hidden by display:none, so the sidebar looked empty on refresh even though the data was on the server. It must stay visible. -->
+          <div id="sideChatsContainer"></div>
+
+          <button type="button" class="sidebar-new-chat-btn" id="btnNewSideChat" title="New chat" style="display:none;">+ New chat</button>
+
+        </div>
+
+      </aside>
+
+      <!-- 2b. Left Sidebar (Connectors) -->
+      <aside class="sidebar-connectors" id="sidebarConnectors" style="display: none;">
+
+        <!-- Connectors Header -->
+        <div class="connectors-header">
+          <button class="connectors-back-btn" id="btnConnectorsBack" title="Back to chats">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+          </button>
+          <h2 class="connectors-title">Connectors</h2>
+        </div>
+
+        <!-- Connected Section -->
+        <div class="connectors-section">
+          <div class="connectors-section-title">Connected</div>
+          <div class="connectors-scroll-box custom-thin-scroll" id="connectedContainer">
+            <!-- Connected items populated via JS -->
+          </div>
+        </div>
+
+        <!-- Social Section: real bot-token test, not the fake Available move -->
+        <div class="connectors-section">
+          <div class="connectors-section-title">Social</div>
+          <div class="connectors-scroll-box custom-thin-scroll" id="socialContainer">
+            <!-- Social items populated via JS -->
+          </div>
+        </div>
+
+        <!-- Available Section -->
+        <div class="connectors-section">
+          <div class="connectors-section-title">Available</div>
+          <div class="connectors-scroll-box custom-thin-scroll" id="availableContainer">
+            <!-- Available items with Deep Red Connect button populated via JS -->
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- 2c. Left Sidebar (Search, dummy page) -->
+      <aside class="sidebar-connectors" id="sidebarSearch" style="display: none;">
+        <div class="connectors-header">
+          <button class="connectors-back-btn" id="btnSearchBack" title="Back to chats"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg></button>
+          <h2 class="connectors-title">Search</h2>
+        </div>
+        <div class="connectors-section">
+          <div class="connectors-section-title">Placeholder</div>
+          <div style="display:flex;gap:8px;padding:8px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
+            <span style="color:#9ca3af;">&#128269;</span>
+            <span style="font-size:13px;color:#9ca3af;">Search</span>
+          </div>
+          <p style="font-size:12px;color:#6b7280;margin-top:10px;">Dummy page &#8212; UI will be redesigned later. Search results will appear here.</p>
+          <div style="border:1px solid #f0f0f2;border-radius:10px;padding:10px;margin-top:10px;"><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;"></div><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;width:70%;"></div></div>
+          <div style="border:1px solid #f0f0f2;border-radius:10px;padding:10px;margin-top:10px;"><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;"></div><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;width:70%;"></div></div>
+          <div style="border:1px solid #f0f0f2;border-radius:10px;padding:10px;margin-top:10px;"><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;"></div><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;width:70%;"></div></div>
+        </div>
+      </aside>
+
+      <!-- 2d. Left Sidebar (Documents & Notes) -->
+      <aside class="sidebar-connectors sidebar-docs" id="sidebarNotes" style="display: none;">
+        <div class="docs-sub-search">
+          <div class="docs-search-input-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <input type="text" id="docsSearchInput" placeholder="Search" autocomplete="off">
+          </div>
+        </div>
+        <div class="docs-sub-nav">
+          <div class="docs-sub-section">Artefacts</div>
+          <button type="button" class="docs-nav-item active" data-docs-page="artefacts">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1.5" /><rect width="7" height="7" x="14" y="3" rx="1.5" /><rect width="7" height="7" x="14" y="14" rx="1.5" /><rect width="7" height="7" x="3" y="14" rx="1.5" /></svg>
+            <span>All artefacts</span>
+          </button>
+          <button type="button" class="docs-nav-item" data-docs-page="skills">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c.8.7 1 1.5 1 2h6c0-.5.2-1.3 1-2a6 6 0 0 0-4-10z" /></svg>
+            <span>Skills</span>
+          </button>
+          <button type="button" class="docs-nav-item" data-docs-page="files">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+            <span>Files</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- 2e. Left Sidebar (Tasks, dummy page) -->
+      <aside class="sidebar-connectors" id="sidebarTasks" style="display: none;">
+        <div class="connectors-header">
+          <button class="connectors-back-btn" id="btnTasksBack" title="Back to chats"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg></button>
+          <h2 class="connectors-title">Tasks</h2>
+        </div>
+        <div class="connectors-section">
+          <div class="connectors-section-title">Placeholder</div>
+          <p style="font-size:12px;color:#6b7280;">Dummy page &#8212; UI will be redesigned later. Your tasks will appear here.</p>
+          <div style="border:1px solid #f0f0f2;border-radius:10px;padding:10px;margin-top:10px;display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border:2px solid #d1d5db;border-radius:5px;flex-shrink:0;"></span><div style="flex:1;"><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;"></div><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;width:70%;"></div></div></div>
+          <div style="border:1px solid #f0f0f2;border-radius:10px;padding:10px;margin-top:10px;display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border:2px solid #d1d5db;border-radius:5px;flex-shrink:0;"></span><div style="flex:1;"><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;"></div><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;width:70%;"></div></div></div>
+          <div style="border:1px solid #f0f0f2;border-radius:10px;padding:10px;margin-top:10px;display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border:2px solid #d1d5db;border-radius:5px;flex-shrink:0;"></span><div style="flex:1;"><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;"></div><div style="height:12px;background:#eef0f2;border-radius:6px;margin:8px 0;width:70%;"></div></div></div>
+        </div>
+      </aside>
+
+
+      <!-- 3. Center Area (Main Chat Conversation) -->
+      <main class="main-chat-area">
+
+        <!-- Collapsed Panel Top Trigger (Appears when right panel is closed) -->
+        <div class="top-agent-pill-container" id="topAgentTrigger" style="display: none;" title="Open REDCAT Details">
+          <button class="top-agent-pill-btn" id="btnOpenRightPanel">
+            <div class="top-avatar-circle">
+              <video class="top-mini-avatar-video" id="topMiniAvatarVideo" src="/avatars/redcat-avatar-idle.mp4"
+                autoplay muted loop playsinline preload="auto" disablepictureinpicture
+                controlslist="nodownload nofullscreen noremoteplayback" disableremoteplayback tabindex="-1"></video>
+            </div>
+            <span class="top-agent-name">REDCAT</span>
+          </button>
+        </div>
+
+        <!-- Discord chat header: shown only when a Discord chat is open -->
+        <div id="discordChatHeader" class="discord-chat-header" style="display:none;">
+          <img src="/assets/mcp-logos/discord.svg" class="discord-chat-header-icon" alt="Discord">
+          <img src="/assets/redcatlogo.png" class="discord-chat-header-icon" alt="RedCat">
+          <span id="discordChatHeaderName" class="discord-chat-header-name"></span>
+        </div>
+
+        <!-- Chat Conversation Messages Flow -->
+        <div class="chat-messages-scroll" id="chatScroll">
+
+          <!-- Empty-state hint (2026-11-05, v2.45): shown only when the open
+               chat genuinely has no messages. It lives outside the message
+               stream, so it is never saved as chat content. -->
+          <div id="emptyChatHint" class="empty-chat-hint" style="display:none;">No messages yet — send a message to start chatting with RedCat.</div>
+
+          <div class="chat-stream-inner" id="chatStream">
+
+            <!-- Dynamic Messages will append here -->
+
+          </div>
+
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-container">
+          <form class="chat-input-pill" id="chatForm">
+            <button type="button" class="input-attach-btn" id="btnAttach" title="Attach file or context">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+            <input type="text" id="chatInput" placeholder="Message" autocomplete="off">
+            <button type="submit" class="input-send-btn" id="btnSend" title="Send message">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+            <button type="button" class="stop-response-btn" id="btnStopResponse" title="Stop response" style="display: none;">
+              <span class="stop-response-square"></span>
+            </button>
+          </form>
+        </div>
+
+
+
+
+      </main>
+
+      <!-- 3b. Center Area (Documents & Notes) -->
+      <main class="docs-main" id="docsMainArea" style="display: none;">
+        <div class="docs-header">
+          <h1 class="docs-title" id="docsTitle">All artefacts</h1>
+          <div class="docs-header-actions">
+            <button type="button" class="docs-select-pill" id="docsSelectBtn">Select</button>
+            <button type="button" class="docs-select-pill" id="docsDeleteBtn" style="display: none;">Delete</button>
+            <button type="button" class="docs-filter-btn" id="docsFilterBtn" title="Sort">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6" /><circle cx="9" cy="6" r="2" /><line x1="4" y1="12" x2="20" y2="12" /><circle cx="15" cy="12" r="2" /><line x1="4" y1="18" x2="20" y2="18" /><circle cx="7" cy="18" r="2" /></svg>
+            </button>
+            <div class="docs-sort-menu" id="docsSortMenu" style="display: none;">
+              <button type="button" data-sort="newest">Newest first</button>
+              <button type="button" data-sort="oldest">Oldest first</button>
+              <button type="button" data-sort="name">Name A–Z</button>
+            </div>
+            <button type="button" class="docs-create-btn blue" id="docsCreateBtn">+ Create an artefact</button>
+          </div>
+        </div>
+        <div class="docs-notice" id="docsNotice" style="display: none;"></div>
+        <div class="docs-section-title" id="docsRecentTitle">Recent</div>
+        <div id="docsGrid"></div>
+        <div id="docsDetail" style="display: none;"></div>
+      </main>
+
+      <!-- 3c. Center Area (Connectors / MCP) -->
+      <main class="mcp-main" id="mcpMainArea" style="display: none;">
+        <div class="mcp-header">
+          <h1 class="mcp-title">Connectors/MCP</h1>
+          <div class="mcp-header-actions">
+            <button type="button" class="mcp-select-pill" id="mcpSelectBtn">Select</button>
+            <select class="mcp-filter-select" id="mcpFilterSelect" title="Filter">
+              <option value="all">All servers</option>
+              <option value="connected">Connected</option>
+              <option value="not-connected">Not connected</option>
+            </select>
+            <input class="mcp-search-input" id="mcpSearchInput" type="text" placeholder="Search servers&hellip;">
+            <select class="mcp-filter-select" id="mcpCategorySelect" title="Category">
+              <option value="all">All categories</option>
+              <option value="Files, search &amp; browser">Files, search &amp; browser</option>
+              <option value="Code &amp; developer tools">Code &amp; developer tools</option>
+              <option value="Databases &amp; data">Databases &amp; data</option>
+              <option value="Communication">Communication</option>
+              <option value="Productivity &amp; knowledge">Productivity &amp; knowledge</option>
+              <option value="Design &amp; media">Design &amp; media</option>
+              <option value="Payments, business &amp; analytics">Payments, business &amp; analytics</option>
+              <option value="Automation">Automation</option>
+              <option value="Maps, data &amp; research">Maps, data &amp; research</option>
+              <option value="DevOps, cloud &amp; observability">DevOps, cloud &amp; observability</option>
+              <option value="Connectors">Connectors</option>
+            </select>
+            <button type="button" class="mcp-bulk-btn" id="mcpBulkDisconnectBtn" style="display: none;">Disconnect selected</button>
+            <button type="button" class="mcp-add-btn" id="mcpAddBtn">+ Add MCP</button>
+          </div>
+        </div>
+        <div class="mcp-note">Connect tools from other apps. Sign-in always happens on the vendor's own page — RedCat never sees your password. There is no "Login with Claude" here: Claude is a model provider, and its key already lives in Settings &gt; AI Models.</div>
+        <div id="mcpGridWrap">
+          <div class="mcp-grid" id="mcpGridContainer"></div>
+        </div>
+        <div id="mcpDetailPanel" style="display: none;"></div>
+        <div id="mcpManualWrap">
+          <div class="mcp-manual-title">Manual setup</div>
+          <div class="mcp-manual-note">These servers need manual setup and are not in the grid above. Each card has full setup steps plus the fields RedCat will accept. Manual setup is guidance only: connecting from pasted credentials is not wired yet.</div>
+          <div id="mcpManualContainer"></div>
+        </div>
+      </main>
+
+                  <main class="browser-main" id="browserMainArea" style="display: none;">
+        <div class="browser-tabbar" id="browserTabBar">
+          <div class="browser-tabs" id="browserTabs"></div>
+          <button type="button" class="browser-tab-new" id="browserTabNewBtn" title="New tab">+</button>
+        </div>
+        <div class="browser-toolbar" id="browserToolbar">
+          <input class="browser-url-input" id="rcbUrlInput" type="text" placeholder="Search or type a web address" autocomplete="off">
+          <button type="button" class="browser-btn" id="rcbGoBtn">Go</button>
+          <button type="button" class="browser-btn" id="browserStartBtn">Start Browser</button>
+          <button type="button" class="browser-btn browser-btn-red" id="browserTakeControlBtn" style="display: none;">Take control of the browser</button>
+          <button type="button" class="browser-btn" id="browserDoneBtn" style="display: none;">Done</button>
+          <button type="button" class="browser-btn" id="browserStopBtn" style="display: none;">Stop</button>
+        </div>
+        <div class="browser-approvals-strip" id="browserApprovals" style="display: none;"></div>
+        <div class="browser-error" id="browserError" style="display: none;"></div>
+        <div class="browser-view" id="browserView" tabindex="0">
+          <img class="browser-shot" id="browserShotImg" alt="Live browser view" style="display: none;">
+          <div class="browser-shot-empty" id="browserShotEmpty">Start the browser to see it here.</div>
+          <div class="browser-cursor" id="browserCursor" style="display: none;"></div>
+          <div class="browser-scrollbar" id="browserScrollbar" style="display: none;"><div class="browser-scrollbar-thumb" id="browserScrollbarThumb"></div></div>
+        </div>
+      </main>
+
+      <div class="modal-backdrop" id="mcpAddDialog">
+        <div class="modal-dialog small-dialog">
+          <div class="modal-header"><div class="modal-title-group"><h3>Add MCP server</h3></div><button class="modal-close-btn" id="mcpAddClose">✕</button></div>
+          <div class="modal-body">
+            <label class="mcp-dialog-label">Name<input class="mcp-dialog-input" id="mcpAddName" type="text" placeholder="My MCP server"></label>
+            <label class="mcp-dialog-label">Transport
+              <select class="mcp-dialog-input" id="mcpAddTransport">
+                <option value="remote">Remote URL</option>
+                <option value="local">Local command</option>
+              </select>
+            </label>
+            <div id="mcpAddRemoteRow">
+              <label class="mcp-dialog-label">Server URL<input class="mcp-dialog-input" id="mcpAddUrl" type="text" placeholder="https://example.com/mcp"></label>
+            </div>
+            <div id="mcpAddLocalRow" style="display: none;">
+              <label class="mcp-dialog-label">Command<input class="mcp-dialog-input" id="mcpAddCommand" type="text" placeholder="npx"></label>
+              <label class="mcp-dialog-label">Arguments<input class="mcp-dialog-input" id="mcpAddArgs" type="text" placeholder="-y @modelcontextprotocol/server-memory"></label>
+            </div>
+            <div class="mcp-dialog-error" id="mcpAddError" style="display: none;"></div>
+            <div><button class="mcp-add-btn" id="mcpAddSubmit">Add server</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Right Sidebar (Profile & Activity Panel) -->
+      <aside class="right-panel" id="rightPanel">
+
+        <!-- Close Button Top Right -->
+        <button class="panel-close-btn" id="btnCloseRightPanel" title="Close details panel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <!-- Agent Profile Section -->
+        <div class="agent-profile-section">
+        <div id="agentProfileMain">
+
+          <!-- 3D Mascot Trio Avatar with Thinking Cloud -->
+          <div class="avatar-wrapper avatar-3d-container">
+            <!-- Mini Thinking Cloud Bubble -->
+            <div class="thinking-bubble-cloud" id="thinkingBubbleCloud" aria-label="Thinking">
+              <span class="bubble-dot dot-1"></span>
+              <span class="bubble-dot dot-2"></span>
+              <div class="bubble-cloud-main">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                </svg>
+                <span class="thinking-dots" aria-hidden="true">
+                  <i></i><i></i><i></i>
+                </span>
+              </div>
+            </div>
+
+            <!-- Lottie Mascot Trio Container (Yellow Left, Red Center, Blue Right) -->
+            <div class="avatar-lottie-trio-wrap" id="avatarLottieTrio">
+              <!-- 1. Yellow Cat with Glasses (LEFT) -->
+              <div class="lottie-cat-item lottie-cat-yellow" id="lottieCatYellow" title="Yellow Cat (Glasses)"></div>
+              <!-- 2. Red Cat (CENTER, Primary Mascot) -->
+              <div class="lottie-cat-item lottie-cat-red" id="lottieCatRed" title="RedCat Mascot"></div>
+              <!-- 3. Blue Cat with Mustache (RIGHT) -->
+              <div class="lottie-cat-item lottie-cat-blue" id="lottieCatBlue" title="Blue Cat (Mustache)"></div>
+            </div>
+          </div>
+
+          <!-- Agent Name (REDCAT in stylized red/contrast format) -->
+          <h2 class="agent-name" id="agentNameDisplay">
+            <span class="name-char text-red">RED</span><span class="name-char text-contrast">C</span><span class="name-char text-red">AT</span>
+          </h2>
+
+          <!-- Connected Status -->
+          <div class="agent-status-row">
+            <span class="status-green-dot"></span>
+            <span class="status-label">Connected</span>
+          </div>
+        </div><!-- /agentProfileMain -->
+
+          <!-- User-agent profile: coloured cat + editable name + model settings -->
+          <div id="agentProfileAgent" style="display:none;">
+            <div class="agent-profile-cat-wrap"><div id="agentProfileCat" class="agent-profile-cat"></div></div>
+            <input id="agentNameInput" type="text" maxlength="40" autocomplete="off" title="Agent name — type to rename" />
+            <div id="agentModelLine" class="agent-model-line"></div>
+            <button type="button" id="btnAgentSettings" class="agent-settings-btn" title="Agent model settings">⚙</button>
+          </div>
+
+          <!-- User-agent model picker: this agent only, key stays in Settings -->
+          <div id="agentModelPopover" style="display:none;">
+            <div class="agent-popover-title">Model for this agent</div>
+            <label class="agent-popover-label">Provider</label>
+            <select id="agentProviderSelect"></select>
+            <label class="agent-popover-label">Model</label>
+            <select id="agentModelSelect"></select>
+            <input id="agentCustomModelInput" type="text" placeholder="Type model name" style="display:none;" />
+            <p class="agent-popover-note">This model runs only in this agent's chat. The API key from Settings → AI Models is used.</p>
+            <div class="agent-popover-row">
+              <button type="button" id="btnAgentModelSave" class="connector-action-btn connect-deep-red">Save</button>
+              <button type="button" id="btnAgentModelClose" class="agent-popover-close">Close</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Browser (right panel) — the Commands tab was removed 2026-11-05 (ali: the 5 slash buttons were extra) -->
+        <div class="segmented-control-capsule">
+          <button class="seg-btn active" data-tab="browser" title="Live Browser">Browser</button>
+        </div>
+
+        <!-- Tab Content: Live Browser -->
+        <div class="tab-content active" id="tabContentBrowser">
+          <div style="border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;background:#ffffff;">
+            <div style="display:flex;gap:8px;padding:10px;border-bottom:1px solid #e5e7eb;">
+              <input id="browserUrlInput" type="text" placeholder="Enter a URL or search" style="flex:1;min-width:0;padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;" />
+              <button id="browserGoBtn" class="connector-action-btn connect-deep-red">Go</button>
+            </div>
+            <div style="padding:10px;">
+              <div style="display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:8px;">
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="browserLiveToggle" /> Live (refresh every 5s)</label>
+                <span id="browserViewStatus" style="color:#6b7280;"></span>
+              </div>
+              <div id="browserViewPlaceholder" style="border-radius:12px;background:#f9fafb;padding:24px 12px;text-align:center;font-size:13px;color:#6b7280;">Live browser view will appear here. Enter a URL or search, then press Go.</div>
+              <div id="browserFrame" class="browser-frame" style="display:none;"><img src="/assets/mcp-logos/oldpc.svg" alt="" class="browser-frame-bg"><img id="browserViewImg" alt="Browser view" class="browser-frame-shot" style="display:none;"></div>
+              <div id="browserViewTitle" style="font-weight:700;font-size:13px;margin-top:8px;"></div>
+              <div id="browserViewText" style="font-size:12px;color:#4b5563;max-height:120px;overflow:auto;white-space:pre-wrap;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content 2: Security & Rules -->
+        <div class="tab-content" id="tabContentShield">
+          <h3 class="section-heading">Operational Rules</h3>
+          <div class="rules-card-box">
+            <div class="rule-row">
+              <span class="rule-tag">RULE 01</span>
+              <h4>50% Advance Rule</h4>
+              <p>Confirm 50% advance payment before finalizing any deal.</p>
+            </div>
+            <div class="rule-row">
+              <span class="rule-tag">RULE 02</span>
+              <h4>Explicit Order Only</h4>
+              <p>Instagram DMs are sent in your name only with explicit permission.</p>
+            </div>
+            <div class="rule-row">
+              <span class="rule-tag">RULE 03</span>
+              <h4>User Controlled WhatsApp</h4>
+              <p>The agent drafts WhatsApp text; you send outreach from your real number.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content 3: Clock / Session Checkpoints -->
+        <div class="tab-content" id="tabContentClock">
+          <h3 class="section-heading">Session Logs</h3>
+          <div class="timeline-box">
+            <div class="timeline-step">
+              <span class="step-dot"></span>
+              <strong>11:30 PM:</strong> Localhost live server active at port 3000
+            </div>
+            <div class="timeline-step">
+              <span class="step-dot"></span>
+              <strong>11:21 PM:</strong> Finger swipe dissolve search completed
+            </div>
+            <div class="timeline-step">
+              <span class="step-dot"></span>
+              <strong>11:16 PM:</strong> RedCat MausBot architecture mapping
+            </div>
+            <div class="timeline-step">
+              <span class="step-dot"></span>
+              <strong>11:02 PM:</strong> Reverse engineering checkpoint reached
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content 4: Fingerprint / Identity -->
+        <div class="tab-content" id="tabContentFingerprint">
+          <h3 class="section-heading">Agent Identity</h3>
+          <div class="identity-cards-grid">
+            <!-- SOUL Card -->
+            <div class="identity-badge-card soul-card">
+              <div class="badge-top">
+                <span class="badge-title">SOUL</span>
+                <span class="badge-subtitle">ACCESS WITH CARE</span>
+              </div>
+              <div class="badge-bottom">
+                <span class="badge-date">10.18.26</span>
+                <svg class="badge-heart-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- MEMORY Card -->
+            <div class="identity-badge-card memory-card">
+              <div class="badge-top">
+                <span class="badge-title">MEMORY</span>
+                <span class="badge-subtitle">ACCESS WITH CARE</span>
+              </div>
+              <div class="badge-bottom">
+                <span class="badge-date">10.29.26</span>
+                <svg class="badge-heart-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- 2c. Full Code IDE Mode Workspace (Antigravity IDE Replica) -->
+
+    </div>
+
+  </div>
+
+  <!-- Settings Modal (Two-Column Layout matching Reference) -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-dialog settings-modal-dialog">
+
+      <!-- Left Column: Settings Sidebar -->
+      <aside class="settings-sidebar">
+        <div class="settings-sidebar-header">
+          <h2 class="settings-sidebar-title">Settings</h2>
+        </div>
+
+        <nav class="settings-nav-list custom-thin-scroll">
+          <button class="settings-nav-item active" data-tab="ai-models">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+            <span>AI Models</span>
+          </button>
+          <button class="settings-nav-item" data-tab="personality">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+            </svg>
+            <span>Personality</span>
+          </button>
+        </nav>
+
+      </aside>
+
+      <!-- Right Column: Settings Content Pane -->
+      <main class="settings-content-pane">
+
+        <!-- Header with Dynamic Tab Title & Close Button -->
+        <div class="settings-content-header">
+          <h3 class="settings-pane-title" id="settingsPaneTitle">AI Models</h3>
+          <button class="settings-close-circle-btn" id="btnCloseSettingsModal" title="Close Settings">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Scrollable Tab Content Panels -->
+        <div class="settings-tab-scroll-body custom-thin-scroll">
+
+          <!-- TAB: AI Models -->
+          <div class="settings-tab-panel active" id="tabPanelAiModels">
+            <div class="ai-models-wrapper">
+
+              <!-- Provider Horizontal Pills -->
+              <div class="ai-providers-pills-bar custom-thin-scroll" id="aiProvidersPillsBar">
+                <!-- Dynamically rendered provider pills via JS from providers.js -->
+              </div>
+
+              <!-- Active Provider Panel -->
+              <div class="settings-card ai-provider-card" id="aiProviderCard">
+
+                <!-- Provider Header & Status Line -->
+                <div class="ai-card-header">
+                  <div class="ai-card-title-wrap">
+                    <img class="ai-card-logo" id="aiCardLogo" src="assets/models/gemini.svg" alt=""
+                      onerror="this.style.display='none'">
+                    <div>
+                      <h4 class="ai-card-title" id="aiCardTitle">Gemini</h4>
+                      <div class="ai-card-subtitle" id="aiCardSubtitle">Configure API key & model selections</div>
+                    </div>
+                  </div>
+                  <div class="ai-status-badge" id="aiStatusBadge">
+                    <span class="status-indicator-dot" id="aiStatusDot"></span>
+                    <span id="aiStatusText">Not connected</span>
+                  </div>
+                </div>
+
+                <!-- API Key Section (Hidden if needsKey: false) -->
+                <div class="ai-form-group" id="aiKeyGroup">
+                  <div class="ai-label-row">
+                    <label class="ai-field-label">API Key</label>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer"
+                      class="ai-get-key-link" id="aiGetKeyLink">
+                      Get key (Google AI Studio) ↗
+                    </a>
+                  </div>
+                  <div class="ai-input-action-row">
+                    <input type="password" id="aiKeyInput" class="ai-key-input" placeholder="Paste your API key here..."
+                      autocomplete="off">
+                    <button type="button" class="ai-action-btn" id="btnToggleShowKey"
+                      title="Show or hide API key">Show</button>
+                    <button type="button" class="ai-action-btn" id="btnPasteKey"
+                      title="Paste from clipboard">Paste</button>
+                    <button type="button" class="ai-action-btn danger" id="btnClearKey"
+                      title="Clear key and disconnect">Clear</button>
+                  </div>
+                </div>
+
+                <!-- Ollama Local Banner (Shown only when needsKey: false) -->
+                <div class="ai-ollama-banner" id="aiOllamaBanner" style="display: none;">
+                  <span class="ollama-check-icon">✓</span>
+                  <span>Local model runner: No API key required for Ollama. Ensure Ollama service is running on your
+                    machine.</span>
+                </div>
+
+                <!-- Model Selectors Grid (Chat Model + Coding Model) -->
+                <div class="ai-models-grid">
+
+                  <!-- Chat Model Selector -->
+                  <div class="ai-model-col">
+                    <label class="ai-field-label">Chat model</label>
+
+                    <!-- Standard Dropdown for fixed model lists -->
+                    <select id="aiChatModelSelect" class="ai-select-field">
+                      <!-- Populated via JS -->
+                    </select>
+
+                    <!-- Text input with datalist for OpenRouter / Ollama -->
+                    <input type="text" id="aiChatModelInput" class="ai-text-field" list="chatModelDatalist"
+                      placeholder="Select or type model ID..." style="display: none;">
+                    <datalist id="chatModelDatalist"></datalist>
+
+                    <!-- Custom Model Free Text Input -->
+                    <div id="aiCustomChatWrap" class="ai-custom-input-wrap" style="display: none;">
+                      <input type="text" id="aiCustomChatInput" class="ai-text-field sub"
+                        placeholder="Enter custom model ID...">
+                    </div>
+
+                    <!-- Note under qwen3-coder -->
+                    <div id="aiChatQwenNote" class="ai-model-subnote" style="display: none;">
+                      * Text-only — no vision
+                    </div>
+                  </div>
+
+                  <!-- Coding Model Selector -->
+                  <div class="ai-model-col">
+                    <label class="ai-field-label">Coding model</label>
+
+                    <!-- Standard Dropdown for fixed model lists -->
+                    <select id="aiCodingModelSelect" class="ai-select-field">
+                      <!-- Populated via JS -->
+                    </select>
+
+                    <!-- Text input with datalist for OpenRouter / Ollama -->
+                    <input type="text" id="aiCodingModelInput" class="ai-text-field" list="codingModelDatalist"
+                      placeholder="Select or type model ID..." style="display: none;">
+                    <datalist id="codingModelDatalist"></datalist>
+
+                    <!-- Custom Model Free Text Input -->
+                    <div id="aiCustomCodingWrap" class="ai-custom-input-wrap" style="display: none;">
+                      <input type="text" id="aiCustomCodingInput" class="ai-text-field sub"
+                        placeholder="Enter custom coding model ID...">
+                    </div>
+
+                    <!-- Note under qwen3-coder -->
+                    <div id="aiCodingQwenNote" class="ai-model-subnote" style="display: none;">
+                      * Text-only — no vision
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Load all models -->
+                <div class="ai-models-load-row">
+                  <button type="button" class="ai-action-btn" id="btnLoadAllModels">Show all models</button>
+                  <span class="ai-model-subnote" id="aiModelsLoadStatus"></span>
+                </div>
+
+                <!-- Validation Error Message -->
+                <div id="aiErrorMessage" class="ai-error-notice" style="display: none;"></div>
+
+                <!-- Save & Status Bottom Action Row -->
+                <div class="ai-card-footer">
+                  <div class="ai-footer-hint" id="aiFooterHint">
+                    Pick provider → paste key → pick model → Save
+                  </div>
+                  <button type="button" class="btn-primary" id="btnSaveAiModel"
+                    style="background-color: #8b0a1a; border-color: #700815;">Save</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Personality -->
+          <div class="settings-tab-panel" id="tabPanelPersonality">
+            <div class="settings-card">
+              <div class="ai-form-group">
+                <div class="ai-label-row">
+                  <label class="ai-field-label">Style profile</label>
+                  <button type="button" class="ai-action-btn" id="btnSavePersonality" title="Save style profile">Save</button>
+                </div>
+                <textarea id="personalityText" rows="14" style="width: 100%; min-height: 260px; resize: vertical; font-family: inherit; font-size: 13px; line-height: 1.5; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;" spellcheck="false"></textarea>
+                <div id="personalityStatus" style="font-size: 12px; color: #6b7280; margin-top: 6px;"></div>
+              </div>
+              <div class="ai-form-group" style="margin-top: 14px;">
+                <label class="ai-field-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="personalityEnabled" checked> Mirror my style
+                </label>
+                <div style="margin-top: 10px;">
+                  <label class="ai-field-label">Applies to</label>
+                  <select id="personalityScope" class="ai-select-field">
+                    <option value="both">App + Discord</option>
+                    <option value="app">App only</option>
+                    <option value="discord">Discord only</option>
+                  </select>
+                </div>
+              </div>
+              <div class="ai-form-group" style="margin-top: 14px;">
+                <label class="ai-field-label">Forget one trait</label>
+                <div class="ai-input-action-row">
+                  <input type="text" id="personalityForgetInput" class="ai-key-input" placeholder="Trait text to remove..." autocomplete="off">
+                  <button type="button" class="ai-action-btn" id="btnForgetPersonalityTrait" title="Remove this trait">Forget</button>
+                </div>
+              </div>
+              <div class="ai-card-footer" style="margin-top: 14px;">
+                <div class="ai-footer-hint" id="personalityFooterHint"></div>
+                <button type="button" class="ai-action-btn danger" id="btnResetPersonality" title="Restore the default style profile">Reset</button>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Report Issue Modal -->
+  <div class="modal-backdrop" id="reportModal">
+    <div class="modal-dialog small-dialog">
+      <div class="modal-header">
+        <h3>Report an Issue</h3>
+        <button class="modal-close-btn" id="btnCloseReportModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: #4b5563; margin-bottom: 12px;">Describe any issue, suggestion, or bug you
+          experienced:</p>
+        <textarea id="reportText"
+          style="width: 100%; height: 90px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 13px; resize: vertical;"
+          placeholder="Type your issue details here..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelReport">Cancel</button>
+        <button class="btn-primary" id="btnSubmitReport">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download Apps Modal -->
+  <div class="modal-backdrop" id="downloadModal">
+    <div class="modal-dialog small-dialog">
+      <div class="modal-header">
+        <h3>Download REDCAT Apps</h3>
+        <button class="modal-close-btn" id="btnCloseDownloadModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: #4b5563; margin-bottom: 14px;">Get REDCAT desktop app for instant speed &
+          system tray notifications:</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #111827;">Windows Desktop</div>
+              <div style="font-size: 11.5px; color: #6b7280;">Windows 10/11 (.exe installer)</div>
+            </div>
+            <button class="btn-primary" style="padding: 5px 12px; font-size: 12px;"
+              onclick="alert('Downloading REDCAT Setup for Windows...')">Download</button>
+          </div>
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #111827;">macOS App</div>
+              <div style="font-size: 11.5px; color: #6b7280;">Apple Silicon & Intel (.dmg)</div>
+            </div>
+            <button class="btn-secondary" style="padding: 5px 12px; font-size: 12px;"
+              onclick="alert('Downloading REDCAT for macOS...')">Download</button>
+          </div>
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #111827;">Linux (.AppImage)</div>
+              <div style="font-size: 11.5px; color: #6b7280;">Universal 64-bit Package</div>
+            </div>
+            <button class="btn-secondary" style="padding: 5px 12px; font-size: 12px;"
+              onclick="alert('Downloading REDCAT for Linux...')">Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RedCat Code Loading Card (standard centred installer-style card) -->
+  <div id="codeLoadingOverlay" class="code-loading-overlay" style="display: none;">
+    <div class="code-loading-card">
+    <div class="code-loading-video-container">
+      <video id="codeLoadingVideo" class="code-loading-video" playsinline preload="auto" muted loop>
+        <source src="assets/redcat-code-loading.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="code-loading-bottom-bar">
+      <div class="code-loading-status-row">
+        <span class="code-loading-tag">
+          <span class="code-loading-pulse"></span>
+          <span id="codeLoadingStatus">Starting RedCat</span>
+        </span>
+        <span class="code-loading-pct" id="codeLoadingPct">0%</span>
+      </div>
+      <div class="code-loading-track">
+        <div class="code-loading-fill" id="codeLoadingFill"></div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Three.js & GLTF Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- Lottie Web Animation Engine -->
+  <script src="assets/lottie.min.js"></script>
+
+  <!-- Disconnect confirm popup (2026-11-05, v2.45): the Discord × never
+       disconnects at once. It opens this centred popup first — Yes
+       disconnects, Cancel closes it and stays connected. -->
+  <div id="discordDisconnectModal" class="discord-modal-overlay" style="display:none;">
+    <div class="discord-modal">
+      <div class="discord-modal-text">Are you sure you want to disconnect Discord from RedCat?</div>
+      <div class="discord-modal-actions">
+        <button type="button" class="discord-modal-btn discord-modal-yes" id="discordDisconnectYes">Yes</button>
+        <button type="button" class="discord-modal-btn discord-modal-cancel" id="discordDisconnectCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="lib/providers.js"></script>
+  <script src="app.js?v=2.48"></script>
+</body>
+
+</html>

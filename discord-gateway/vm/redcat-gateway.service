@@ -1,0 +1,18 @@
+[Unit]
+Description=RedCat Discord gateway (bot + relay)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/redcat-gateway
+EnvironmentFile=/home/ubuntu/redcat-gateway/.env
+ExecStart=/usr/bin/node /home/ubuntu/redcat-gateway/gateway.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

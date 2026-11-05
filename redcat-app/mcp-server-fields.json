@@ -1,0 +1,37 @@
+{
+  "higgsfield": {},
+  "filesystem": {
+    "dir": ""
+  },
+  "notion": {},
+  "disconnect-test": {},
+  "miro": {},
+  "airtable": {},
+  "linear": {},
+  "atlassian": {},
+  "todoist": {},
+  "elevenlabs": {},
+  "stripe": {},
+  "sentry": {
+    "org": "",
+    "project": ""
+  },
+  "exa": {},
+  "context7": {},
+  "memory": {},
+  "thinking": {},
+  "playwright": {},
+  "tavily": {},
+  "firecrawl": {},
+  "deepwiki": {},
+  "chrome-devtools": {},
+  "clickup": {},
+  "monday": {},
+  "adobe": {},
+  "shopify-storefront": {},
+  "shopify-dev": {},
+  "cloudflare": {},
+  "lovable": {},
+  "replit": {},
+  "railway": {}
+}

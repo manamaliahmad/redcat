@@ -1,0 +1,1 @@
+{"discordBotToken":"","discordClientId":"","discordClientSecret":"","discordRedirectUri":"http://localhost:3000/api/social/callback/discord","slackClientId":"","slackClientSecret":"","slackRedirectUri":"http://localhost:3000/api/social/callback/slack","telegramBotToken":"","telegramBotUsername":""}

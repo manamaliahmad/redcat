@@ -1,0 +1,22 @@
+{
+  "name": "redcat-ai-agent",
+  "version": "1.0.0",
+  "description": "Deeply authentic pixel-perfect replica of the REDCAT AI AGENT workspace interface",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "ai-agent",
+    "chat-interface",
+    "redcat-ai-agent",
+    "redcat"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^29.1.1",
+    "playwright": "^1.64.1"
+  }
+}
