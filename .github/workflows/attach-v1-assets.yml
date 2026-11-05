@@ -2,6 +2,8 @@
 # Created because a workflow_dispatch build (no tag) does not publish to the release.
 # Uses the gh CLI because actions/download-artifact can only download artifacts
 # from a run of the SAME workflow, not from the build workflow's run.
+# Every gh command passes --repo explicitly because this job does not check out
+# the repository, so gh cannot resolve the repo from a local .git directory.
 # The macOS download is allowed to fail (macOS runners are capacity-constrained), so
 # the Linux files can be attached while the macOS build is still pending.
 # Delete this file once the v1.0.0 release has the macOS + Linux files.
@@ -29,8 +31,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh run download "${{ inputs.run_id }}" --name redcat-macos --dir macos || echo "macOS artifact not available yet"
-          gh run download "${{ inputs.run_id }}" --name redcat-linux --dir linux
+          gh run download "${{ inputs.run_id }}" --repo manamaliahmad/redcat --name redcat-macos --dir macos || echo "macOS artifact not available yet"
+          gh run download "${{ inputs.run_id }}" --repo manamaliahmad/redcat --name redcat-linux --dir linux
           echo '--- downloaded files ---'
           if [ -d macos ]; then find macos -type f | sort; fi
           find linux -type f | sort
@@ -39,9 +41,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release view v1.0.0 --json tagName --jq .tagName
+          gh release view v1.0.0 --repo manamaliahmad/redcat --json tagName --jq .tagName
           files=(linux/*)
           if compgen -G "macos/*" > /dev/null; then files+=(macos/*); fi
-          gh release upload v1.0.0 "${files[@]}" --clobber
+          gh release upload v1.0.0 "${files[@]}" --repo manamaliahmad/redcat --clobber
           echo '--- release assets ---'
-          gh release view v1.0.0 --json assets --jq '.assets[] | .name + " (" + (.size | tostring) + " bytes)"'
+          gh release view v1.0.0 --repo manamaliahmad/redcat --json assets --jq '.assets[] | .name + " (" + (.size | tostring) + " bytes)"'
