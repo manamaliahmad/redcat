@@ -1,70 +1,57 @@
-name: Build RedCat
+# RedCat desktop apps — build macOS + Linux on GitHub Actions.
+# Windows is built on the PC (npm run dist-win).
+# Trigger: manually (Actions tab -> Run workflow) or when a v* tag is pushed.
+# Each job uploads its built files as an artifact; attach them to the
+# GitHub release (v1.0.0) from the Actions run's Artifacts section.
+name: Build macOS and Linux apps
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            args: ""
-          - os: ubuntu-22.04
-            args: ""
-          - os: macos-latest
-            args: ""
-    runs-on: ${{ matrix.os }}
+  build-mac:
+    name: macOS (dmg)
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Linux dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-      - name: Setup Node
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ./src-tauri
-
-      - name: Install frontend deps
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
         run: npm install
-
-      - name: Restore icons from base64
-        # Icons are binary, so the repo stores them as .b64 text files and
-        # this step decodes them back before the Tauri build runs. Works on
-        # Linux (GNU -d), macOS (BSD -D) and Windows (Git Bash, GNU -d).
-        shell: bash
-        run: |
-          cd src-tauri/icons
-          decode() { base64 -d "$1" > "$2" 2>/dev/null || base64 -D "$1" > "$2" 2>/dev/null || base64 --decode "$1" > "$2"; }
-          decode icon.png.b64 icon.png
-          decode icon.ico.b64 icon.ico
-          decode icon.icns.b64 icon.icns
-          ls -la
-
-      - name: Build with Tauri Action
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build macOS app
+        run: npm run dist-mac
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v4
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "RedCat ${{ github.ref_name }}"
-          releaseBody: "See the release notes below. Windows .exe + Linux binary attached."
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.args }}
+          name: redcat-macos
+          path: dist/
+          if-no-files-found: error
+
+  build-linux:
+    name: Linux (AppImage + deb)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Build Linux app
+        run: npm run dist-linux
+      - name: Upload Linux app
+        uses: actions/upload-artifact@v4
+        with:
+          name: redcat-linux
+          path: dist/
+          if-no-files-found: error
