@@ -260,6 +260,7 @@ async function startBrowser(opts) {
     const base = {
       headless: true,
       viewport: viewport,
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
       args: ['--no-first-run', '--no-default-browser-check', '--disable-blink-features=AutomationControlled']
     };
     try {
@@ -268,6 +269,27 @@ async function startBrowser(opts) {
       if (isLockError(String(e && e.message ? e.message : e))) throw e;
       context = await chromium.launchPersistentContext(PROFILE_DIR, base);
     }
+    // STEALTH (2026-11-07, v1.0.6): DuckDuckGo (and Google) detect the
+    // automated Playwright browser and refuse search results (DDG 418 /
+    // 'email us' error). Hide the automation signals so the browser looks
+    // like a real Chrome and DDG returns real results. Runs in every page
+    // before any page script (addInitScript). No new dependency.
+    try {
+      await context.addInitScript(function () {
+        try { Object.defineProperty(navigator, 'webdriver', { get: function () { return undefined; } }); } catch (e) {}
+        try { Object.defineProperty(navigator, 'plugins', { get: function () { return [1, 2, 3, 4, 5]; } }); } catch (e) {}
+        try { Object.defineProperty(navigator, 'languages', { get: function () { return ['en-US', 'en']; } }); } catch (e) {}
+        try { window.chrome = { runtime: {} }; } catch (e) {}
+        try {
+          var originalQuery = window.navigator.permissions.query;
+          window.navigator.permissions.query = function (parameters) {
+            return parameters.name === 'notifications'
+              ? Promise.resolve({ state: Notification.permission })
+              : originalQuery(parameters);
+          };
+        } catch (e) {}
+      });
+    } catch (e) { pushLog('stealth-init-failed', String(e && e.message ? e.message : e).split('\n')[0].slice(0, 160)); }
     const existing = context.pages();
     if (existing.length) {
       tabs = existing.map(function (pg) { return makeTab(pg); });

@@ -10,7 +10,14 @@
 // purge it from localStorage too. The tombstone survives server restarts.
 const fs = require('fs');
 const path = require('path');
-const DIR = path.join(__dirname, 'chats');
+// CHATS IN userData (2026-11-07, v1.0.6): chats must live in userData so an
+// app update/reinstall never touches them. The packaged app sets
+// REDCAT_USER_DATA (main.js) to app.getPath('userData'); the dev server
+// (no env var) keeps using chats/ next to server.js. Same pattern as the
+// v1.0.4 browser-profile fix (REDCAT_BROWSER_PROFILE).
+const DIR = process.env.REDCAT_USER_DATA
+  ? path.join(process.env.REDCAT_USER_DATA, 'chats')
+  : path.join(__dirname, 'chats');
 const META_FILE = path.join(DIR, '__meta__.json');
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_DELETED = 500;
@@ -41,6 +48,49 @@ function writeMeta(counter, agentCounter, deleted) {
     fs.writeFileSync(META_FILE, JSON.stringify({ counter: counter, agentCounter: agentCounter, deleted: d }));
   } catch (e) {}
 }
+// MIGRATION (2026-11-07, v1.0.6): on first run after the move to userData,
+// copy any chats that still live in the old location (chats/ next to
+// server.js, under the install dir) into userData/chats/ so NO user's old
+// chat is lost. Idempotent and safe: never overwrites an existing file in
+// userData; merges __meta__.json (tombstones + counters) instead of
+// replacing it; leaves the old files in place as a backup; deletes nothing.
+// Runs once when this module loads. The dev server (DIR === old location)
+// is a no-op.
+let LEGACY_DIR = path.join(__dirname, 'chats');
+if (process.env.REDCAT_USER_DATA && process.execPath) {
+  try { LEGACY_DIR = path.join(path.dirname(process.execPath), 'resources', 'app.asar.unpacked', 'redcat-app', 'chats'); } catch (e) {}
+}
+let migrationDone = false;
+function migrateLegacyChats() {
+  if (migrationDone) return;
+  try {
+    if (LEGACY_DIR === DIR) { migrationDone = true; return; }
+    if (!fs.existsSync(LEGACY_DIR)) return;
+    ensureDir();
+    let files = [];
+    try { files = fs.readdirSync(LEGACY_DIR); } catch (e) { files = []; }
+    files.forEach(function (f) {
+      if (!f.endsWith('.json') || f === '__meta__.json') return;
+      const src = path.join(LEGACY_DIR, f);
+      const dst = path.join(DIR, f);
+      if (fs.existsSync(dst)) return;
+      try { fs.copyFileSync(src, dst); } catch (e) {}
+    });
+    try {
+      const legacyMetaFile = path.join(LEGACY_DIR, '__meta__.json');
+      if (fs.existsSync(legacyMetaFile)) {
+        const legacy = JSON.parse(fs.readFileSync(legacyMetaFile, 'utf8'));
+        const current = readMeta();
+        const mergedDeleted = Array.from(new Set([].concat(current.deleted || [], Array.isArray(legacy.deleted) ? legacy.deleted : []).filter(function (x) { return typeof x === 'string' && x; }))).slice(0, MAX_DELETED);
+        const mergedCounter = Math.max(typeof current.counter === 'number' ? current.counter : 0, typeof legacy.counter === 'number' ? legacy.counter : 0);
+        const mergedAgentCounter = Math.max(typeof current.agentCounter === 'number' ? current.agentCounter : 0, typeof legacy.agentCounter === 'number' ? legacy.agentCounter : 0);
+        writeMeta(mergedCounter, mergedAgentCounter, mergedDeleted);
+      }
+    } catch (e) {}
+    migrationDone = true;
+  } catch (e) {}
+}
+migrateLegacyChats();
 function isDeleted(id) {
   if (!id) return false;
   return readMeta().deleted.indexOf(id) !== -1;
@@ -65,6 +115,7 @@ function deriveTitle(data) {
   return data.id === 'main' ? 'Main chat' : 'New chat';
 }
 function list() {
+  migrateLegacyChats();
   ensureDir();
   const meta = readMeta();
   const deletedSet = new Set(meta.deleted);
@@ -83,6 +134,7 @@ function list() {
   return { ok: true, chats: out, counter: meta.counter, agentCounter: meta.agentCounter, deleted: meta.deleted };
 }
 function get(id) {
+  migrateLegacyChats();
   const safe = safeId(id);
   if (!safe) return { ok: false, error: 'INVALID_ID' };
   if (isDeleted(safe)) return { ok: false, error: 'DELETED' };
@@ -92,6 +144,7 @@ function get(id) {
   catch (e) { return { ok: false, error: 'CHATSTORE_ERROR' }; }
 }
 function save(id, data) {
+  migrateLegacyChats();
   const safe = safeId(id);
   if (!safe) return { ok: false, error: 'INVALID_ID' };
   if (isDeleted(safe)) return { ok: false, error: 'DELETED' };
