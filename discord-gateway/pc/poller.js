@@ -9,7 +9,7 @@
 //   RELAY_URL   http://127.0.0.1:8080
 //   REDCAT_URL  http://127.0.0.1:3000
 //   SSH_KEY     C:\Users\HOME\oracle-vm-key
-//   SSH_HOST    137.23.39.189
+//   SSH_HOST    <your-vm-public-ip> (required - set via SSH_HOST env var)
 //   SSH_USER    ubuntu
 //   DISCORD_LANG  (optional override; empty = detect the language of each user message)
 //   AGENT_TIMEOUT_MS 600000 (10 min)
@@ -24,7 +24,7 @@ const { spawn } = require('child_process');
 const RELAY_URL = process.env.RELAY_URL || 'http://127.0.0.1:8080';
 const REDCAT_URL = process.env.REDCAT_URL || 'http://127.0.0.1:3000';
 const SSH_KEY = process.env.SSH_KEY || 'C:\\Users\\HOME\\oracle-vm-key';
-const SSH_HOST = process.env.SSH_HOST || '137.23.39.189';
+const SSH_HOST = process.env.SSH_HOST || ''; // Set SSH_HOST to your VM's public IP (never hardcode it).
 const SSH_USER = process.env.SSH_USER || 'ubuntu';
 const LANG_OVERRIDE = (process.env.DISCORD_LANG || '').trim(); // empty = detect per message
 // Real per-message language detection (same rules as the RedCat server):
