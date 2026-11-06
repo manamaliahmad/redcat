@@ -279,6 +279,14 @@ app.whenReady().then(async () => {
   // device token for /api/discord/connect-url (state), so it is set in
   // the env before the server loads. Same token the poller uses.
   process.env.DISCORD_DEVICE_TOKEN = discordDeviceToken();
+  // BROWSER PROFILE (2026-11-06, v1.0.4): the in-app browser keeps its
+  // Chromium profile in userData (a real writable folder). The browser
+  // used to build the profile path from its own folder (__dirname),
+  // which is inside resources/app.asar in the packaged app - a read-only
+  // file - so starting the browser failed with ENOTDIR. Setting the env
+  // var here makes the packaged app use userData; dev keeps working
+  // because browser.js falls back to __dirname when it is unset.
+  process.env.REDCAT_BROWSER_PROFILE = path.join(app.getPath('userData'), 'browser-profile');
   require('./redcat-app/server.js');
   startPoller(port);
   createWindow(port);
