@@ -153,3 +153,9 @@ Contributions are open to everyone. Fork the repo, create a branch, and submit a
 ## License
 
 RedCat is released under the MIT License. See [LICENSE](LICENSE) for the full text.
+
+---
+
+<p align="center">
+  <img src="bannerimage.png" alt="RedCat — your AI agent" width="640">
+</p>
