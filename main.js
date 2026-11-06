@@ -335,7 +335,7 @@ function createFloatingBar() {
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
-    movable: false,
+    movable: true,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
@@ -580,6 +580,17 @@ app.whenReady().then(async () => {
     } catch (e) {}
   };
   global.__redcatHideFloatingBar = () => { hideFloatingBar(); };
+  // MANUAL DRAG (v1.0.7): move the floating bar by (dx, dy). The bar page
+  // posts here on mousemove while dragging (no OS drag region is used).
+  global.__redcatMoveFloatingBar = (dx, dy) => {
+    try {
+      if (barWin && !barWin.isDestroyed()) {
+        const b = barWin.getBounds();
+        barWin.setBounds({ x: b.x + (dx || 0), y: b.y + (dy || 0), width: b.width, height: b.height });
+      }
+    } catch (e) {}
+  };
+
   startPoller(port);
   createWindow(port);
   // SILENT AUTO-UPDATE (2026-11-06, v1.0.5): background download, install

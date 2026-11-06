@@ -4523,6 +4523,23 @@ async function fetchProviderModels(provider, key) {
     res.end(JSON.stringify({ ok: true }));
     return;
   }
+  // POST /api/floating-bar/move {dx, dy} - the bar asks to be moved by a delta.
+  // (v1.0.7: manual JS drag; the OS drag region is not used, so the server
+  // moves the bar window via the main-process global.)
+  if (req.url === '/api/floating-bar/move' && req.method === 'POST') {
+    let body = '';
+    req.on('data', function (c) { body += c; });
+    req.on('end', function () {
+      try {
+        const j = JSON.parse(body || '{}');
+        const fn = global.__redcatMoveFloatingBar;
+        if (typeof fn === 'function') fn(Number(j.dx) || 0, Number(j.dy) || 0);
+      } catch (e) {}
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    });
+    return;
+  }
   // GET /api/social/direct/:platform -> { ok, url } or setup error
   {
     const m = req.url.match(/^\/api\/social\/direct\/(discord|slack|telegram)(\?.*)?$/);
