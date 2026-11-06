@@ -2,7 +2,8 @@
 REM Deploy RedCat Discord gateway files from this PC to the Oracle VM.
 REM Run from an SSH session: C:\Users\HOME\redcat-discord-gateway\deploy-vm.bat
 REM Does NOT contain the token; rg-env is copied as the VM .env file.
-set VM=ubuntu@137.23.39.189
+REM Set SSH_HOST to your VM's public IP before running (e.g. set SSH_HOST=1.2.3.4).
+set VM=ubuntu@%SSH_HOST%
 ssh -i oracle-vm-key %VM% "mkdir -p /home/ubuntu/redcat-gateway"
 scp -i oracle-vm-key C:\Users\HOME\redcat-discord-gateway\rg-env %VM%:/home/ubuntu/redcat-gateway/.env
 scp -i oracle-vm-key C:\Users\HOME\redcat-discord-gateway\vm\gateway.js %VM%:/home/ubuntu/redcat-gateway/gateway.js
