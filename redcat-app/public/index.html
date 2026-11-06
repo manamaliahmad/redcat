@@ -645,6 +645,14 @@
             </svg>
             <span>Personality</span>
           </button>
+          <button class="settings-nav-item" data-tab="updates">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+              <polyline points="21 3 21 9 15 9" />
+            </svg>
+            <span>Updates</span>
+          </button>
         </nav>
 
       </aside>
@@ -836,6 +844,22 @@
               <div class="ai-card-footer" style="margin-top: 14px;">
                 <div class="ai-footer-hint" id="personalityFooterHint"></div>
                 <button type="button" class="ai-action-btn danger" id="btnResetPersonality" title="Restore the default style profile">Reset</button>
+              </div>
+            </div>
+          </div>
+          <!-- TAB: Updates -->
+          <div class="settings-tab-panel" id="tabPanelUpdates">
+            <div class="settings-card">
+              <div class="ai-form-group">
+                <div class="ai-label-row">
+                  <label class="ai-field-label">App updates</label>
+                </div>
+                <div style="font-size: 13px; color: #374151; margin-bottom: 10px;">Current version: <strong id="updatesVersionText">-</strong></div>
+                <p style="font-size: 13px; color: #4b5563; line-height: 1.6; margin: 0 0 12px;">RedCat updates itself silently: new versions download in the background and install automatically when you quit the app. The next launch shows the update progress, then the new version runs. No notification, no click needed.</p>
+                <div class="ai-input-action-row">
+                  <button type="button" class="ai-action-btn" id="btnCheckUpdates" title="Check for updates now">Check for Updates</button>
+                </div>
+                <div id="updatesStatus" style="font-size: 12px; color: #6b7280; margin-top: 8px;"></div>
               </div>
             </div>
           </div>

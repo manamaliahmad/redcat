@@ -4318,6 +4318,48 @@ async function fetchProviderModels(provider, key) {
     const url = 'https://discord.com/oauth2/authorize?client_id=1567612015000686744&redirect_uri=' + encodeURIComponent('https://discord-relay.arexora.com/discord/callback') + '&response_type=code&scope=' + encodeURIComponent('bot identify') + '&permissions=117760&state=' + encodeURIComponent(deviceToken);
     res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, url })); return;
   }
+  // SILENT AUTO-UPDATE (2026-11-06, v1.0.5): the Settings "Check for
+  // Updates" button calls these. GET /api/updates/check runs the same
+  // check the app runs silently in the background (via
+  // global.__redcatCheckForUpdates, set by main.js in the packaged app)
+  // and returns the result. GET /api/updates/status returns the last
+  // known updater state without starting a new check. On a standalone
+  // dev server there is no Electron updater, so the check reports that
+  // updates are handled by the desktop app.
+  function redcatAppVersion() {
+    try { return String(require(path.join(__dirname, '..', 'package.json')).version || ''); } catch (e) { return ''; }
+  }
+  if (req.url === '/api/updates/check' && req.method === 'GET') {
+    (async () => {
+      try {
+        const fn = global.__redcatCheckForUpdates;
+        if (typeof fn !== 'function') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, packaged: false, currentVersion: redcatAppVersion(), updateAvailable: false, message: 'Automatic updates run in the desktop app. This is the developer server, so there is nothing to check here.' }));
+          return;
+        }
+        const r = await fn('manual');
+        const st = global.__redcatUpdaterStatus || {};
+        if (r && r.ok) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, packaged: true, currentVersion: redcatAppVersion(), updateAvailable: !!r.updateAvailable, version: r.version || st.version || null, downloading: !!st.downloading, downloaded: !!st.downloaded, message: r.updateAvailable ? 'Update available - downloading in the background. It will install when you quit the app.' : "You're up to date." }));
+        } else {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, packaged: true, currentVersion: redcatAppVersion(), error: (r && r.error) || 'Update check failed.', message: 'Update check failed. See updater.log for details.' }));
+        }
+      } catch (e) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: String(e && e.message ? e.message : e) }));
+      }
+    })();
+    return;
+  }
+  if (req.url === '/api/updates/status' && req.method === 'GET') {
+    const st = global.__redcatUpdaterStatus || null;
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, packaged: !!st, currentVersion: redcatAppVersion(), status: st || { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null } }));
+    return;
+  }
   // GET /api/social/direct/:platform -> { ok, url } or setup error
   {
     const m = req.url.match(/^\/api\/social\/direct\/(discord|slack|telegram)(\?.*)?$/);

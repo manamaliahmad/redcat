@@ -178,11 +178,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabTitleMap = {
     'ai-models': 'AI Models',
     'personality': 'Personality',
+    'updates': 'Updates',
   };
 
   const tabPanelMap = {
     'ai-models': 'tabPanelAiModels',
     'personality': 'tabPanelPersonality',
+    'updates': 'tabPanelUpdates',
   };
 
   settingsNavItems.forEach(item => {
@@ -267,6 +269,54 @@ document.addEventListener('DOMContentLoaded', () => {
     item.addEventListener('click', () => { if (item.getAttribute('data-tab') === 'personality') loadPersonality(); });
   });
   if (btnNavSettings) btnNavSettings.addEventListener('click', () => loadPersonality());
+  // Updates (silent auto-update, v1.0.5) - manual "Check for Updates"
+  // button + current status. The app already checks silently in the
+  // background (15s after startup, then every 4 hours) and installs on
+  // quit; this button just runs the same check on demand and shows the
+  // result. All strings are English (app UI is always English).
+  const updatesVersionText = document.getElementById('updatesVersionText');
+  const updatesStatus = document.getElementById('updatesStatus');
+  const btnCheckUpdates = document.getElementById('btnCheckUpdates');
+  async function loadUpdateStatus() {
+    try {
+      const r = await fetch('/api/updates/status');
+      const j = await r.json();
+      if (j && j.ok) {
+        if (updatesVersionText && j.currentVersion) updatesVersionText.textContent = 'v' + j.currentVersion;
+        const st = j.status || {};
+        if (updatesStatus) {
+          if (st.error) updatesStatus.textContent = 'Last check failed: ' + st.error;
+          else if (st.downloaded) updatesStatus.textContent = 'Update v' + (st.version || '') + ' downloaded - it will install when you quit the app.';
+          else if (st.downloading) updatesStatus.textContent = 'Downloading update v' + (st.version || '') + ' in the background...';
+          else if (st.updateAvailable) updatesStatus.textContent = 'Update v' + (st.version || '') + ' available - downloading in the background.';
+          else updatesStatus.textContent = st.lastCheck ? 'Last checked: ' + new Date(st.lastCheck).toLocaleString() + '. You are up to date.' : 'Automatic updates are on. No check has run yet.';
+        }
+      }
+    } catch (e) {}
+  }
+  if (btnCheckUpdates) btnCheckUpdates.addEventListener('click', async () => {
+    if (updatesStatus) updatesStatus.textContent = 'Checking for updates...';
+    btnCheckUpdates.disabled = true;
+    try {
+      const r = await fetch('/api/updates/check');
+      const j = await r.json();
+      if (j && j.ok) {
+        if (updatesVersionText && j.currentVersion) updatesVersionText.textContent = 'v' + j.currentVersion;
+        if (updatesStatus) updatesStatus.textContent = j.message || (j.updateAvailable ? 'Update available - downloading in the background.' : "You're up to date.");
+      } else if (updatesStatus) {
+        updatesStatus.textContent = 'Could not check: ' + ((j && (j.error || j.message)) || 'unknown error');
+      }
+    } catch (e) {
+      if (updatesStatus) updatesStatus.textContent = 'Could not check for updates.';
+    }
+    btnCheckUpdates.disabled = false;
+    loadUpdateStatus();
+  });
+  // Load the update status when the Updates tab is opened, and when Settings opens.
+  settingsNavItems.forEach(item => {
+    item.addEventListener('click', () => { if (item.getAttribute('data-tab') === 'updates') loadUpdateStatus(); });
+  });
+  if (btnNavSettings) btnNavSettings.addEventListener('click', () => loadUpdateStatus());
 
 
   // Settings Theme Pill Selector
