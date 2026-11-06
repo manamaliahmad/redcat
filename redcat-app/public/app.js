@@ -1205,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // tab (same link as the Connectors card). Bound once here, not per render.
   if (discordConnectBtn) {
     discordConnectBtn.addEventListener('click', () => {
-      window.open(DISCORD_BOT_AUTH_URL, '_blank', 'noopener');
+      openDiscordConnect();
     });
   }
   // Disconnect confirm popup buttons (bound once here, not per render).
@@ -5141,8 +5141,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // for now "Open RedCat app" opens the app in the browser (localhost:3000).
   var DISCORD_BOT_AUTH_URL = 'https://discord.com/oauth2/authorize?client_id=1567612015000686744&scope=bot&permissions=117760&redirect_uri=http%3A%2F%2F127.0.0.1%3A3000%2Fdiscord-connected';
   var DISCORD_BOT_PROFILE_URL = 'https://discord.com/users/1567612015000686744';
+  // DISCORD CONNECT v2 (2026-11-06): the Connect button fetches the
+  // authorize URL from the server (/api/discord/connect-url), which
+  // returns the shared-bot authorize URL with redirect to the public
+  // relay (https://discord-relay.arexora.com/discord/callback) and
+  // state = this install's device token. The relay binds the user's
+  // Discord ID to the device token so DMs are routed to this PC.
+  // Falls back to the old bot-invite URL if the endpoint is unavailable.
+  function openDiscordConnect() {
+    fetch('/api/discord/connect-url').then(function (r) { return r.json(); }).then(function (j) {
+      if (j && j.ok && j.url) { window.open(j.url, '_blank', 'noopener'); }
+      else { window.open(DISCORD_BOT_AUTH_URL, '_blank', 'noopener'); }
+    }).catch(function () { window.open(DISCORD_BOT_AUTH_URL, '_blank', 'noopener'); });
+  }
   function mcpDiscordConnectLink(btnCls) {
-    return '<a class="' + btnCls + '" href="' + DISCORD_BOT_AUTH_URL + '" target="_blank" rel="noopener">Connect</a>';
+    return '<a class="' + btnCls + '" href="' + DISCORD_BOT_AUTH_URL + '" target="_blank" rel="noopener" onclick="openDiscordConnect(); return false;">Connect</a>';
   }
   function mcpDiscordChatLink() {
     return '<a class="mcp-dash-link" href="' + DISCORD_BOT_PROFILE_URL + '" target="_blank" rel="noopener">Chat on Discord</a>';
@@ -5324,7 +5337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mcpClearError(id);
         // DISCORD (2026-11-05): the shared RedCat bot is added by authorizing
         // it — no Client ID / Secret. Open the authorize page directly.
-        if (id === 'discord') { window.open(DISCORD_BOT_AUTH_URL, '_blank', 'noopener'); return; }
+        if (id === 'discord') { openDiscordConnect(); return; }
         var fields = mcpFieldValues(server);
         var missing = (server.fields || []).filter(function (f) { return f.required && !(fields[f.key] || '').trim() && !(f.secret && server.hasToken); });
         if (missing.length) { mcpShowError(id, 'Please fill in: ' + missing.map(function (f) { return f.label; }).join(', ')); return; }
