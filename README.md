@@ -92,9 +92,9 @@ Download RedCat from the [Releases page](https://github.com/manamaliahmad/redcat
 
 | Platform | Installer |
 |----------|-----------|
-| Windows | `RedCat-Setup-1.0.3.exe` |
-| macOS | `RedCat-1.0.3-arm64.dmg` |
-| Linux | `RedCat-1.0.3.AppImage` or `redcat_1.0.3_amd64.deb` |
+| Windows | `RedCat-Setup-1.0.4.exe` |
+| macOS | `RedCat-1.0.4-arm64.dmg` |
+| Linux | `RedCat-1.0.4.AppImage` or `redcat_1.0.4_amd64.deb` |
 
 macOS and Linux builds are produced automatically by GitHub Actions on each release and attached to the same release.
 
