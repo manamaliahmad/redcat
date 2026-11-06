@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RedCat</title>
+<script src="/assets/lottie.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .bar {
+    width: 600px; margin: 6px auto 0;
+    background: #ff5757;
+    border-radius: 26px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+    padding: 12px 18px 14px;
+    position: relative;
+    animation: slideDown 0.25s ease-out;
+    /* DRAGGABLE (v1.0.6): the red bar can be dragged to reposition it
+       (it may cover desktop folders/icons). Default stays top-center. */
+    -webkit-app-region: drag;
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  /* Top row: the three cat Lottie animations, looping together. */
+  .cats { display: flex; align-items: center; justify-content: center; gap: 18px; height: 76px; -webkit-app-region: drag; }
+  .cat { width: 72px; height: 72px; flex: 0 0 auto; }
+  /* Small corner controls (kept subtle so the cats own the red space). */
+  .corner-btns { position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; z-index: 2; }
+  .corner-btn {
+    width: 28px; height: 28px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; color: rgba(255, 255, 255, 0.85); border-radius: 8px;
+    -webkit-app-region: no-drag;
+  }
+  .corner-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+  .corner-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+  /* Bottom: white pill chat box. */
+  .pill {
+    display: flex; align-items: center; gap: 10px;
+    background: #ffffff; border-radius: 999px;
+    height: 56px; padding: 0 8px 0 14px; margin-top: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    -webkit-app-region: no-drag;
+  }
+  .mini-cat { width: 30px; height: 30px; flex: 0 0 auto; }
+  #barInput {
+    flex: 1 1 auto; min-width: 0;
+    background: transparent; border: none; outline: none;
+    color: #1f2937; font-size: 15px; line-height: 22px;
+    -webkit-app-region: no-drag;
+  }
+  #barInput::placeholder { color: #9ca3af; }
+  #barInput:disabled { color: #9ca3af; }
+  #statusLine {
+    flex: 1 1 auto; min-width: 0;
+    display: none; align-items: center; gap: 8px;
+    color: #374151; font-size: 14px; line-height: 22px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #statusLine.clickable { cursor: pointer; }
+  .spinner {
+    width: 14px; height: 14px; flex: 0 0 auto;
+    border: 2px solid rgba(55, 65, 81, 0.25);
+    border-top-color: #b12524; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-send {
+    width: 42px; height: 42px; flex: 0 0 auto; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: #b12524; color: #fff; border-radius: 50%;
+    -webkit-app-region: no-drag;
+  }
+  .btn-send:hover { background: #8f1d1c; }
+  .btn-send:disabled { background: #9ca3af; cursor: default; }
+  .btn-send:focus-visible { outline: 2px solid #b12524; outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <div class="bar" id="bar">
+    <div class="corner-btns">
+      <button class="corner-btn" id="btnExpand" title="Open RedCat" aria-label="Open RedCat">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      </button>
+      <button class="corner-btn" id="btnDismiss" title="Dismiss" aria-label="Dismiss">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="cats">
+      <div class="cat" id="catYellow" title="Yellow Cat"></div>
+      <div class="cat" id="catRed" title="RedCat"></div>
+      <div class="cat" id="catBlue" title="Blue Cat"></div>
+    </div>
+    <div class="pill">
+      <div class="mini-cat" id="catMiniRed" title="RedCat"></div>
+      <input id="barInput" type="text" placeholder="Give me task" autocomplete="off" spellcheck="false">
+      <div id="statusLine"></div>
+      <button class="btn-send" id="btnSend" title="Send" aria-label="Send">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+<script>
+(function () {
+  // The three cat Lottie animations (ali's own, already in the project).
+  // Same trio order as the main app: Yellow left, Red center, Blue right.
+  // They loop together, always - they make the desktop feel alive.
+  // The WORKING status below is separate and driven by the real agent
+  // state from the server, never by these animations.
+  function loadCat(id, path) {
+    var el = document.getElementById(id);
+    if (!el || !window.lottie) return null;
+    try {
+      return window.lottie.loadAnimation({ container: el, path: path, renderer: 'svg', loop: true, autoplay: true });
+    } catch (e) { return null; }
+  }
+  loadCat('catYellow', '/lottie-animations/yellow-cat.json');
+  loadCat('catRed', '/lottie-animations/red-cat.json');
+  loadCat('catBlue', '/lottie-animations/blue-cat.json');
+  loadCat('catMiniRed', '/lottie-animations/red-cat.json');
+
+  var input = document.getElementById('barInput');
+  var statusLine = document.getElementById('statusLine');
+  var btnSend = document.getElementById('btnSend');
+  var btnExpand = document.getElementById('btnExpand');
+  var btnDismiss = document.getElementById('btnDismiss');
+  var currentId = null;
+  var pollTimer = null;
+  var pollStartedAt = 0;
+  var POLL_MS = 1500;
+  var POLL_MAX_MS = 300000; // 5 minutes, then the notification takes over
+
+  function setIdle() {
+    stopPolling();
+    currentId = null;
+    input.style.display = '';
+    input.disabled = false;
+    input.value = '';
+    statusLine.style.display = 'none';
+    statusLine.classList.remove('clickable');
+    btnSend.style.display = '';
+    btnSend.disabled = false;
+  }
+
+  function setWorking() {
+    input.style.display = 'none';
+    btnSend.style.display = 'none';
+    statusLine.style.display = 'flex';
+    statusLine.classList.remove('clickable');
+    statusLine.innerHTML = '<span class="spinner"></span><span>Working...</span>';
+  }
+
+  function setResult(kind, text) {
+    stopPolling();
+    input.style.display = 'none';
+    btnSend.style.display = 'none';
+    statusLine.style.display = 'flex';
+    statusLine.classList.add('clickable');
+    var icon = kind === 'done' ? '\u2713' : (kind === 'error' ? '!' : '\u2022');
+    statusLine.innerHTML = '<span style="font-weight:700;color:#b12524">' + icon + '</span><span>' + text + '</span>';
+  }
+
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollStartedAt = Date.now();
+    pollTimer = setInterval(pollStatus, POLL_MS);
+    pollStatus();
+  }
+
+  function pollStatus() {
+    if (!currentId) { stopPolling(); return; }
+    if (Date.now() - pollStartedAt > POLL_MAX_MS) {
+      stopPolling();
+      setResult('waiting', 'Still working — click to open');
+      return;
+    }
+    fetch('/api/quick-prompt/status', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok || !j.result || j.result.id !== currentId) return;
+        var res = j.result;
+        if (res.status === 'done') {
+          setResult('done', 'Reply ready — click to open');
+        } else if (res.status === 'waiting') {
+          setResult('waiting', 'Needs your input — click to open');
+        } else if (res.status === 'error') {
+          setResult('error', 'Something went wrong — click to open');
+        }
+      })
+      .catch(function () { /* keep polling; the app may be busy */ });
+  }
+
+  function sendPrompt() {
+    var text = (input.value || '').trim();
+    if (!text || btnSend.disabled) return;
+    btnSend.disabled = true;
+    input.disabled = true;
+    fetch('/api/quick-prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok || !j.id) { setIdle(); showSendError(); return; }
+        currentId = j.id;
+        setWorking();
+        startPolling();
+      })
+      .catch(function () {
+        setIdle();
+        showSendError();
+      });
+  }
+
+  function showSendError() {
+    setResult('error', 'Could not reach RedCat — click to open');
+  }
+
+  function expandApp() {
+    fetch('/api/floating-bar/expand', { method: 'POST' }).catch(function () {});
+  }
+
+  function dismissBar() {
+    fetch('/api/floating-bar/dismiss', { method: 'POST' }).catch(function () {});
+  }
+
+  btnSend.addEventListener('click', sendPrompt);
+  btnExpand.addEventListener('click', expandApp);
+  btnDismiss.addEventListener('click', dismissBar);
+  statusLine.addEventListener('click', function () {
+    if (statusLine.classList.contains('clickable')) expandApp();
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); sendPrompt(); }
+    if (e.key === 'Escape') { e.preventDefault(); dismissBar(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') dismissBar();
+  });
+  window.addEventListener('focus', function () {
+    if (input.style.display !== 'none') input.focus();
+  });
+
+  // Reset to a fresh idle bar whenever the window is shown again.
+  window.addEventListener('redcat-bar-shown', setIdle);
+
+  input.focus();
+})();
+</script>
+</body>
+</html>

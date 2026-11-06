@@ -177,11 +177,33 @@ async function syncMeta() {
   } catch (e) {}
 }
 
+// DUCKDUCKGO LITE (v1.0.6): the browser's default search is DDG Lite
+// (lite.duckduckgo.com) because the full duckduckgo.com 418-blocks the
+// automated (Playwright) browser. If a Lite search fails (418 / error
+// page), retry once with the HTML endpoint (html.duckduckgo.com).
+const DDG_LITE_PREFIX = 'https://lite.duckduckgo.com/lite/?q=';
+const DDG_HTML_PREFIX = 'https://html.duckduckgo.com/html/?q=';
+async function gotoWithSearchFallback(page, url) {
+  let resp = null;
+  try { resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 }); } catch (e) { throw e; }
+  if (url.indexOf(DDG_LITE_PREFIX) === 0) {
+    let failed = false;
+    try { if (resp && resp.status() >= 400) failed = true; } catch (e) {}
+    try { const cur = page.url() || ''; if (cur.indexOf('home-error') !== -1) failed = true; } catch (e) {}
+    if (failed) {
+      const htmlUrl = DDG_HTML_PREFIX + url.slice(DDG_LITE_PREFIX.length);
+      try { resp = await page.goto(htmlUrl, { waitUntil: 'domcontentloaded', timeout: 30000 }); } catch (e) {}
+      pushLog('ddg-lite-fallback', htmlUrl);
+    }
+  }
+  return resp;
+}
+
 async function runRoutine(action) {
   const p = activePage();
   if (!p) throw new Error('NO_TAB');
   if (action.type === 'navigate') {
-    await p.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await gotoWithSearchFallback(p, action.url);
     await syncMeta();
     pushLog('agent-navigate', action.url);
     return { ok: true, url: currentUrl };
@@ -410,7 +432,7 @@ async function handle(req, res) {
       if (!p || p.isClosed()) return sendJson(res, 409, { ok: false, error: 'NO_TABS' });
       const url = String(body.url || '');
       if (!/^https?:\/\//.test(url)) return sendJson(res, 400, { ok: false, error: 'BAD_REQUEST' });
-      await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await gotoWithSearchFallback(p, url);
       await syncMeta();
       return sendJson(res, 200, publicStatus({}));
     }

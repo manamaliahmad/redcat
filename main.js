@@ -13,7 +13,7 @@
 // the next free port instead of crashing. The window always loads the
 // port the server actually bound to. A second instance gets its own free
 // port and never crashes with EADDRINUSE.
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, globalShortcut, Notification, screen } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const { fork } = require('child_process');
 const crypto = require('crypto');
@@ -212,6 +212,18 @@ async function createWindow(serverPort) {
     icon: windowIconPath(),
     webPreferences: { nodeIntegration: false, contextIsolation: true }
   });
+  // FLOATING BAR (v1.0.6): keep a reference to the main window so the
+  // bar can be shown/hidden with it and the app can be restored from a
+  // notification. `win` is created here (not stored) in older code.
+  mainWin = win;
+  serverPortForBar = serverPort;
+  // Minimize -> show the bar (if enabled). Restore/focus -> hide it
+  // again. Closed -> destroy the bar so it cannot keep the app alive
+  // (window-all-closed quits the app).
+  win.on('minimize', () => { showFloatingBar(); });
+  win.on('restore', () => { hideFloatingBar(); });
+  win.on('focus', () => { hideFloatingBar(); });
+  win.on('closed', () => { destroyFloatingBar(); mainWin = null; });
 
   // FIRST-RUN + UPDATE RULE (2026-11-05): the video card (splash) shows
   // ONLY on the first launch after a fresh install and while an update
@@ -267,6 +279,129 @@ async function createWindow(serverPort) {
       ).catch(() => {});
     } catch (e) {}
   }
+}
+
+// FLOATING TOP BAR (v1.0.6)
+// A red bar with the three cat Lottie animations (yellow, red, blue)
+// and a white pill chat box ("Give me task"). It appears at the
+// top-center of the screen when the main window is minimized, and hides
+// when the main window is restored/focused. Ctrl+Space summons it from
+// anywhere. It is only an input: the prompt goes to the same agent loop
+// the main app uses (via the local server, /api/quick-prompt), and a
+// Notification tells the user when the reply is ready. Approvals still
+// happen in the main app only - the bar never approves anything.
+// The bar page (floating-bar.html) is served by the local server, so
+// there is no IPC/preload - the bar talks to the server over HTTP, and
+// the server calls back into the globals set in app.whenReady below.
+let mainWin = null;
+let barWin = null;
+let serverPortForBar = null;
+
+function floatingBarLog(message) {
+  try {
+    const dir = app.getPath('userData');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, 'floating-bar.log'), '[' + new Date().toISOString() + '] ' + message + '\n');
+  } catch (e) {}
+}
+function floatingBarSettingsPath() {
+  return path.join(app.getPath('userData'), 'floating-bar.json');
+}
+function isFloatingBarEnabled() {
+  try {
+    const raw = fs.readFileSync(floatingBarSettingsPath(), 'utf8');
+    const j = JSON.parse(raw);
+    if (j && typeof j.enabled === 'boolean') return j.enabled;
+  } catch (e) {}
+  return true; // default ON
+}
+
+function createFloatingBar() {
+  if (barWin && !barWin.isDestroyed()) return barWin;
+  if (!serverPortForBar) { floatingBarLog('createFloatingBar: no server port'); return null; }
+  floatingBarLog('createFloatingBar: creating bar window (port ' + serverPortForBar + ')');
+  const primary = screen.getPrimaryDisplay();
+  const work = primary.workArea;
+  const BAR_W = 640, BAR_H = 190;
+  const x = Math.round(work.x + (work.width - BAR_W) / 2);
+  const y = work.y + 10;
+  barWin = new BrowserWindow({
+    width: BAR_W,
+    height: BAR_H,
+    x: x,
+    y: y,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    show: false,
+    autoHideMenuBar: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true }
+  });
+  barWin.on('closed', () => { barWin = null; });
+  barWin.loadURL('http://localhost:' + serverPortForBar + '/floating-bar.html');
+  barWin.webContents.once('did-finish-load', () => {
+    try { barWin.webContents.executeJavaScript("window.dispatchEvent(new Event('redcat-bar-shown'));").catch(() => {}); } catch (e) {}
+  });
+  return barWin;
+}
+
+function showFloatingBar() {
+  try {
+    floatingBarLog('showFloatingBar: minimize event, enabled=' + isFloatingBarEnabled() + ', mainMinimized=' + (mainWin && !mainWin.isDestroyed() ? mainWin.isMinimized() : 'no-main'));
+    if (!isFloatingBarEnabled()) { floatingBarLog('showFloatingBar: disabled, skip'); return; }
+    if (!mainWin || mainWin.isDestroyed()) { floatingBarLog('showFloatingBar: no main window'); return; }
+    const bw = createFloatingBar();
+    if (!bw || bw.isDestroyed()) { floatingBarLog('showFloatingBar: bar window not created'); return; }
+    if (bw.isVisible()) { floatingBarLog('showFloatingBar: already visible'); return; }
+    // showInactive: visible without stealing focus from what the user
+    // is doing. The bar is an input they can click when ready.
+    bw.showInactive();
+    floatingBarLog('showFloatingBar: bar shown');
+    try { bw.webContents.executeJavaScript("window.dispatchEvent(new Event('redcat-bar-shown'));").catch(() => {}); } catch (e) {}
+  } catch (e) {}
+}
+
+function hideFloatingBar() {
+  try {
+    if (barWin && !barWin.isDestroyed() && barWin.isVisible()) { barWin.hide(); floatingBarLog('hideFloatingBar: bar hidden'); }
+  } catch (e) {}
+}
+
+function destroyFloatingBar() {
+  try {
+    if (barWin && !barWin.isDestroyed()) barWin.destroy();
+  } catch (e) {}
+  barWin = null;
+}
+
+function focusFloatingBar() {
+  try {
+    if (!isFloatingBarEnabled()) return;
+    const bw = createFloatingBar();
+    if (!bw || bw.isDestroyed()) return;
+    if (!bw.isVisible()) bw.show();
+    bw.focus();
+    try { bw.webContents.executeJavaScript("var i=document.getElementById('barInput'); if(i) i.focus();").catch(() => {}); } catch (e) {}
+  } catch (e) {}
+}
+
+function registerFloatingBarShortcut() {
+  try {
+    const ok = globalShortcut.register('CommandOrControl+Space', () => { focusFloatingBar(); });
+    if (!ok) {
+      const ok2 = globalShortcut.register('Alt+Space', () => { focusFloatingBar(); });
+      if (!ok2) console.log('[floating-bar] could not register a global shortcut (Ctrl+Space and Alt+Space are both taken)');
+      else console.log('[floating-bar] global shortcut: Alt+Space (Ctrl+Space was taken)');
+    } else {
+      console.log('[floating-bar] global shortcut: Ctrl+Space');
+    }
+  } catch (e) { console.log('[floating-bar] shortcut registration failed: ' + (e && e.message ? e.message : e)); }
 }
 
 // SILENT AUTO-UPDATE (2026-11-06, v1.0.5)
@@ -407,16 +542,57 @@ app.whenReady().then(async () => {
   // var here makes the packaged app use userData; dev keeps working
   // because browser.js falls back to __dirname when it is unset.
   process.env.REDCAT_BROWSER_PROFILE = path.join(app.getPath('userData'), 'browser-profile');
+  // FLOATING BAR (v1.0.6): the server stores the bar's enabled flag in
+  // userData (floating-bar.json) so main.js and the server share it.
+  process.env.REDCAT_USER_DATA = app.getPath('userData');
   require('./redcat-app/server.js');
+  // FLOATING BAR (v1.0.6): callbacks the server uses for the bar.
+  // When a quick prompt finishes, show a Notification; clicking it
+  // restores the main window with the reply. The bar never approves.
+  global.__redcatOnQuickPromptDone = (result) => {
+    try {
+      const status = result && result.status ? result.status : 'done';
+      let body = 'Reply ready \u2014 click to open';
+      if (status === 'waiting') body = 'Needs your input \u2014 click to open';
+      else if (status === 'error') body = 'Something went wrong \u2014 click to open';
+      const note = new Notification({ title: 'RedCat', body: body });
+      note.on('click', () => {
+        try {
+          if (mainWin && !mainWin.isDestroyed()) {
+            if (mainWin.isMinimized()) mainWin.restore();
+            mainWin.show();
+            mainWin.focus();
+          }
+          hideFloatingBar();
+        } catch (e) {}
+      });
+      note.show();
+    } catch (e) {}
+  };
+  global.__redcatShowMainWindow = () => {
+    try {
+      if (mainWin && !mainWin.isDestroyed()) {
+        if (mainWin.isMinimized()) mainWin.restore();
+        mainWin.show();
+        mainWin.focus();
+      }
+      hideFloatingBar();
+    } catch (e) {}
+  };
+  global.__redcatHideFloatingBar = () => { hideFloatingBar(); };
   startPoller(port);
   createWindow(port);
   // SILENT AUTO-UPDATE (2026-11-06, v1.0.5): background download, install
   // on quit, "Updating RedCat" card on the next launch. No notification,
   // no click. See setupSilentAutoUpdate() above.
   setupSilentAutoUpdate();
+  // FLOATING BAR (v1.0.6): Ctrl+Space (Alt+Space fallback) summons it.
+  registerFloatingBarShortcut();
 });
 
 app.on('before-quit', stopPoller);
+
+app.on('will-quit', () => { try { globalShortcut.unregisterAll(); } catch (e) {} });
 
 app.on('window-all-closed', () => {
   app.quit();

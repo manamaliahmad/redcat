@@ -317,6 +317,37 @@ document.addEventListener('DOMContentLoaded', () => {
     item.addEventListener('click', () => { if (item.getAttribute('data-tab') === 'updates') loadUpdateStatus(); });
   });
   if (btnNavSettings) btnNavSettings.addEventListener('click', () => loadUpdateStatus());
+  // FLOATING TOP BAR (v1.0.6): Settings toggle - show the quick bar when
+  // the app is minimized. Default ON. All strings are English.
+  const floatingBarEnabledEl = document.getElementById('floatingBarEnabled');
+  const floatingBarStatus = document.getElementById('floatingBarStatus');
+  async function loadFloatingBarSetting() {
+    try {
+      const r = await fetch('/api/floating-bar/settings');
+      const j = await r.json();
+      if (j && j.ok && floatingBarEnabledEl) floatingBarEnabledEl.checked = j.enabled !== false;
+    } catch (e) {}
+  }
+  if (floatingBarEnabledEl) floatingBarEnabledEl.addEventListener('change', async () => {
+    const enabled = !!floatingBarEnabledEl.checked;
+    if (floatingBarStatus) floatingBarStatus.textContent = 'Saving...';
+    try {
+      const r = await fetch('/api/floating-bar/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled })
+      });
+      const j = await r.json();
+      if (floatingBarStatus) floatingBarStatus.textContent = (j && j.ok) ? 'Saved.' : 'Could not save. Try again.';
+    } catch (e) {
+      if (floatingBarStatus) floatingBarStatus.textContent = 'Could not save. Try again.';
+    }
+  });
+  // Load the floating-bar setting when the Updates tab is opened, and when Settings opens.
+  settingsNavItems.forEach(item => {
+    item.addEventListener('click', () => { if (item.getAttribute('data-tab') === 'updates') loadFloatingBarSetting(); });
+  });
+  if (btnNavSettings) btnNavSettings.addEventListener('click', () => loadFloatingBarSetting());
 
 
   // Settings Theme Pill Selector
@@ -890,7 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let url = rawUrl;
       if (!/^https?:\/\//i.test(url)) {
         if (/^[^\s]+\.[^\s]+$/.test(url)) url = 'https://' + url;
-        else if (url) url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+        else if (url) url = 'https://lite.duckduckgo.com/lite/?q=' + encodeURIComponent(url);
       }
       const r = await fetch('/api/browser/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
       const j = await r.json();
@@ -2111,6 +2142,73 @@ document.addEventListener('DOMContentLoaded', () => {
     livePollTimer = setInterval(() => { try { pollServerChatsLive(); } catch (e) {} }, 5000);
     pollServerChatsLive();
   }
+  // FLOATING TOP BAR (v1.0.6): quick prompts sent from the bar window.
+  // This poll runs even when the window is minimized (document.hidden),
+  // unlike pollServerChatsLive - the bar is only useful while minimized.
+  // A prompt taken here runs through the normal agent loop via
+  // sendChatMessage (same provider/model/key/memory as the main app),
+  // then the outcome is reported to /api/quick-prompt/done so the bar
+  // shows the REAL state and main.js shows a Notification. Approvals
+  // are NOT bypassed: if the run needs approval, the approval card
+  // appears in the main app and the bar reports "Needs your input".
+  let quickPromptPollTimer = null;
+  let quickPromptPollRunning = false;
+  let quickPromptActive = null; // id of the quick prompt being run, or null
+  async function pollQuickPrompt() {
+    if (quickPromptPollRunning || quickPromptActive) return;
+    quickPromptPollRunning = true;
+    try {
+      const r = await fetch('/api/quick-prompt/next');
+      const j = await r.json();
+      if (j && j.ok && j.prompt && j.prompt.text) {
+        quickPromptActive = j.prompt.id;
+        handleQuickPrompt(j.prompt.id, j.prompt.text);
+      }
+    } catch (e) {}
+    quickPromptPollRunning = false;
+  }
+  function startQuickPromptPolling() {
+    if (quickPromptPollTimer) return;
+    quickPromptPollTimer = setInterval(() => { try { pollQuickPrompt(); } catch (e) {} }, 2000);
+    pollQuickPrompt();
+  }
+  async function handleQuickPrompt(qid, text) {
+    const runChatId = currentChatId;
+    try {
+      await sendChatMessage(text);
+    } catch (e) {}
+    // Determine the outcome from the run state. sendChatMessage resolves
+    // at a terminal state: done, waiting (approval/plan card shown), or
+    // an error reply. A run that produced no assistant reply (e.g. no
+    // API key yet) is an error - the user opens the app to see it.
+    let status = 'done', preview = '';
+    try {
+      const pipe = chatPipelines[runChatId];
+      if (pipe && pipe.stage === 'waiting') {
+        status = 'waiting';
+      } else {
+        const hist = chatHistories[runChatId] || [];
+        let lastAsst = null;
+        for (let i = hist.length - 1; i >= 0; i--) {
+          if (hist[i] && hist[i].role === 'assistant') { lastAsst = hist[i].content || ''; break; }
+        }
+        if (lastAsst) {
+          if (/^Model error:/.test(String(lastAsst))) status = 'error';
+          else { status = 'done'; preview = String(lastAsst).replace(/\s+/g, ' ').trim().slice(0, 120); }
+        } else {
+          status = 'error';
+        }
+      }
+    } catch (e) { status = 'done'; }
+    try {
+      await fetch('/api/quick-prompt/done', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: qid, status: status, text: preview })
+      });
+    } catch (e) {}
+    if (quickPromptActive === qid) quickPromptActive = null;
+  }
   window.addEventListener('beforeunload', () => { persistChats(); flushServerChatSync(); });
   window.addEventListener('pagehide', () => { persistChats(); flushServerChatSync(); });
   function makeChatTitle(msg) {
@@ -2212,7 +2310,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // actual startup load (server chats). When it resolves the home page is
   // ready, so the card hides. No timer, no fake delay.
   setCodeLoadingProgress(25, 'Connecting to server');
-  restoreChatsFromServer().then(() => { try { loadInterruptedRuns(); } catch (e) {} try { startLiveChatPolling(); } catch (e) {} hideCodeLoading(); }).catch(() => { hideCodeLoading(); });
+  restoreChatsFromServer().then(() => { try { loadInterruptedRuns(); } catch (e) {} try { startLiveChatPolling(); } catch (e) {} try { startQuickPromptPolling(); } catch (e) {} hideCodeLoading(); }).catch(() => { hideCodeLoading(); });
 
   function switchChat(chatId) {
     if (!chatStream || !chatId || chatId === currentChatId) return;
@@ -5873,7 +5971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!q) return null;
     if (/^https?:\/\//i.test(q)) return q;
     if (/^[^\s]+\.[^\s]{2,}$/.test(q)) return 'https://' + q;
-    return 'https://duckduckgo.com/?q=' + encodeURIComponent(q);
+    return 'https://lite.duckduckgo.com/lite/?q=' + encodeURIComponent(q);
   }
   function browserShowCursor(clientX, clientY) {
     if (!browserCursorEl || !browserViewEl) return;
