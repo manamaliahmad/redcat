@@ -269,6 +269,126 @@ async function createWindow(serverPort) {
   }
 }
 
+// SILENT AUTO-UPDATE (2026-11-06, v1.0.5)
+// The update downloads in the background (no notification, no click),
+// installs automatically when the user quits the app, and the NEXT
+// launch shows the "Updating RedCat" video card. Every updater event
+// is written to updater.log in userData (and to the console) - an
+// updater error is NEVER swallowed silently again (that silent failure
+// is why v1.0.1 never showed an update notification).
+const UPDATER_LOG_FILE = 'updater.log';
+function updaterLog(message) {
+  const line = '[' + new Date().toISOString() + '] ' + message + '\n';
+  try { console.log('[updater] ' + message); } catch (e) {}
+  try {
+    const dir = app.getPath('userData');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, UPDATER_LOG_FILE), line);
+  } catch (e) {}
+}
+// Last known updater state. Shared with the local server through
+// global.__redcatUpdaterStatus so the Settings "Check for Updates"
+// button can show the result. Only its properties are ever mutated
+// (never reassigned), so the global reference stays current.
+let updaterState = { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null };
+let updaterCheckRunning = false;
+let updaterLastLoggedPct = -1;
+// Numeric semver comparison: true only if `latest` is strictly newer
+// than `current` (1.0.10 > 1.0.9, 1.0.5 > 1.0.4). A plain string
+// comparison (latest !== current) wrongly treats an OLDER release as an
+// update - that is the bug this fixes.
+function isNewerVersion(latest, current) {
+  const pa = String(latest || '').split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = String(current || '').split('.').map((n) => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length);
+  for (let k = 0; k < len; k++) {
+    const a = pa[k] || 0, b = pb[k] || 0;
+    if (a !== b) return a > b;
+  }
+  return false;
+}
+async function triggerUpdateCheck(source) {
+  if (updaterCheckRunning) return { ok: true, inProgress: true, state: updaterState };
+  updaterCheckRunning = true;
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    const info = result && result.updateInfo ? result.updateInfo : null;
+    const latest = info && info.version ? String(info.version) : '';
+    const current = app.getVersion();
+    updaterState.lastCheck = new Date().toISOString();
+    updaterState.error = null;
+    if (latest && isNewerVersion(latest, current)) {
+      updaterState.updateAvailable = true;
+      updaterState.version = latest;
+      updaterLog('update available: ' + latest + ' (current ' + current + ') - downloading in background');
+      return { ok: true, updateAvailable: true, version: latest, state: updaterState };
+    }
+    updaterState.updateAvailable = false;
+    updaterState.version = latest || current;
+    updaterLog('no update available (current ' + current + ', latest ' + (latest || 'unknown') + ')');
+    return { ok: true, updateAvailable: false, version: updaterState.version, state: updaterState };
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    updaterState.error = msg;
+    updaterState.lastCheck = new Date().toISOString();
+    updaterLog('update check FAILED: ' + msg);
+    return { ok: false, error: msg, state: updaterState };
+  } finally {
+    updaterCheckRunning = false;
+  }
+}
+function setupSilentAutoUpdate() {
+  try {
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.on('checking-for-update', () => { updaterLog('checking for update'); });
+    autoUpdater.on('update-available', (info) => {
+      updaterState.updateAvailable = true;
+      updaterState.version = info && info.version ? String(info.version) : null;
+      updaterLog('update available: ' + (updaterState.version || 'unknown') + ' - downloading in background');
+    });
+    autoUpdater.on('update-not-available', (info) => {
+      updaterState.updateAvailable = false;
+      updaterState.version = info && info.version ? String(info.version) : null;
+      updaterLog('no update available (latest ' + (updaterState.version || 'unknown') + ')');
+    });
+    autoUpdater.on('download-progress', (p) => {
+      updaterState.downloading = true;
+      const pct = Math.round((p && p.percent) || 0);
+      if (pct === 100 || pct - updaterLastLoggedPct >= 10 || updaterLastLoggedPct < 0) {
+        updaterLastLoggedPct = pct;
+        updaterLog('downloading update: ' + pct + '% (' + ((p && p.transferred) || 0) + '/' + ((p && p.total) || 0) + ' bytes)');
+      }
+    });
+    autoUpdater.on('update-downloaded', (info) => {
+      updaterState.downloading = false;
+      updaterState.downloaded = true;
+      updaterState.version = info && info.version ? String(info.version) : updaterState.version;
+      updaterLog('update downloaded: ' + (updaterState.version || 'unknown') + ' - will install on quit');
+      markPendingUpdate();
+    });
+    autoUpdater.on('error', (err) => {
+      const msg = err && err.message ? err.message : String(err);
+      updaterState.error = msg;
+      updaterLog('updater ERROR: ' + msg);
+    });
+    // Expose the check + status to the local server so the Settings UI
+    // "Check for Updates" button can trigger a check and show the result.
+    global.__redcatCheckForUpdates = triggerUpdateCheck;
+    global.__redcatUpdaterStatus = updaterState;
+    // First check 15s after startup (never slows the launch), then every
+    // 4 hours while the app is running, so a release published while the
+    // app is open still downloads in the background.
+    setTimeout(() => { triggerUpdateCheck('startup'); }, 15000);
+    setInterval(() => { triggerUpdateCheck('periodic'); }, 4 * 60 * 60 * 1000);
+    updaterLog('silent auto-update enabled (current ' + app.getVersion() + ')');
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    updaterState.error = msg;
+    updaterLog('updater setup FAILED: ' + msg);
+  }
+}
+
 app.whenReady().then(async () => {
   // Pick a free port BEFORE starting the server, so the packaged server
   // never crashes with EADDRINUSE when 3000 is already in use.
@@ -290,22 +410,10 @@ app.whenReady().then(async () => {
   require('./redcat-app/server.js');
   startPoller(port);
   createWindow(port);
-  // AUTO-UPDATE (2026-11-05, v1.0.0): check GitHub releases for a newer
-  // version and notify the user. Runs in the background 15s after startup
-  // so it never slows the launch. A failed check (no internet, no release
-  // yet) is silent — the app keeps working. Download starts only after
-  // the user accepts the notification (autoDownload is off).
-  try {
-    autoUpdater.autoDownload = false;
-    autoUpdater.on('error', () => {});
-    // UPDATE (2026-11-05): when a new version finishes downloading and
-    // is ready to install, record it so the NEXT launch (after the
-    // restart) shows the video card with update progress while the
-    // update is applied. The flag is cleared when that launch's main
-    // page finishes loading (see createWindow).
-    autoUpdater.on('update-downloaded', () => { markPendingUpdate(); });
-    setTimeout(() => { try { autoUpdater.checkForUpdatesAndNotify(); } catch (e) {} }, 15000);
-  } catch (e) {}
+  // SILENT AUTO-UPDATE (2026-11-06, v1.0.5): background download, install
+  // on quit, "Updating RedCat" card on the next launch. No notification,
+  // no click. See setupSilentAutoUpdate() above.
+  setupSilentAutoUpdate();
 });
 
 app.on('before-quit', stopPoller);
