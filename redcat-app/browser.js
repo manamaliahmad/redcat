@@ -177,11 +177,33 @@ async function syncMeta() {
   } catch (e) {}
 }
 
+// DUCKDUCKGO LITE (v1.0.6): the browser's default search is DDG Lite
+// (lite.duckduckgo.com) because the full duckduckgo.com 418-blocks the
+// automated (Playwright) browser. If a Lite search fails (418 / error
+// page), retry once with the HTML endpoint (html.duckduckgo.com).
+const DDG_LITE_PREFIX = 'https://lite.duckduckgo.com/lite/?q=';
+const DDG_HTML_PREFIX = 'https://html.duckduckgo.com/html/?q=';
+async function gotoWithSearchFallback(page, url) {
+  let resp = null;
+  try { resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 }); } catch (e) { throw e; }
+  if (url.indexOf(DDG_LITE_PREFIX) === 0) {
+    let failed = false;
+    try { if (resp && resp.status() >= 400) failed = true; } catch (e) {}
+    try { const cur = page.url() || ''; if (cur.indexOf('home-error') !== -1) failed = true; } catch (e) {}
+    if (failed) {
+      const htmlUrl = DDG_HTML_PREFIX + url.slice(DDG_LITE_PREFIX.length);
+      try { resp = await page.goto(htmlUrl, { waitUntil: 'domcontentloaded', timeout: 30000 }); } catch (e) {}
+      pushLog('ddg-lite-fallback', htmlUrl);
+    }
+  }
+  return resp;
+}
+
 async function runRoutine(action) {
   const p = activePage();
   if (!p) throw new Error('NO_TAB');
   if (action.type === 'navigate') {
-    await p.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await gotoWithSearchFallback(p, action.url);
     await syncMeta();
     pushLog('agent-navigate', action.url);
     return { ok: true, url: currentUrl };
@@ -238,6 +260,7 @@ async function startBrowser(opts) {
     const base = {
       headless: true,
       viewport: viewport,
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
       args: ['--no-first-run', '--no-default-browser-check', '--disable-blink-features=AutomationControlled']
     };
     try {
@@ -246,6 +269,27 @@ async function startBrowser(opts) {
       if (isLockError(String(e && e.message ? e.message : e))) throw e;
       context = await chromium.launchPersistentContext(PROFILE_DIR, base);
     }
+    // STEALTH (2026-11-07, v1.0.6): DuckDuckGo (and Google) detect the
+    // automated Playwright browser and refuse search results (DDG 418 /
+    // 'email us' error). Hide the automation signals so the browser looks
+    // like a real Chrome and DDG returns real results. Runs in every page
+    // before any page script (addInitScript). No new dependency.
+    try {
+      await context.addInitScript(function () {
+        try { Object.defineProperty(navigator, 'webdriver', { get: function () { return undefined; } }); } catch (e) {}
+        try { Object.defineProperty(navigator, 'plugins', { get: function () { return [1, 2, 3, 4, 5]; } }); } catch (e) {}
+        try { Object.defineProperty(navigator, 'languages', { get: function () { return ['en-US', 'en']; } }); } catch (e) {}
+        try { window.chrome = { runtime: {} }; } catch (e) {}
+        try {
+          var originalQuery = window.navigator.permissions.query;
+          window.navigator.permissions.query = function (parameters) {
+            return parameters.name === 'notifications'
+              ? Promise.resolve({ state: Notification.permission })
+              : originalQuery(parameters);
+          };
+        } catch (e) {}
+      });
+    } catch (e) { pushLog('stealth-init-failed', String(e && e.message ? e.message : e).split('\n')[0].slice(0, 160)); }
     const existing = context.pages();
     if (existing.length) {
       tabs = existing.map(function (pg) { return makeTab(pg); });
@@ -410,7 +454,7 @@ async function handle(req, res) {
       if (!p || p.isClosed()) return sendJson(res, 409, { ok: false, error: 'NO_TABS' });
       const url = String(body.url || '');
       if (!/^https?:\/\//.test(url)) return sendJson(res, 400, { ok: false, error: 'BAD_REQUEST' });
-      await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await gotoWithSearchFallback(p, url);
       await syncMeta();
       return sendJson(res, 200, publicStatus({}));
     }

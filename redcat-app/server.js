@@ -4270,14 +4270,25 @@ async function fetchProviderModels(provider, key) {
         if (!urlString) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Enter a URL or search.' })); return; }
         if (!/^https?:\/\//i.test(urlString)) {
           if (/^[^\s]+\.[^\s]+$/.test(urlString)) urlString = 'https://' + urlString;
-          else urlString = 'https://duckduckgo.com/?q=' + encodeURIComponent(urlString);
+          else urlString = 'https://lite.duckduckgo.com/lite/?q=' + encodeURIComponent(urlString);
         }
         if (typeof isBrowserControlBlocked === 'function' && isBrowserControlBlocked(urlString, {})) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Login, sign-in, checkout and payment pages are blocked.' })); return; }
         const { chromium } = require('playwright');
         const browser = await chromium.launch({ headless: true });
         try {
           const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-          await page.goto(urlString, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          let viewResp = await page.goto(urlString, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          // DUCKDUCKGO LITE (v1.0.6): if a Lite search is 418-blocked,
+          // retry once with the HTML endpoint.
+          if (urlString.indexOf('https://lite.duckduckgo.com/lite/?q=') === 0) {
+            let liteFailed = false;
+            try { if (viewResp && viewResp.status() >= 400) liteFailed = true; } catch (e) {}
+            try { const cur = page.url() || ''; if (cur.indexOf('home-error') !== -1) liteFailed = true; } catch (e) {}
+            if (liteFailed) {
+              const htmlUrl = 'https://html.duckduckgo.com/html/?q=' + urlString.slice('https://lite.duckduckgo.com/lite/?q='.length);
+              try { await page.goto(htmlUrl, { waitUntil: 'domcontentloaded', timeout: 30000 }); urlString = htmlUrl; } catch (e) {}
+            }
+          }
           try { await page.waitForTimeout(1000); } catch (e) {}
           const title = await page.title().catch(() => '');
           const text = (await page.evaluate(() => (document.body ? document.body.innerText : '')).catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 2000);
@@ -4358,6 +4369,158 @@ async function fetchProviderModels(provider, key) {
     const st = global.__redcatUpdaterStatus || null;
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, packaged: !!st, currentVersion: redcatAppVersion(), status: st || { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null } }));
+    return;
+  }
+  // FLOATING TOP BAR (v1.0.6) - quick prompts from the bar window.
+  // The bar (floating-bar.html) POSTs a prompt here; the main app
+  // (app.js) polls GET /api/quick-prompt/next and runs it through the
+  // normal agent loop (sendChatMessage), then POSTs the result to
+  // /api/quick-prompt/done. The bar polls GET /api/quick-prompt/status
+  // to show the REAL agent state ("Working..." only while the agent is
+  // actually working). main.js is notified via
+  // global.__redcatOnQuickPromptDone so it can show a Notification.
+  // The bar is only an input - it never approves anything; approvals
+  // still appear in the main app. Single-prompt slot: the bar sends one
+  // prompt at a time and waits for its result.
+  // State lives on `global` so it survives across requests.
+  function quickPromptState() {
+    if (!global.__redcatQuickPrompt) global.__redcatQuickPrompt = { pending: null, result: null, seq: 0 };
+    return global.__redcatQuickPrompt;
+  }
+  function floatingBarSettingsFile() {
+    const base = process.env.REDCAT_USER_DATA || path.join(__dirname, 'user-data');
+    return path.join(base, 'floating-bar.json');
+  }
+  function readFloatingBarSettings() {
+    try {
+      const raw = fs.readFileSync(floatingBarSettingsFile(), 'utf8');
+      const j = JSON.parse(raw);
+      if (j && typeof j.enabled === 'boolean') return { enabled: j.enabled };
+    } catch (e) {}
+    return { enabled: true }; // default ON
+  }
+  function writeFloatingBarSettings(enabled) {
+    try {
+      const p = floatingBarSettingsFile();
+      fs.mkdirSync(path.dirname(p), { recursive: true });
+      fs.writeFileSync(p, JSON.stringify({ enabled: !!enabled }));
+      return true;
+    } catch (e) { return false; }
+  }
+  // POST /api/quick-prompt {text} - the bar submits a prompt.
+  if (req.url === '/api/quick-prompt' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; if (body.length > 20000) req.destroy(); });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const text = String(data.text || '').trim();
+        if (!text) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Empty prompt.' })); return; }
+        const st = quickPromptState();
+        st.seq += 1;
+        const id = 'qp-' + Date.now().toString(36) + '-' + st.seq;
+        st.pending = { id, text, at: Date.now() };
+        st.result = null;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, id }));
+      } catch (e) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Bad request.' }));
+      }
+    });
+    return;
+  }
+  // GET /api/quick-prompt/next - the main app takes the pending prompt.
+  if (req.url === '/api/quick-prompt/next' && req.method === 'GET') {
+    const st = quickPromptState();
+    if (st.pending) {
+      const p = st.pending;
+      st.pending = null;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, prompt: { id: p.id, text: p.text } }));
+    } else {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, empty: true }));
+    }
+    return;
+  }
+  // POST /api/quick-prompt/done {id, status, text} - the main app reports
+  // the outcome. status: 'done' | 'waiting' | 'error'. Notifies main.js.
+  if (req.url === '/api/quick-prompt/done' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; if (body.length > 20000) req.destroy(); });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const id = String(data.id || '');
+        const status = (data.status === 'waiting' || data.status === 'error') ? data.status : 'done';
+        const text = String(data.text || '').slice(0, 200);
+        if (!id) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Missing id.' })); return; }
+        const st = quickPromptState();
+        st.result = { id, status, text, at: Date.now() };
+        try {
+          const fn = global.__redcatOnQuickPromptDone;
+          if (typeof fn === 'function') fn({ id, status, text });
+        } catch (e) {}
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Bad request.' }));
+      }
+    });
+    return;
+  }
+  // GET /api/quick-prompt/status - the bar polls for the result.
+  if (req.url === '/api/quick-prompt/status' && req.method === 'GET') {
+    const st = quickPromptState();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, result: st.result }));
+    return;
+  }
+  // GET /api/floating-bar/settings - is the bar enabled? (default ON)
+  if (req.url === '/api/floating-bar/settings' && req.method === 'GET') {
+    const s = readFloatingBarSettings();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, enabled: s.enabled }));
+    return;
+  }
+  // POST /api/floating-bar/settings {enabled} - Settings toggle.
+  if (req.url === '/api/floating-bar/settings' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; if (body.length > 2000) req.destroy(); });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const enabled = data.enabled !== false;
+        writeFloatingBarSettings(enabled);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, enabled }));
+      } catch (e) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Bad request.' }));
+      }
+    });
+    return;
+  }
+  // POST /api/floating-bar/expand - the bar asks to open the main app.
+  if (req.url === '/api/floating-bar/expand' && req.method === 'POST') {
+    try {
+      const fn = global.__redcatShowMainWindow;
+      if (typeof fn === 'function') fn();
+    } catch (e) {}
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+  // POST /api/floating-bar/dismiss - the bar asks to be hidden.
+  if (req.url === '/api/floating-bar/dismiss' && req.method === 'POST') {
+    try {
+      const fn = global.__redcatHideFloatingBar;
+      if (typeof fn === 'function') fn();
+    } catch (e) {}
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
     return;
   }
   // GET /api/social/direct/:platform -> { ok, url } or setup error
