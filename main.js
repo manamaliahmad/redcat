@@ -15,6 +15,8 @@
 // port and never crashes with EADDRINUSE.
 const { app, BrowserWindow } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const { fork } = require('child_process');
+const crypto = require('crypto');
 const fs = require('fs');
 const http = require('http');
 const net = require('net');
@@ -59,6 +61,81 @@ function markPendingUpdate() {
 }
 function clearPendingUpdate() {
   try { fs.unlinkSync(flagPaths().pendingUpdate); } catch (e) {}
+}
+
+// DISCORD POLLER (bundled, 2026-11-06): the Discord gateway poller runs
+// as a child process of the app, so the user never starts it manually.
+// It auto-starts when RedCat starts, auto-restarts if it crashes, and
+// stops when the app quits. The poller only ever sees its own user's
+// Discord jobs: it authenticates with a per-install device token, and
+// the relay resolves that token to the user's Discord ID (per-user
+// isolation — one user's jobs never reach another user's PC).
+// The device token is a random UUID stored in userData. It is NOT a
+// secret the user manages — it just identifies this install to the relay
+// so jobs are routed to the right PC. It is never shown in the UI.
+// PUBLIC_RELAY_URL is the relay's public HTTPS address. Until that relay
+// is live, the poller falls back to the SSH tunnel (legacy mode) when
+// DISCORD_SSH_HOST / DISCORD_SSH_KEY are set (dev PC only); end users
+// never have those set, so they only ever use the public relay.
+const PUBLIC_RELAY_URL = 'https://discord-relay.arexora.com';
+function discordDeviceToken() {
+  const dir = app.getPath('userData');
+  const file = path.join(dir, 'discord-device-token');
+  try {
+    const existing = fs.readFileSync(file, 'utf8').trim();
+    if (existing) return existing;
+  } catch (e) {}
+  const token = crypto.randomUUID();
+  try { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(file, token); } catch (e) {}
+  return token;
+}
+function pollerScriptPath() {
+  if (app.isPackaged) return path.join(process.resourcesPath, 'app.asar.unpacked', 'redcat-app', 'poller.js');
+  return path.join(__dirname, 'redcat-app', 'poller.js');
+}
+let pollerChild = null;
+let pollerStopping = false;
+let pollerRestarts = 0;
+let pollerLastStart = 0;
+function startPoller(serverPort) {
+  if (pollerStopping) return;
+  const script = pollerScriptPath();
+  if (!fs.existsSync(script)) return; // poller not bundled (older build) — skip silently
+  const userData = app.getPath('userData');
+  const env = Object.assign({}, process.env, {
+    REDCAT_URL: 'http://127.0.0.1:' + serverPort,
+    RELAY_URL: PUBLIC_RELAY_URL,
+    DISCORD_DEVICE_TOKEN: discordDeviceToken(),
+    POLLER_LOG_DIR: userData,
+    // Legacy SSH fallback (dev PC only; end users never have these set).
+    SSH_HOST: process.env.DISCORD_SSH_HOST || '',
+    SSH_KEY: process.env.DISCORD_SSH_KEY || '',
+    SSH_USER: process.env.DISCORD_SSH_USER || 'ubuntu',
+  });
+  try {
+    pollerChild = fork(script, [], { env, silent: true });
+    pollerLastStart = Date.now();
+    pollerChild.on('exit', () => {
+      pollerChild = null;
+      if (pollerStopping) return;
+      // Auto-restart on crash (with backoff). If it ran for over a minute,
+      // reset the counter — it was healthy, this was a one-off.
+      if (Date.now() - pollerLastStart > 60000) pollerRestarts = 0;
+      pollerRestarts += 1;
+      if (pollerRestarts > 10) return; // give up after 10 quick restarts
+      const delay = Math.min(5000 * pollerRestarts, 60000);
+      setTimeout(() => { if (!pollerStopping) startPoller(serverPort); }, delay);
+    });
+    pollerChild.on('error', () => {});
+  } catch (e) {}
+}
+function stopPoller() {
+  pollerStopping = true;
+  if (pollerChild) {
+    try { pollerChild.kill('SIGTERM'); } catch (e) {}
+    setTimeout(() => { try { if (pollerChild) pollerChild.kill('SIGKILL'); } catch (e) {} }, 5000);
+    pollerChild = null;
+  }
 }
 
 // Window/taskbar icon: use a real PNG. The redcatlogo.png file is JPEG
@@ -198,7 +275,12 @@ app.whenReady().then(async () => {
   let port = await pickFreePort(3000, 20);
   if (!port) port = 3000; // last resort: let the server try 3000 (its error handler logs instead of crashing)
   process.env.PORT = String(port);
+  // DISCORD CONNECT v2 (2026-11-06): the server needs this install's
+  // device token for /api/discord/connect-url (state), so it is set in
+  // the env before the server loads. Same token the poller uses.
+  process.env.DISCORD_DEVICE_TOKEN = discordDeviceToken();
   require('./redcat-app/server.js');
+  startPoller(port);
   createWindow(port);
   // AUTO-UPDATE (2026-11-05, v1.0.0): check GitHub releases for a newer
   // version and notify the user. Runs in the background 15s after startup
@@ -217,6 +299,8 @@ app.whenReady().then(async () => {
     setTimeout(() => { try { autoUpdater.checkForUpdatesAndNotify(); } catch (e) {} }, 15000);
   } catch (e) {}
 });
+
+app.on('before-quit', stopPoller);
 
 app.on('window-all-closed', () => {
   app.quit();
