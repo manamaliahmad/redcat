@@ -30,7 +30,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const PROFILE_DIR = path.join(__dirname, 'browser-profile');
+const PROFILE_DIR = process.env.REDCAT_BROWSER_PROFILE || path.join(__dirname, 'browser-profile');
 const SENSITIVE_KINDS = new Set(['send', 'publish', 'buy', 'delete', 'submit', 'permission-change']);
 const KEY_ALLOW = new Set(['Enter', 'Backspace', 'Tab', 'Escape', 'Delete', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown',
   'Control+A', 'Control+C', 'Control+V', 'Control+X', 'Control+Backspace', 'Control+Delete',
