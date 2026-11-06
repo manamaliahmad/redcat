@@ -664,23 +664,7 @@ function addUsageFromResponse(sink, provider, parsed, status) {
     if (sink.rateLimitNotes.indexOf(note) === -1) sink.rateLimitNotes.push(note);
   }
 }
-function formatUsageLine(usage) {
-  const u = usage || freshUsage();
-  if (!u.calls) return '';
-  let line = '';
-  if (u.reported) {
-    line = 'Tokens used: ' + u.total + ' (input ' + u.input + ', output ' + u.output + '). This is what this task used — I do not know your remaining balance.';
-  } else {
-    line = 'Token usage was not reported by the provider for this task, so I cannot give a number. I do not know your remaining balance.';
-  }
-  if (u.rateLimited && u.rateLimitNotes.length) line += ' Rate limit: ' + u.rateLimitNotes.join('; ') + ' — the run continued after a retry.';
-  return '\n\n' + line;
-}
-function withUsageLine(run, text) {
-  if ((run.depth || 0) >= 1) return text;
-  const line = formatUsageLine(run.usage || null);
-  return line ? String(text || '') + line : String(text || '');
-}
+// TOKEN DISPLAY REMOVED (2026-11-06, ali order): replies no longer show a usage line.
 // THOUGHT SANITIZER (2026-11-05) — the thought shown to the user must NEVER reveal
 // the bot's character/personality instruction. If a thought leaks it (names the
 // savage character, the personality, or the instruction itself), the DISPLAYED
@@ -3056,11 +3040,7 @@ async function runAgentLoop(run, onProgress) {
   if (outcome.status === 'done' && typeof outcome.text === 'string') {
     outcome.text = cleanFinalText(outcome.text);
   }
-  // TOKEN-USAGE (2026-11-05): append the real usage line to a finished top-level task only.
-  // Child runs (depth >= 1) do not get their own line — their usage is merged into the parent.
-  if (outcome.status === 'done' && typeof outcome.text === 'string' && (run.depth || 0) === 0) {
-    outcome.text = withUsageLine(run, outcome.text);
-  }
+  // TOKEN DISPLAY REMOVED (2026-11-06, ali order): no usage line is appended to replies.
   // MEMORY REVIEW (Hermes-style background review, 2026-11-05) — after a top-level
   // run completes, a short review replays a compact digest and saves durable facts
   // to MEMORY.md (no approval; the user sees only the small "updating memory"
