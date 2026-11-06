@@ -4313,6 +4313,31 @@ async function fetchProviderModels(provider, key) {
   if (req.url === '/api/social/status' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, status: socialStatus() })); return;
   }
+  // DISCORD CONNECT v2 (2026-11-06): GET /api/discord/connect-url ->
+  // { ok, url } — the shared RedCat bot authorize URL. The redirect
+  // goes to the public relay (https://discord-relay.arexora.com/
+  // discord/callback), which exchanges the code and binds the user's
+  // Discord ID to this install's device token (state), so DMs are
+  // routed to this PC. The device token is set by main.js in the env
+  // (DISCORD_DEVICE_TOKEN); for a standalone server, fall back to
+  // reading the token file from the Electron userData folder.
+  if (req.url === '/api/discord/connect-url' && req.method === 'GET') {
+    let deviceToken = process.env.DISCORD_DEVICE_TOKEN ? String(process.env.DISCORD_DEVICE_TOKEN).trim() : '';
+    if (!deviceToken) {
+      const candidates = [];
+      if (process.env.APPDATA) candidates.push(path.join(process.env.APPDATA, 'redcat', 'discord-device-token'));
+      if (process.env.HOME) {
+        candidates.push(path.join(process.env.HOME, '.config', 'redcat', 'discord-device-token'));
+        candidates.push(path.join(process.env.HOME, 'Library', 'Application Support', 'redcat', 'discord-device-token'));
+      }
+      for (const f of candidates) {
+        try { const t = fs.readFileSync(f, 'utf8').trim(); if (t) { deviceToken = t; break; } } catch (e) {}
+      }
+    }
+    if (!deviceToken) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Discord device token is not available yet. Restart RedCat and try again.' })); return; }
+    const url = 'https://discord.com/oauth2/authorize?client_id=1567612015000686744&redirect_uri=' + encodeURIComponent('https://discord-relay.arexora.com/discord/callback') + '&response_type=code&scope=' + encodeURIComponent('bot identify') + '&permissions=117760&state=' + encodeURIComponent(deviceToken);
+    res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, url })); return;
+  }
   // GET /api/social/direct/:platform -> { ok, url } or setup error
   {
     const m = req.url.match(/^\/api\/social\/direct\/(discord|slack|telegram)(\?.*)?$/);
