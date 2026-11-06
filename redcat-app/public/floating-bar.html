@@ -16,17 +16,19 @@
     box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
     padding: 12px 18px 14px;
     position: relative;
-    animation: slideDown 0.25s ease-out;
+    animation: fadeIn 0.2s ease-out;
     /* DRAGGABLE (v1.0.6): the red bar can be dragged to reposition it
        (it may cover desktop folders/icons). Default stays top-center. */
-    -webkit-app-region: drag;
+    /* NOTE (v1.0.7): .bar itself is NOT a drag region. The corner buttons
+       sit in .bar; the OS swallowed their clicks as drags (no-drag holes
+       not honoured). Drag lives on .cats and .pill via JS (see below). */
   }
-  @keyframes slideDown {
-    from { transform: translateY(-16px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   /* Top row: the three cat Lottie animations, looping together. */
-  .cats { display: flex; align-items: center; justify-content: center; gap: 18px; height: 76px; -webkit-app-region: drag; }
+  .cats { display: flex; align-items: center; justify-content: center; gap: 18px; height: 76px; }
   .cat { width: 72px; height: 72px; flex: 0 0 auto; }
   /* Small corner controls (kept subtle so the cats own the red space). */
   .corner-btns { position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; z-index: 2; }
@@ -34,7 +36,6 @@
     width: 28px; height: 28px; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     background: transparent; color: rgba(255, 255, 255, 0.85); border-radius: 8px;
-    -webkit-app-region: no-drag;
   }
   .corner-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
   .corner-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
@@ -44,14 +45,12 @@
     background: #ffffff; border-radius: 999px;
     height: 56px; padding: 0 8px 0 14px; margin-top: 10px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-    -webkit-app-region: no-drag;
   }
   .mini-cat { width: 30px; height: 30px; flex: 0 0 auto; }
   #barInput {
     flex: 1 1 auto; min-width: 0;
     background: transparent; border: none; outline: none;
     color: #1f2937; font-size: 15px; line-height: 22px;
-    -webkit-app-region: no-drag;
   }
   #barInput::placeholder { color: #9ca3af; }
   #barInput:disabled { color: #9ca3af; }
@@ -73,7 +72,6 @@
     width: 42px; height: 42px; flex: 0 0 auto; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     background: #b12524; color: #fff; border-radius: 50%;
-    -webkit-app-region: no-drag;
   }
   .btn-send:hover { background: #8f1d1c; }
   .btn-send:disabled { background: #9ca3af; cursor: default; }
@@ -122,6 +120,42 @@
   loadCat('catRed', '/lottie-animations/red-cat.json');
   loadCat('catBlue', '/lottie-animations/blue-cat.json');
   loadCat('catMiniRed', '/lottie-animations/red-cat.json');
+
+  // MANUAL DRAG (v1.0.7): the OS-level drag region is NOT used (it swallowed
+  // clicks on the corner buttons: the no-drag holes were not honoured, so
+  // x/expand never received clicks). Instead the bar is dragged in JS:
+  // mousedown on the bar (not on the input, send button, or corner buttons)
+  // starts a drag; mousemove moves the window via the server; mouseup ends it.
+  // Buttons always receive clicks now.
+  (function enableManualDrag() {
+    var barEl = document.getElementById('bar');
+    var dragging = false;
+    var lastX = 0, lastY = 0;
+    function isInteractive(t) {
+      if (!t || !t.closest) return false;
+      return !!(t.closest('#barInput') || t.closest('#btnSend') || t.closest('.corner-btn'));
+    }
+    barEl.addEventListener('mousedown', function (e) {
+      if (isInteractive(e.target)) return;
+      if (e.button !== 0) return;
+      dragging = true;
+      lastX = e.screenX; lastY = e.screenY;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      var dx = e.screenX - lastX;
+      var dy = e.screenY - lastY;
+      if (dx === 0 && dy === 0) return;
+      lastX = e.screenX; lastY = e.screenY;
+      fetch('/api/floating-bar/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dx: dx, dy: dy })
+      }).catch(function () {});
+    });
+    document.addEventListener('mouseup', function () { dragging = false; });
+  })();
 
   var input = document.getElementById('barInput');
   var statusLine = document.getElementById('statusLine');
