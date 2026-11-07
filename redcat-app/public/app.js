@@ -6809,7 +6809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (docsPage === 'skills') {
       const items = docsSortItems(docsData.skills.filter(s => docsMatch(s.name)).map(s => ({
-        sortName: s.name.toLowerCase(), mtime: s.mtime, key: 'skill:' + s.name, name: s.name
+        sortName: s.name.toLowerCase(), mtime: s.mtime, key: 'skill:' + s.name, name: s.name, enabled: s.enabled !== false, origin: s.origin || 'bundled'
       })));
       docsRenderFolders(items);
       return;
@@ -6825,10 +6825,12 @@ document.addEventListener('DOMContentLoaded', () => {
     docsGrid.className = 'docs-folders-grid' + (docsSelecting ? ' docs-selecting' : '');
     docsGrid.innerHTML = items.map(it => {
       const checked = docsSelected.has(it.key) ? 'checked' : '';
-      return '<button type="button" class="docs-folder" data-docs-key="' + docsEsc(it.key) + '">'
+      const off = it.enabled === false;
+      const label = off ? docsEsc(it.name) + ' (off)' : docsEsc(it.name);
+      return '<button type="button" class="docs-folder' + (off ? ' docs-folder-off' : '') + '" data-docs-key="' + docsEsc(it.key) + '">'
         + '<input type="checkbox" class="docs-folder-check" ' + checked + ' data-docs-check="' + docsEsc(it.key) + '">'
         + '<img src="assets/folder-icon.svg" alt="">'
-        + '<div class="docs-folder-name">' + docsEsc(it.name) + '</div></button>';
+        + '<div class="docs-folder-name">' + label + '</div></button>';
     }).join('');
     docsGrid.querySelectorAll('.docs-folder').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -6849,11 +6851,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let files = [];
     let title = name;
     let sub = '';
+    let manageHtml = '';
     if (kind === 'skill') {
       const s = (docsData.skills || []).find(x => x.name === name);
       if (!s) return;
       files = s.files || [];
       sub = (s.description ? s.description : 'Skill') + ' · ' + files.length + ' files';
+      // SKILLS-ADD (v1.0.12): manage bar — origin, source, on/off, update, delete.
+      const originBadge = s.origin === 'user'
+        ? '<span class="skill-badge skill-badge-user">Added by you</span>'
+        : '<span class="skill-badge">Built-in</span>';
+      const srcBadge = (s.source && s.source.type === 'github') ? '<span class="skill-badge skill-badge-github">GitHub</span>' : '';
+      const srcText = (s.source && s.source.url) ? docsEsc(s.source.url) : (s.origin === 'user' ? 'Added in the app' : 'Shipped with RedCat');
+      manageHtml = '<div class="skill-manage-bar">' + originBadge + srcBadge
+        + '<span class="skill-manage-source">' + srcText + '</span>'
+        + '<div class="skill-manage-actions">'
+        + '<label class="skill-switch"><input type="checkbox" id="skillToggle" ' + (s.enabled !== false ? 'checked' : '') + '><span class="skill-switch-track"></span><span>' + (s.enabled !== false ? 'On' : 'Off') + '</span></label>'
+        + (s.hasSource ? '<button type="button" class="skill-manage-btn" id="skillUpdateBtn">Update</button>' : '')
+        + '<button type="button" class="skill-manage-btn skill-manage-btn-danger" id="skillDeleteBtn">Delete</button>'
+        + '</div></div>';
     } else if (kind === 'site') {
       const s = (docsData.sites || []).find(x => x.name === name);
       if (!s) return;
@@ -6881,9 +6897,230 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('') || '<p class="docs-empty">This folder is empty.</p>';
     docsDetail.innerHTML = '<button type="button" class="docs-back-btn" id="docsBackBtn">← Back</button>'
       + '<h2 class="docs-detail-title">' + docsEsc(title) + '</h2>'
-      + '<p class="docs-detail-sub">' + docsEsc(sub) + '</p>' + rows;
+      + '<p class="docs-detail-sub">' + docsEsc(sub) + '</p>' + manageHtml + rows;
     document.getElementById('docsBackBtn').addEventListener('click', () => { docsRender(); });
+    if (kind === 'skill') skillManageWire(name);
   }
+  // SKILLS-ADD (v1.0.12): Add Skill modal — GitHub / upload / paste, scan
+  // gate, preview, approval (Install). Shares the server's skill-add.js
+  // fetch + scan + install with the chat path (skill_prepare/skill_install).
+  const skillAddModal = document.getElementById('skillAddModal');
+  const skillAddGithubUrl = document.getElementById('skillAddGithubUrl');
+  const skillAddFile = document.getElementById('skillAddFile');
+  const skillAddFileChip = document.getElementById('skillAddFileChip');
+  const skillAddPaste = document.getElementById('skillAddPaste');
+  const skillAddError = document.getElementById('skillAddError');
+  const skillAddScan = document.getElementById('skillAddScan');
+  const skillAddPreview = document.getElementById('skillAddPreview');
+  const skillAddCheckBtn = document.getElementById('skillAddCheck');
+  const skillAddInstallBtn = document.getElementById('skillAddInstall');
+  let skillAddTab = 'github';
+  let skillAddUpload = null;
+  let skillAddPrep = null;
+  let skillAddUpdateMode = false;
+  function skillAddShowError(msg) {
+    if (!msg) { skillAddError.style.display = 'none'; skillAddError.textContent = ''; return; }
+    skillAddError.textContent = msg;
+    skillAddError.style.display = 'block';
+  }
+  function skillAddReset(keepInputs) {
+    skillAddPrep = null; skillAddUpdateMode = false;
+    skillAddScan.innerHTML = ''; skillAddPreview.innerHTML = '';
+    skillAddShowError('');
+    skillAddInstallBtn.disabled = true;
+    skillAddInstallBtn.textContent = 'Install skill';
+    if (!keepInputs) { skillAddUpload = null; if (skillAddFileChip) skillAddFileChip.innerHTML = ''; if (skillAddFile) skillAddFile.value = ''; }
+  }
+  function skillAddOpen() {
+    skillAddReset();
+    skillAddModal.classList.add('active');
+    if (skillAddGithubUrl) skillAddGithubUrl.focus();
+  }
+  function skillAddClose() {
+    skillAddModal.classList.remove('active');
+    skillAddReset();
+  }
+  function skillAddSetTab(tab) {
+    skillAddTab = tab;
+    document.querySelectorAll('.skill-add-tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-skill-tab') === tab));
+    document.querySelectorAll('.skill-add-panel').forEach(p => p.classList.toggle('active', p.getAttribute('data-skill-panel') === tab));
+    skillAddReset(true);
+  }
+  function skillAddRenderScan(r) {
+    const scan = r.scan || { verdict: 'ALLOW', findings: [] };
+    const cls = scan.verdict === 'BLOCK' ? 'skill-add-scan-block' : (scan.verdict === 'REVIEW' ? 'skill-add-scan-review' : 'skill-add-scan-allow');
+    let html = '<div class="skill-add-scan ' + cls + '"><p class="skill-add-scan-title">Scan: ' + scan.verdict + (scan.verdict === 'ALLOW' ? ' — no flags found.' : '') + '</p>';
+    (scan.findings || []).forEach(f => {
+      html += '<p class="skill-add-finding"><strong>' + docsEsc(f.cls) + '</strong> (' + docsEsc(f.severity) + ') — ' + docsEsc(f.file) + ':' + f.line + ' — <code>' + docsEsc(f.text) + '</code></p>';
+    });
+    if (scan.verdict === 'BLOCK') html += '<p class="skill-add-finding">This skill is refused by default. Install it only if you have read the finding above and trust this skill — clicking Install will ask you to confirm.</p>';
+    if (scan.verdict === 'REVIEW') html += '<p class="skill-add-finding">Review the concern above. If it looks safe, you can install it.</p>';
+    html += '</div>';
+    skillAddScan.innerHTML = html;
+  }
+  function skillAddRenderPreview(r) {
+    const md = (r.fileContents || []).find(f => f.path === 'SKILL.md');
+    const files = (r.files || []).map(f => docsEsc(f.path) + ' (' + docsFmtSize(f.size) + ')').join(', ');
+    skillAddPreview.innerHTML = '<div class="skill-add-preview">'
+      + '<p class="skill-add-preview-name">' + docsEsc(r.name) + '</p>'
+      + '<p class="skill-add-preview-desc">' + docsEsc(r.description || '(no description)') + '</p>'
+      + '<p class="skill-add-preview-files">Files: ' + files + '</p>'
+      + ((r.skipped && r.skipped.length) ? '<p class="skill-add-preview-files">Skipped (never copied): ' + docsEsc(r.skipped.join(', ')) + '</p>' : '')
+      + (r.conflict ? '<p class="skill-add-preview-files">A skill named ' + docsEsc(r.name) + ' already exists' + (skillAddUpdateMode ? ' — this update will replace it.' : ' — installing will be refused unless you update it.') + '</p>' : '')
+      + ((r.warnCap && !r.overCap) ? '<p class="skill-add-preview-files">Catalog nearly full (' + r.skillCount + '/30 skills).</p>' : '')
+      + '<pre class="skill-add-preview-md">' + docsEsc(md ? md.content : '') + '</pre>'
+      + '<div class="skill-add-desc-edit"><label class="skill-add-label" for="skillAddDesc">Description (used as the trigger — edit if it is missing or vague)</label>'
+      + '<input class="skill-add-input" id="skillAddDesc" type="text" value="' + docsEsc(r.description || '') + '" placeholder="What this skill does, and when to use it."></div>'
+      + '</div>';
+  }
+  async function skillAddCheck() {
+    skillAddShowError('');
+    skillAddScan.innerHTML = ''; skillAddPreview.innerHTML = '';
+    skillAddInstallBtn.disabled = true;
+    let body = null;
+    if (skillAddTab === 'github') {
+      const url = (skillAddGithubUrl.value || '').trim();
+      if (!url) { skillAddShowError('Paste a GitHub URL first.'); return; }
+      body = { method: 'github', url: url };
+    } else if (skillAddTab === 'upload') {
+      if (!skillAddUpload) { skillAddShowError('Choose a SKILL.md file or a zip first.'); return; }
+      body = { method: 'upload', fileName: skillAddUpload.fileName, zipBase64: skillAddUpload.zipBase64 || undefined, content: skillAddUpload.content || undefined };
+    } else {
+      const text = (skillAddPaste.value || '').trim();
+      if (!text) { skillAddShowError('Paste the SKILL.md text first.'); return; }
+      body = { method: 'paste', text: text };
+    }
+    skillAddCheckBtn.disabled = true;
+    skillAddCheckBtn.textContent = 'Checking…';
+    try {
+      const res = await fetch('/api/skills/prepare', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await res.json();
+      if (!j || !j.ok) {
+        skillAddShowError('Could not prepare this skill: ' + (j && j.error ? j.error : 'unknown error') + (j && j.tried ? '\nTried: ' + j.tried.join('\n') : ''));
+        return;
+      }
+      skillAddPrep = j;
+      skillAddRenderScan(j);
+      skillAddRenderPreview(j);
+      skillAddInstallBtn.disabled = false;
+      skillAddInstallBtn.textContent = (j.scan.verdict === 'BLOCK') ? 'Install anyway (I have seen the finding)' : (skillAddUpdateMode ? 'Update skill' : 'Install skill');
+    } catch (e) {
+      skillAddShowError('Could not reach the server. Try again.');
+    } finally {
+      skillAddCheckBtn.disabled = false;
+      skillAddCheckBtn.textContent = 'Check skill';
+    }
+  }
+  async function skillAddInstall() {
+    if (!skillAddPrep) return;
+    const descEl = document.getElementById('skillAddDesc');
+    const desc = descEl ? descEl.value.trim() : (skillAddPrep.description || '');
+    if (!desc) { skillAddShowError('A description line is required — add one above.'); return; }
+    const scan = skillAddPrep.scan || { verdict: 'ALLOW', findings: [] };
+    let override = null;
+    if (scan.verdict === 'BLOCK') {
+      const names = (scan.findings || []).map(f => f.cls).filter((v, i, a) => a.indexOf(v) === i).join(', ');
+      if (!window.confirm('This skill was BLOCKED by the scan (' + names + '). Install it anyway? Only do this if you have read the finding and trust this skill.')) return;
+      override = { confirmed: true, findings: (scan.findings || []).map(f => f.cls) };
+    }
+    const body = { name: skillAddPrep.name, description: desc, files: skillAddPrep.fileContents, source: skillAddPrep.source, override: override, allowOverwrite: skillAddUpdateMode };
+    skillAddInstallBtn.disabled = true;
+    skillAddInstallBtn.textContent = 'Installing…';
+    try {
+      const res = await fetch('/api/skills/install', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await res.json();
+      if (!j || !j.ok) {
+        skillAddShowError('Install failed: ' + (j && j.error ? j.error : 'unknown error') + (j && j.message ? ' — ' + j.message : ''));
+        skillAddInstallBtn.disabled = false;
+        skillAddInstallBtn.textContent = skillAddUpdateMode ? 'Update skill' : 'Install skill';
+        return;
+      }
+      skillAddClose();
+      docsLoad();
+    } catch (e) {
+      skillAddShowError('Could not reach the server. Try again.');
+      skillAddInstallBtn.disabled = false;
+    }
+  }
+  async function skillManageWire(name) {
+    const toggle = document.getElementById('skillToggle');
+    if (toggle) toggle.addEventListener('change', async () => {
+      const enabled = toggle.checked;
+      toggle.disabled = true;
+      try {
+        const res = await fetch('/api/skills/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, enabled: enabled }) });
+        const j = await res.json();
+        if (!j || !j.ok) { toggle.checked = !enabled; docsShowNotice('Could not change this skill: ' + (j && j.error ? j.error : 'unknown error')); return; }
+        docsLoad();
+      } catch (e) { toggle.checked = !enabled; }
+      toggle.disabled = false;
+    });
+    const upd = document.getElementById('skillUpdateBtn');
+    if (upd) upd.addEventListener('click', async () => {
+      upd.disabled = true; upd.textContent = 'Checking…';
+      try {
+        const res = await fetch('/api/skills/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name }) });
+        const j = await res.json();
+        if (!j || !j.ok) { docsShowNotice('Update failed: ' + (j && j.error ? j.error : 'unknown error') + (j && j.message ? ' — ' + j.message : '')); return; }
+        skillAddUpdateMode = true;
+        skillAddPrep = j;
+        skillAddShowError('');
+        skillAddRenderScan(j);
+        skillAddRenderPreview(j);
+        skillAddInstallBtn.disabled = false;
+        skillAddInstallBtn.textContent = 'Update skill';
+        skillAddModal.classList.add('active');
+      } catch (e) { docsShowNotice('Could not reach the server. Try again.'); }
+      upd.disabled = false; upd.textContent = 'Update';
+    });
+    const del = document.getElementById('skillDeleteBtn');
+    if (del) del.addEventListener('click', async () => {
+      const s = (docsData.skills || []).find(x => x.name === name);
+      const isBundled = !s || s.origin !== 'user';
+      const first = isBundled
+        ? 'Delete the built-in skill "' + name + '"? This may break flows that depend on it.'
+        : 'Delete the skill "' + name + '"?';
+      if (!window.confirm(first)) return;
+      if (isBundled && !window.confirm('Are you sure? Built-in skills are part of RedCat. This cannot be undone from the app.')) return;
+      del.disabled = true;
+      try {
+        const res = await fetch('/api/skills/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name }) });
+        const j = await res.json();
+        if (!j || !j.ok) { docsShowNotice('Delete failed: ' + (j && j.error ? j.error : 'unknown error')); del.disabled = false; return; }
+        docsLoad();
+      } catch (e) { docsShowNotice('Could not reach the server. Try again.'); del.disabled = false; }
+    });
+  }
+  document.querySelectorAll('.skill-add-tab').forEach(b => b.addEventListener('click', () => skillAddSetTab(b.getAttribute('data-skill-tab'))));
+  if (skillAddCheckBtn) skillAddCheckBtn.addEventListener('click', skillAddCheck);
+  if (skillAddInstallBtn) skillAddInstallBtn.addEventListener('click', skillAddInstall);
+  const skillAddCloseBtn = document.getElementById('skillAddClose');
+  if (skillAddCloseBtn) skillAddCloseBtn.addEventListener('click', skillAddClose);
+  const skillAddCancelBtn = document.getElementById('skillAddCancel');
+  if (skillAddCancelBtn) skillAddCancelBtn.addEventListener('click', skillAddClose);
+  if (skillAddModal) skillAddModal.addEventListener('click', (e) => { if (e.target === skillAddModal) skillAddClose(); });
+  if (skillAddFile) skillAddFile.addEventListener('change', () => {
+    const f = skillAddFile.files && skillAddFile.files[0];
+    if (!f) { skillAddUpload = null; skillAddFileChip.innerHTML = ''; return; }
+    const isZip = /\.zip$/i.test(f.name) || f.type === 'application/zip';
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (isZip) {
+        const bytes = new Uint8Array(reader.result);
+        let bin = '';
+        const CHUNK = 8192;
+        for (let i = 0; i < bytes.length; i += CHUNK) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+        skillAddUpload = { fileName: f.name, zipBase64: btoa(bin) };
+      } else {
+        skillAddUpload = { fileName: f.name, content: String(reader.result || '') };
+      }
+      skillAddFileChip.innerHTML = '<span class="skill-add-file-chip">' + docsEsc(f.name) + ' (' + docsFmtSize(f.size) + ') <button type="button" id="skillAddFileClear" title="Remove">✕</button></span>';
+      const clearBtn = document.getElementById('skillAddFileClear');
+      if (clearBtn) clearBtn.addEventListener('click', () => { skillAddUpload = null; skillAddFile.value = ''; skillAddFileChip.innerHTML = ''; skillAddReset(true); });
+      skillAddReset(true);
+    };
+    if (isZip) reader.readAsArrayBuffer(f); else reader.readAsText(f);
+  });
   async function docsLoad() {
     try {
       const r = await fetch('/api/library');
@@ -6962,7 +7199,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
-    docsShowNotice('Add Skills (GitHub link, pasted skill text, scan gate, install) arrives in the next slice — this button is intentionally not wired yet.');
+    // SKILLS-ADD (v1.0.12): open the Add Skill modal (GitHub / upload / paste).
+    skillAddOpen();
   });
   if (window.location.hash.indexOf('#docs-') === 0) {
     const p = window.location.hash.replace('#docs-', '');

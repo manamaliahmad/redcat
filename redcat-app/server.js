@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
 const mcp = require('./mcp.js');
+const skillAdd = require('./skill-add.js');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -370,7 +371,7 @@ const TERMINAL_READ_COMMANDS = ['dir', 'type', 'more', 'find', 'findstr', 'where
 // any requested tool list with CHILD_READONLY_TOOLS. terminal_exec stays in
 // the set for reads only — writes are additionally denied by policy Never.
 // Roles: 'explore' gathers facts, 'review' gives a fresh-eyes check.
-const CHILD_READONLY_TOOLS = ['browser_read', 'browser_read_js', 'web_search', 'deep_read', 'memory_search', 'skill_read', 'run_info', 'session_list', 'session_read', 'session_search', 'session_surface', 'terminal_exec'];
+const CHILD_READONLY_TOOLS = ['browser_read', 'browser_read_js', 'web_search', 'deep_read', 'memory_search', 'skill_read', 'skill_prepare', 'run_info', 'session_list', 'session_read', 'session_search', 'session_surface', 'terminal_exec'];
 
 // 7-POINTS (5) POST-WRITE HOOK — verify paths attached to terminal_exec
 // (string or array, max 5, each max 500 chars). The harness checks each path
@@ -763,6 +764,8 @@ function agentSystemText(lang, memoryText, skillIndex, skillContent, goalText, i
     '{"tool": "deep_read", "args": {"url": "https://example.com", "maxPages": 5}} - crawl a site deeply: the page plus same-site linked pages (up to 10) for notes.\n' +
     '{"tool": "skill_read", "args": {"name": "website-build"}} - read a learned skill in full.\n' +
     '{"tool": "skill_save", "args": {"name": "website-build", "when": "building a website", "content": "steps..."}} - save a reusable procedure you learned (never a secret).\n' +
+    '{"tool": "skill_prepare", "args": {"source": "github", "url": "https://github.com/anthropics/skills/tree/main/skills/pdf"}} - fetch a skill and run the skill-scan gate, WITHOUT installing it. source "github" = a GitHub repo URL, skills-folder URL, or direct SKILL.md/raw URL (only skill files are fetched, never the whole repo, never scripts). source "paste" = the user pasted SKILL.md text in chat (args.text). Returns the preview: name, description, file list, scan verdict (BLOCK/REVIEW/ALLOW) + specific findings, name conflict, catalog count. Show the preview to the user and ask before installing — never install without the user seeing the preview first.\n' +
+    '{"tool": "skill_install", "args": {"prepToken": "prep-...", "name": "pdf", "description": "What the skill does, and when to use it."}} - install a skill you prepared with skill_prepare. Takes the prepToken from the skill_prepare result (the prepared files live on the server — you never retype them). The user sees an approval card and must allow it; a BLOCK scan is refused unless the user named the finding and confirmed explicitly (pass override: {confirmed: true, findings: ["<finding class>"]}). If the name already exists, pass allowOverwrite: true ONLY when the user said update/overwrite — otherwise stop and ask. After install, the skill joins the catalog from the NEXT run and appears in the Skills page.\n' +
     '{"tool": "schedule_create", "args": {"title": "Morning reminder", "prompt": "Remind me to post the Tux reel", "kind": "daily", "value": "09:00"}} - create a scheduled task in THIS chat. kind: after_seconds (value = seconds), at (value = "2026-10-30 09:00"), every_seconds (value = seconds, minimum 60), daily (value = "09:00"), weekly (value = "Mon 09:00"), cron (value = "30 9 * * Mon"). When it is due, the client delivers the prompt into this chat as a new user message and you run it. One-shot kinds (after_seconds, at) run once; the rest repeat. Maximum 50 active schedules per chat.\n' +
     '{"tool": "schedule_list", "args": {}} - list the active schedules in THIS chat.\n' +
     '{"tool": "schedule_delete", "args": {"id": "sch-..."}} - delete a schedule in THIS chat by its id.\n' +
@@ -798,7 +801,7 @@ function agentSystemText(lang, memoryText, skillIndex, skillContent, goalText, i
     'MULTI-AGENT DECISION (you decide, the user does not have to ask): BEFORE any tool, analyse the task. If it is a single simple step, do it yourself - do NOT spawn. If it is a DEEP task - 2 or more INDEPENDENT parts (for example: research topic A + research topic B + build a page, or research + summary + check, or several separate topics) or more than about 5 steps across phases - you MUST split it: first todo_write the parts, then spawn ONE subagent per independent part with subagent_spawn (mode fresh, role \'explore\' to gather facts or \'review\' for a fresh-eyes check, a bounded prompt naming exactly one part, maxSteps you set; the harness enforces read-only tool sets for children in code, whatever you request). Dependent steps (step B needs step A output) stay with you, in order - never parallelise a dependency. Limits: at most 8 children per run, depth 1 (a child cannot spawn), child approval is Never so children NEVER write files, send, or ask the user - writing, sending, and approvals stay with you. Wait for every child, VERIFY each child result with dir/type or a read before using it, combine all parts into ONE final answer naming what each agent did, and if a child fails or returns nothing, retry it once with a narrower prompt or do that part yourself - never fake its result. State your split decision in your thought field: \'Split: N agents - ...\' or \'No split: single task.\'\n\n' +
     'MODEL ROUTING (Kimi K3): when the main model is Kimi K3 (strong), Explore children run on the cheaper kimi-k2 model in fresh mode only, so no thinking history is lost; Reviewer children keep the main model. Never switch models mid-session on a Kimi K3 chat - K3 thinking history must be replayed in full, and the harness refuses mid-session switches in code.\n\n' +
     'PLUGINS: tools can also arrive as plugins. The plugin list is explicit - an entry list in code, never auto-downloaded or auto-discovered. plugin_list shows what is registered; built-in tools win if a plugin name ever collides. A plugin that fails to start refuses server boot with its name in the error - it never silently runs half-working.\n\n' +
-    'SKILLS: you learn from experience. When a task succeeds with a reusable procedure, save it with skill_save so next time is better. The list above is only a catalog - names plus one short description each. When a task matches a skill, read the full skill with skill_read first and follow it exactly. Skills marked [side-effect skill] in the catalog need user approval before first use (the harness enforces this in code). When you use a skill for the first time in a chat, tell the user naturally in English that first time there may be an issue, but next time you will give a much better result because you will have learned. If the user writes /skillname, that skill full text is already loaded below as <skill_content>. Skills are LOCAL only - never download or install skills from the internet.\n\n' +
+    'SKILLS: you learn from experience. When a task succeeds with a reusable procedure, save it with skill_save so next time is better. The list above is only a catalog - names plus one short description each. When a task matches a skill, read the full skill with skill_read first and follow it exactly. Skills marked [side-effect skill] in the catalog need user approval before first use (the harness enforces this in code). When you use a skill for the first time in a chat, tell the user naturally in English that first time there may be an issue, but next time you will give a much better result because you will have learned. If the user writes /skillname, that skill full text is already loaded below as <skill_content>. ADD A SKILL (two ways, one gate): (1) The user uses the Skills page Add Skill form (GitHub link, file upload, or pasted text) — that form runs the same fetch + scan + preview + approval. (2) In CHAT, when the user pastes a GitHub link and asks you to pick it up ("skill uthao yahan se", "install this skill", "add this skill") OR pastes SKILL.md text directly, YOU do it: call skill_prepare with the URL or the pasted text (it fetches ONLY skill files — SKILL.md plus its referenced support files, never the whole repo, never scripts — and runs the skill-scan gate), then SHOW the user the preview (name, description, file list, scan verdict + each finding in plain words) and ASK before installing. Install ONLY with skill_install (it shows an approval card — the user must allow it) and ONLY after the user said yes in chat. A BLOCK scan = refuse by default; install only if the user names the finding and confirms explicitly. A REVIEW scan = show the concern and let the user decide. A name conflict = stop and ask (overwrite / rename / cancel), never silent-overwrite. After install, tell the user the skill is in the catalog from the next run and visible in the Skills page. Never install a skill the user did not name, never go hunting for skills on your own, never run anything from a skill, never fetch a private repo (no token is ever asked for or stored).\n\n' +
     'DEEP RESEARCH: for research questions or unknown facts, read at least 2-3 independent sources with web_search or browser_read, cross-check them, and name your sources in the final reply. One page is never enough for an important fact. If sources disagree, say so. CONTEXT ANCHORING: keep the ORIGINAL question\'s intent — never reframe it into a different domain (ecommerce products to sell are NOT stock-market sectors; an AI product is NOT market trends). When the user nudges with "??" or a bare follow-up, re-read the ORIGINAL question from the conversation history and stick to it. If the question is ambiguous (AI product vs market trends, which market), ASK one short clarifying question with the options, OR state your assumption clearly, BEFORE researching — never guess the domain. SOURCE SELECTION: resources must ALWAYS come from factual sites — sites that actually state the facts, where the facts are written. Primary sources first (official docs, repos, data pages, the thing itself, official reports, news). Wikipedia is for background/encyclopedia ONLY — never the source for a current or trending topic (ecommerce trends, market trends, 2026 trends). For a current or trending topic use the right sources (Exploding Topics, Shopify, Trend Hunter, Google Trends, Amazon Best Sellers, official reports, news). Use search operators to target factual sites (site:domain, "exact phrase", intitle:word, -term). FALLBACK: if web_search returns no results, or only Wikipedia results for a question that needs non-Wikipedia sources, EITHER open the Browser panel and search/read directly (search in the browser, open the real factual sites, read them live) OR ask the user right away — never guess, never invent, never settle for a weak or wrong source. NO FAKE: cite ONLY what you actually read — never invent a source, a number, a date, or a quote. If a fact cannot be verified, say so honestly. ARTIFACT: at the end of ANY big task (research, deep dive, comparison, investigation), BUILD the user a minimalist world-class website artifact containing ALL the resources (all sources with links, plus the findings) — build it as part of the task, do not just offer it and wait. The artifact is minimalist (clean, lots of white space, simple typography, no clutter) and world-class.\n\n' +
     'VERIFY BEFORE FINAL: before your final reply, re-check every file you claim to have created or changed with a read-only command (dir/type). If any check fails, fix it or say the task FAILED - never claim success on words alone.\n\n' +
     'EVIDENCE RULE (verify loop): when your final reply claims a check, test, build, or verification passed or failed, quote the exact tool output (command + result lines) that proves it. Never write \'tests pass\' or \'verified\' without quoting the output. The harness records every tool result in the run log (runs/<id>.jsonl) - your claims must match that record. If a check FAILED, say so, fix it on real output, re-run it, and quote the new output. A loop that closes on real pass/fail output is the goal, whether the result is good or bad.\n\n' +
@@ -1687,23 +1690,36 @@ function skillDescription(text) {
   }
   return para.join(' ').replace(/\s+/g, ' ').trim().slice(0, 500);
 }
+// SKILLS-ADD (v1.0.12): cheap digest over BOTH skill dirs (bundled + user)
+// plus the disabled/removed lists, so toggling or installing invalidates
+// the catalog cache without reading every SKILL.md on every call.
+function skillDirsDigest() {
+  const parts = [];
+  const scan = (root) => {
+    if (!root || !fs.existsSync(root)) return;
+    for (const d of fs.readdirSync(root, { withFileTypes: true }).filter(x => x.isDirectory()).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+      const p = path.join(root, d.name, 'SKILL.md');
+      try { const st = fs.statSync(p); parts.push(d.name + ':' + st.mtimeMs + ':' + st.size); } catch (e) { parts.push(d.name + ':missing'); }
+    }
+  };
+  scan(skillsDir());
+  scan(skillAdd.userSkillsDir());
+  parts.push('disabled:' + skillAdd.skillsDisabled().sort().join(','));
+  parts.push('removed:' + skillAdd.skillsRemoved().sort().join(','));
+  return parts.join('|');
+}
 function loadSkillsIndex() {
   try {
-    if (!fs.existsSync(skillsDir())) return '';
-    const names = fs.readdirSync(skillsDir()).filter(n => {
-      try { return fs.statSync(path.join(skillsDir(), n)).isDirectory() && fs.existsSync(path.join(skillsDir(), n, 'SKILL.md')); } catch (e) { return false; }
-    });
-    if (!names.length) return '';
-    const stats = names.map(n => {
-      try { const st = fs.statSync(path.join(skillsDir(), n, 'SKILL.md')); return n + ':' + st.mtimeMs + ':' + st.size; } catch (e) { return n + ':missing'; }
-    });
-    const digest = stats.join('|');
+    const digest = skillDirsDigest();
     if (skillCatalogCache.digest === digest && skillCatalogCache.index) return skillCatalogCache.index;
+    const all = skillAdd.listSkills(skillsDir(), skillAdd.userSkillsDir());
+    const enabled = all.filter(s => s.enabled);
+    if (!enabled.length) { skillCatalogCache = { digest: digest, index: '' }; return ''; }
     const parts = [];
-    names.slice(0, 30).forEach(n => {
+    enabled.slice(0, 30).forEach(s => {
       try {
-        const text = fs.readFileSync(path.join(skillsDir(), n, 'SKILL.md'), 'utf8');
-        parts.push('- ' + n + ': ' + skillDescription(text) + (skillHasSideEffects(text) ? ' [side-effect skill: needs user approval before first use]' : ''));
+        const text = fs.readFileSync(path.join(s.origin === 'user' ? skillAdd.userSkillsDir() : skillsDir(), s.name, 'SKILL.md'), 'utf8');
+        parts.push('- ' + s.name + ': ' + skillDescription(text) + (skillHasSideEffects(text) ? ' [side-effect skill: needs user approval before first use]' : ''));
       } catch (e) {}
     });
     const index = parts.join('\n').slice(0, 8000);
@@ -1715,7 +1731,13 @@ function loadSkillsIndex() {
 function readSkill(name) {
   const clean = String(name || '').replace(/[^A-Za-z0-9\-]/g, '').slice(0, 64);
   if (!clean) return { ok: false, error: 'invalid skill name' };
+  // SKILLS-ADD (v1.0.12): a disabled or removed skill is not readable — the
+  // toggle is enforced here, not only in the catalog listing.
+  if (skillAdd.skillsDisabled().indexOf(clean) !== -1) return { ok: false, error: 'skill is disabled: ' + clean };
+  if (skillAdd.skillsRemoved().indexOf(clean) !== -1) return { ok: false, error: 'skill was removed: ' + clean };
   try {
+    const userP = path.join(skillAdd.userSkillsDir(), clean, 'SKILL.md');
+    if (fs.existsSync(userP)) return { ok: true, text: fs.readFileSync(userP, 'utf8').slice(0, 8000) };
     const p = path.join(skillsDir(), clean, 'SKILL.md');
     if (!fs.existsSync(p)) return { ok: false, error: 'no such skill: ' + clean };
     return { ok: true, text: fs.readFileSync(p, 'utf8').slice(0, 8000) };
@@ -1872,6 +1894,8 @@ function activityStep(tool, args) {
   }
   if (tool === 'skill_read') return { label: 'Reading skill: ' + trunc(a.name, 40), detail: '' };
   if (tool === 'skill_save') return { label: 'Saving skill: ' + trunc(a.name, 40), detail: '' };
+  if (tool === 'skill_prepare') return { label: 'Preparing skill: ' + trunc(a.url || a.source || '', 40), detail: '' };
+  if (tool === 'skill_install') return { label: 'Installing skill: ' + trunc(a.name || '', 40), detail: '' };
   if (tool === 'schedule_create') return { label: 'Creating reminder', detail: trunc(a.title, 60) };
   if (tool === 'schedule_list') return { label: 'Listing reminders', detail: '' };
   if (tool === 'schedule_delete') return { label: 'Deleting reminder', detail: trunc(a.id, 40) };
@@ -2452,6 +2476,67 @@ async function runAgentLoopInner(run, onProgress) {
       if (auditEntry2) appendLogEvent(run, 'approval/asked', { approvalId: auditEntry2.id, tool: auditEntry2.tool, command: auditEntry2.command });
       run.status = 'waiting_approval';
       return { status: 'need_approval', runId: run.id, approval: { tool: 'skill_save', command: 'Save skill: ' + parsed.args.name + ' — ' + (parsed.args.when || '') + '\n' + String(parsed.args.content).slice(0, 500), cwd: '(project folder)' }, thought: run.lastThought || '' };
+    }
+    // SKILLS-ADD (v1.0.12): chat path — fetch + scan + preview, no install.
+    // Read-only (no approval needed). The prepared files are stashed
+    // server-side under a prepToken; the model installs by token.
+    if (parsed.tool === 'skill_prepare' && parsed.args && typeof parsed.args.source === 'string') {
+      let prep = null;
+      try {
+        if (parsed.args.source === 'github' && typeof parsed.args.url === 'string') {
+          prep = await skillAdd.fetchGithubSkill(parsed.args.url);
+        } else if (parsed.args.source === 'paste' && typeof parsed.args.text === 'string') {
+          prep = skillAdd.prepareFromText(parsed.args.text, parsed.args.fileName || '');
+        } else {
+          prep = { ok: false, error: 'skill_prepare needs source "github" with a url, or source "paste" with text.' };
+        }
+      } catch (e) {
+        prep = { ok: false, error: 'PREPARE_ERROR' };
+      }
+      if (!prep || !prep.ok) {
+        pushToolResult(run, 'skill_prepare', parsed.args, 'Tool result for skill_prepare failed: ' + ((prep && prep.error) || 'PREPARE_FAILED') + (prep && prep.tried ? ' (tried: ' + prep.tried.join(', ') + ')' : ''), false);
+      } else {
+        const r = skillAdd.chatPreview(prep, skillsDir(), skillAdd.userSkillsDir());
+        if (!r.ok) {
+          pushToolResult(run, 'skill_prepare', parsed.args, 'Tool result for skill_prepare failed: ' + (r.error || 'PREPARE_FAILED'), false);
+        } else {
+          const scanNote = r.scan.verdict === 'ALLOW' ? 'Scan: ALLOW (no flags found).' : ('Scan: ' + r.scan.verdict + ' — ' + r.scan.findings.map(f => f.cls + ' (' + f.severity + ') at ' + f.file + ':' + f.line + ': ' + f.text).join('; '));
+          const preview = 'Tool result for skill_prepare (NOT installed yet — show this preview to the user and ask before installing):\n'
+            + 'Name: ' + r.name + '\nDescription: ' + (r.description || '(missing — ask the user to supply one)') + '\n'
+            + 'Files: ' + r.files.map(f => f.path + ' (' + f.size + ' B)').join(', ') + (r.skipped && r.skipped.length ? '\nSkipped (never copied): ' + r.skipped.join(', ') : '') + '\n'
+            + scanNote + '\n'
+            + (r.conflict ? 'Name conflict: a skill named ' + r.name + ' already exists — ask the user (overwrite / rename / cancel), never silent-overwrite.\n' : '')
+            + (r.overCap ? 'Catalog full: 30 skills already installed — the user must remove one first.\n' : (r.warnCap ? 'Catalog nearly full (' + r.skillCount + '/30 skills) — warn the user.\n' : ''))
+            + (r.source ? 'Source: ' + r.source.type + ' ' + (r.source.url || '') + '\n' : '')
+            + 'SKILL.md preview (first 2000 chars):\n' + (r.skillMdPreview || '(empty)') + '\n'
+            + 'To install, call skill_install with prepToken "' + r.prepToken + '" (and the description, edited if the user changed it).';
+          pushToolResult(run, 'skill_prepare', parsed.args, preview, true);
+        }
+      }
+      if (onProgress) { try { onProgress(parsed.tool, parsed.args, run.lastThought || ''); } catch (e) {} }
+      continue;
+    }
+    // SKILLS-ADD (v1.0.12): chat path — install a prepared skill. Approval-
+    // gated exactly like skill_save: the run pauses, the user sees a card,
+    // and the install runs only on Allow (see the decide handler).
+    if (parsed.tool === 'skill_install' && parsed.args && typeof parsed.args.prepToken === 'string') {
+      if (run.policy === 'never') {
+        pushToolResult(run, 'skill_install', parsed.args, 'Tool result for skill_install: DENIED by policy - approvals are set to Never for this session. Show the preview to the user and ask them to change the policy or approve it manually.', false);
+        run.denyCount = (run.denyCount || 0) + 1;
+        if (onProgress) { try { onProgress(parsed.tool, parsed.args, run.lastThought || ''); } catch (e) {} }
+        continue;
+      }
+      const prep = skillAdd.peekPrepare(parsed.args.prepToken);
+      if (!prep) {
+        pushToolResult(run, 'skill_install', parsed.args, 'Tool result for skill_install failed: the prepared skill expired or was not found (prepares expire after 15 minutes). Call skill_prepare again to fetch it fresh.', false);
+        if (onProgress) { try { onProgress(parsed.tool, parsed.args, run.lastThought || ''); } catch (e) {} }
+        continue;
+      }
+      run.pendingApproval = { tool: 'skill_install', command: 'Install skill: ' + (prep.name || 'skill') + (prep.description ? ' — ' + prep.description : ''), name: prep.name, prepToken: parsed.args.prepToken, description: parsed.args.description || '', override: parsed.args.override || null, allowOverwrite: !!parsed.args.allowOverwrite, cwd: '(project folder)' };
+      const auditEntry4 = recordApprovalAsked(run, run.pendingApproval);
+      if (auditEntry4) appendLogEvent(run, 'approval/asked', { approvalId: auditEntry4.id, tool: auditEntry4.tool, command: auditEntry4.command });
+      run.status = 'waiting_approval';
+      return { status: 'need_approval', runId: run.id, approval: { tool: 'skill_install', command: 'Install skill: ' + (prep.name || 'skill') + (prep.description ? ' — ' + prep.description : '') + '\nFiles: ' + (prep.files || []).map(f => f.path).join(', '), cwd: '(project folder)' }, thought: run.lastThought || '' };
     }
     if (parsed.tool === 'schedule_create' && parsed.args && typeof parsed.args.title === 'string' && typeof parsed.args.prompt === 'string') {
       const s = createSchedule(run.chatId || '', parsed.args);
@@ -3674,6 +3759,21 @@ async function fetchProviderModels(provider, key) {
             const s = saveSkill(pending.name, pending.when || '', pending.content || '');
             pushToolResult(run, 'skill_save', { name: pending.name }, 'Tool result for skill_save (approved by user): ' + (s.ok ? 'saved.' : ('refused - ' + s.error)), s.ok);
             progress('skill_save', { name: pending.name }, run.lastThought || '');
+          } else if (pending.tool === 'skill_install') {
+            // SKILLS-ADD (v1.0.12): chat path — install on Allow. Uses the
+            // SAME installPrepared as the HTTP form (re-scan + BLOCK + conflict
+            // + cap). The prepToken is consumed only on success.
+            appendLogEvent(run, 'tool/call', { step: run.step || 0, tool: 'skill_install', args: pending.name });
+            const prep = skillAdd.peekPrepare(pending.prepToken);
+            if (!prep) {
+              pushToolResult(run, 'skill_install', { prepToken: pending.prepToken }, 'Tool result for skill_install (approved by user) failed: the prepared skill expired (prepares expire after 15 minutes). Call skill_prepare again to fetch it fresh.', false);
+            } else {
+              const s = skillAdd.installPrepared(prep, { description: pending.description || '', override: pending.override || null, allowOverwrite: !!pending.allowOverwrite }, skillsDir(), skillAdd.userSkillsDir());
+              if (s.ok) skillAdd.clearPrepare(pending.prepToken);
+              skillCatalogCache = { digest: '', index: '' };
+              pushToolResult(run, 'skill_install', { name: pending.name }, 'Tool result for skill_install (approved by user): ' + (s.ok ? ('installed "' + s.name + '". It joins the skill catalog from the NEXT run and appears in the Skills page. Tell the user it is installed.') : ('refused - ' + (s.error || 'INSTALL_FAILED') + (s.message ? ': ' + s.message : '') + (s.scan ? ' (scan: ' + s.scan.verdict + ')' : ''))), s.ok);
+            }
+            progress('skill_install', { name: pending.name }, run.lastThought || '');
           } else if (pending.tool === 'mcp_call') {
             appendLogEvent(run, 'tool/call', { step: run.step || 0, tool: 'mcp_call', args: pending.toolName });
             try {
@@ -3748,6 +3848,9 @@ async function fetchProviderModels(provider, key) {
           } else if (pending.tool === 'skill_save') {
             appendLogEvent(run, 'loop/note', { step: run.step || 0, content: 'Tool result for skill_save: the user DENIED saving skill ' + (pending.name || '') + (denyReason ? ' (reason: ' + denyReason + ')' : '') + '. Do not retry it without showing a revised draft.' });
             run.history.push({ role: 'user', content: 'Tool result for skill_save: the user DENIED saving skill ' + (pending.name || '') + '. Do not retry it without showing a revised draft.' });
+          } else if (pending.tool === 'skill_install') {
+            appendLogEvent(run, 'loop/note', { step: run.step || 0, content: 'Tool result for skill_install: the user DENIED installing skill ' + (pending.name || '') + (denyReason ? ' (reason: ' + denyReason + ')' : '') + '. Do not retry it without showing a revised preview.' });
+            run.history.push({ role: 'user', content: 'Tool result for skill_install: the user DENIED installing skill ' + (pending.name || '') + '. Do not retry it. Tell the user the skill was not installed.' });
           } else if (pending.tool === 'browser_control') {
             appendLogEvent(run, 'loop/note', { step: run.step || 0, content: 'Tool result for browser_control: the user DENIED this browser fill/click' + (denyReason ? ' (reason: ' + denyReason + ')' : '') + '. Do not retry it without showing a revised plan.' });
             run.history.push({ role: 'user', content: 'Tool result for browser_control: the user DENIED this browser fill/click. Do not retry it. Explain briefly and suggest a safer alternative.' });
@@ -5351,11 +5454,8 @@ async function fetchProviderModels(provider, key) {
       const outRoot = path.join(__dirname, 'slash-outputs');
       const skills = [];
       try {
-        for (const d of fs.readdirSync(skillsRoot, { withFileTypes: true }).filter(x => x.isDirectory()).sort((a, b) => (a.name < b.name ? -1 : 1))) {
-          const dir = path.join(skillsRoot, d.name);
-          let mt = null;
-          try { mt = fs.statSync(dir).mtime.toISOString(); } catch (e) {}
-          skills.push({ name: d.name, description: skillDesc(dir), mtime: mt, files: listFiles(dir, 200) });
+        for (const s of skillAdd.listSkills(skillsRoot, skillAdd.userSkillsDir())) {
+          skills.push({ name: s.name, description: s.description, mtime: s.mtime, files: s.files, origin: s.origin, source: s.source, enabled: s.enabled, hasSource: s.hasSource, installedAt: s.installedAt });
         }
       } catch (e) {}
       const sites = [];
@@ -5414,6 +5514,118 @@ async function fetchProviderModels(provider, key) {
     return;
   }
   // LIBRARY-END
+
+  // SKILLS-ADD (v1.0.12): Add Skill flow — GitHub link, file upload, pasted
+  // text. Prepare (fetch + validate + scan) -> preview -> Install (approval).
+  // User-installed skills live in <userData>/skills (survive app updates).
+  // The deterministic scan is skill-add.js (skill-scan Step 2 catalog).
+  // Install re-scans server-side — the enforcement point, never the client.
+  function skillAddJson(res, obj) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(obj));
+  }
+  function skillAddReadBody(req, cap, cb) {
+    let body = '';
+    req.on('data', c => { body += c; if (body.length > cap) req.destroy(); });
+    req.on('end', () => {
+      try { cb(null, JSON.parse(body || '{}')); }
+      catch (e) { cb(new Error('BAD_JSON')); }
+    });
+    req.on('error', () => cb(new Error('BODY_ERROR')));
+  }
+  if (req.url === '/api/skills/prepare' && req.method === 'POST') {
+    skillAddReadBody(req, skillAdd.MAX_BODY, async (err, body) => {
+      if (err) return skillAddJson(res, { ok: false, error: 'BAD_REQUEST' });
+      try {
+        const method = String(body.method || '');
+        let prep = null;
+        if (method === 'github') {
+          if (!body.url) return skillAddJson(res, { ok: false, error: 'A GitHub URL is required.' });
+          prep = await skillAdd.fetchGithubSkill(body.url);
+        } else if (method === 'paste') {
+          prep = skillAdd.prepareFromText(body.text || '', body.fileName || '');
+        } else if (method === 'upload') {
+          if (body.zipBase64) prep = skillAdd.prepareFromZip(body.zipBase64);
+          else if (body.content) prep = skillAdd.prepareFromText(body.content, body.fileName || '');
+          else return skillAddJson(res, { ok: false, error: 'No file content received.' });
+        } else {
+          return skillAddJson(res, { ok: false, error: 'Unknown method.' });
+        }
+        if (!prep || !prep.ok) return skillAddJson(res, { ok: false, error: prep.error || 'PREPARE_FAILED', tried: prep.tried || [] });
+        return skillAddJson(res, skillAdd.prepareResult(prep, skillsDir(), skillAdd.userSkillsDir()));
+      } catch (e) {
+        return skillAddJson(res, { ok: false, error: 'PREPARE_ERROR' });
+      }
+    });
+    return;
+  }
+  if (req.url === '/api/skills/install' && req.method === 'POST') {
+    skillAddReadBody(req, skillAdd.MAX_BODY, (err, body) => {
+      if (err) return skillAddJson(res, { ok: false, error: 'BAD_REQUEST' });
+      try {
+        // Shared install (same function the chat skill_install tool calls):
+        // re-scans exactly what will be installed, enforces BLOCK, conflicts,
+        // and the 30-skill cap. The frontend sends the files it got from
+        // /prepare; the chat path sends a prepToken instead (see skill_install).
+        const result = skillAdd.installPrepared(
+          { name: body.name, description: body.description, files: Array.isArray(body.files) ? body.files : [], source: body.source || null },
+          { description: body.description, override: body.override || null, allowOverwrite: !!body.allowOverwrite },
+          skillsDir(), skillAdd.userSkillsDir()
+        );
+        if (!result.ok) return skillAddJson(res, result);
+        skillCatalogCache = { digest: '', index: '' };
+        return skillAddJson(res, result);
+      } catch (e) {
+        return skillAddJson(res, { ok: false, error: 'INSTALL_ERROR' });
+      }
+    });
+    return;
+  }
+  if (req.url === '/api/skills/toggle' && req.method === 'POST') {
+    skillAddReadBody(req, 10000, (err, body) => {
+      if (err) return skillAddJson(res, { ok: false, error: 'BAD_REQUEST' });
+      const done = skillAdd.setSkillEnabled(body.name, body.enabled !== false && body.enabled !== 'false');
+      if (!done.ok) return skillAddJson(res, { ok: false, error: done.error });
+      skillCatalogCache = { digest: '', index: '' };
+      return skillAddJson(res, { ok: true, name: done.name, enabled: done.enabled });
+    });
+    return;
+  }
+  if (req.url === '/api/skills/delete' && req.method === 'POST') {
+    skillAddReadBody(req, 10000, (err, body) => {
+      if (err) return skillAddJson(res, { ok: false, error: 'BAD_REQUEST' });
+      const done = skillAdd.deleteSkill(skillAdd.userSkillsDir(), skillsDir(), body.name);
+      if (!done.ok) return skillAddJson(res, { ok: false, error: done.error });
+      skillCatalogCache = { digest: '', index: '' };
+      return skillAddJson(res, { ok: true, name: body.name, removed: done.removed });
+    });
+    return;
+  }
+  if (req.url === '/api/skills/update' && req.method === 'POST') {
+    skillAddReadBody(req, 10000, async (err, body) => {
+      if (err) return skillAddJson(res, { ok: false, error: 'BAD_REQUEST' });
+      try {
+        const name = skillAdd.cleanSkillName(body.name);
+        if (!name) return skillAddJson(res, { ok: false, error: 'Invalid skill name.' });
+        const meta = skillAdd.skillsMeta();
+        const entry = meta[name];
+        if (!entry || !entry.source || !entry.source.url || entry.source.type !== 'github') {
+          return skillAddJson(res, { ok: false, error: 'NO_SOURCE', message: 'This skill has no GitHub source to re-fetch. Re-add it with a link, file, or pasted text.' });
+        }
+        const prep = await skillAdd.fetchGithubSkill(entry.source.url);
+        if (!prep || !prep.ok) return skillAddJson(res, { ok: false, error: prep.error || 'UPDATE_FAILED', tried: prep.tried || [] });
+        const result = skillAdd.prepareResult(prep, skillsDir(), skillAdd.userSkillsDir());
+        if (!result.ok) return skillAddJson(res, { ok: false, error: result.error });
+        const cur = skillAdd.listSkills(skillsDir(), skillAdd.userSkillsDir()).find(s => s.name === name);
+        result.isUpdate = true;
+        result.previousFiles = cur ? cur.files.map(f => f.path) : [];
+        return skillAddJson(res, result);
+      } catch (e) {
+        return skillAddJson(res, { ok: false, error: 'UPDATE_ERROR' });
+      }
+    });
+    return;
+  }
 
   // BROWSER-START — in-app browser API (see browser.js).
   if (req.url.startsWith('/api/browser/')) {

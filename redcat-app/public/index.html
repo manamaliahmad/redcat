@@ -440,6 +440,44 @@
         </div>
       </div>
 
+      <!-- Add Skill modal (v1.0.12) -->
+      <div class="modal-backdrop" id="skillAddModal">
+        <div class="modal-dialog skill-add-dialog">
+          <div class="modal-header"><div class="modal-title-group"><h3>Add Skill</h3></div><button class="modal-close-btn" id="skillAddClose">✕</button></div>
+          <div class="modal-body">
+            <div class="skill-add-tabs" role="tablist">
+              <button class="skill-add-tab active" data-skill-tab="github" type="button">GitHub link</button>
+              <button class="skill-add-tab" data-skill-tab="upload" type="button">Upload file</button>
+              <button class="skill-add-tab" data-skill-tab="paste" type="button">Paste text</button>
+            </div>
+            <div class="skill-add-panel active" data-skill-panel="github">
+              <label class="skill-add-label" for="skillAddGithubUrl">GitHub repo or SKILL.md URL</label>
+              <input class="skill-add-input" id="skillAddGithubUrl" type="text" placeholder="https://github.com/anthropics/skills/tree/main/skills/pdf" autocomplete="off" spellcheck="false">
+              <p class="skill-add-hint">Paste a GitHub repo URL, a skills folder URL, or a direct SKILL.md link. RedCat fetches only the skill files (SKILL.md plus the support files it references) — never arbitrary repo files.</p>
+            </div>
+            <div class="skill-add-panel" data-skill-panel="upload">
+              <label class="skill-add-label" for="skillAddFile">SKILL.md file or a zip of a skill folder</label>
+              <input id="skillAddFile" type="file" accept=".md,.zip" style="display:block;">
+              <div id="skillAddFileChip"></div>
+              <p class="skill-add-hint">Upload a single SKILL.md file, or a zip of a skill folder. Scripts are never copied or run, and files outside the skill folder are ignored.</p>
+            </div>
+            <div class="skill-add-panel" data-skill-panel="paste">
+              <label class="skill-add-label" for="skillAddPaste">Paste the SKILL.md text</label>
+              <textarea class="skill-add-textarea" id="skillAddPaste" placeholder="---&#10;name: my-skill&#10;description: What this skill does, and when to use it.&#10;---&#10;&#10;# My Skill&#10;&#10;..." spellcheck="false"></textarea>
+            </div>
+            <div class="skill-add-error" id="skillAddError"></div>
+            <div id="skillAddScan"></div>
+            <div id="skillAddPreview"></div>
+            <p class="skill-add-note">Every skill is checked by the skill-scan gate before install: BLOCK means it is refused, REVIEW means you decide, ALLOW means it is clear. Nothing is installed without you clicking Install.</p>
+            <div class="skill-add-actions">
+              <button class="skill-add-btn" id="skillAddCancel" type="button">Cancel</button>
+              <button class="skill-add-btn" id="skillAddCheck" type="button">Check skill</button>
+              <button class="skill-add-btn skill-add-btn-primary" id="skillAddInstall" type="button" disabled>Install skill</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 4. Right Sidebar (Profile & Activity Panel) -->
       <aside class="right-panel" id="rightPanel">
 
