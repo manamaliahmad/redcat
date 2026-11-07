@@ -4408,7 +4408,7 @@ async function fetchProviderModels(provider, key) {
   if (req.url === '/api/updates/status' && req.method === 'GET') {
     const st = global.__redcatUpdaterStatus || null;
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, packaged: !!st, currentVersion: redcatAppVersion(), status: st || { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null } }));
+    res.end(JSON.stringify({ ok: true, packaged: !!st, currentVersion: redcatAppVersion(), status: st || { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null, downloadPercent: null, bytesTransferred: null, bytesTotal: null } }));
     return;
   }
   // FLOATING TOP BAR (v1.0.6) - quick prompts from the bar window.

@@ -425,7 +425,7 @@ function updaterLog(message) {
 // global.__redcatUpdaterStatus so the Settings "Check for Updates"
 // button can show the result. Only its properties are ever mutated
 // (never reassigned), so the global reference stays current.
-let updaterState = { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null };
+let updaterState = { lastCheck: null, updateAvailable: false, version: null, downloading: false, downloaded: false, error: null, downloadPercent: null, bytesTransferred: null, bytesTotal: null };
 let updaterCheckRunning = false;
 let updaterLastLoggedPct = -1;
 // Numeric semver comparison: true only if `latest` is strictly newer
@@ -480,6 +480,9 @@ function setupSilentAutoUpdate() {
     autoUpdater.on('update-available', (info) => {
       updaterState.updateAvailable = true;
       updaterState.version = info && info.version ? String(info.version) : null;
+      updaterState.downloadPercent = 0;
+      updaterState.bytesTransferred = 0;
+      updaterState.bytesTotal = 0;
       updaterLog('update available: ' + (updaterState.version || 'unknown') + ' - downloading in background');
     });
     autoUpdater.on('update-not-available', (info) => {
@@ -490,6 +493,9 @@ function setupSilentAutoUpdate() {
     autoUpdater.on('download-progress', (p) => {
       updaterState.downloading = true;
       const pct = Math.round((p && p.percent) || 0);
+      updaterState.downloadPercent = pct;
+      updaterState.bytesTransferred = (p && p.transferred) || 0;
+      updaterState.bytesTotal = (p && p.total) || 0;
       if (pct === 100 || pct - updaterLastLoggedPct >= 10 || updaterLastLoggedPct < 0) {
         updaterLastLoggedPct = pct;
         updaterLog('downloading update: ' + pct + '% (' + ((p && p.transferred) || 0) + '/' + ((p && p.total) || 0) + ' bytes)');
@@ -498,6 +504,7 @@ function setupSilentAutoUpdate() {
     autoUpdater.on('update-downloaded', (info) => {
       updaterState.downloading = false;
       updaterState.downloaded = true;
+      updaterState.downloadPercent = 100;
       updaterState.version = info && info.version ? String(info.version) : updaterState.version;
       updaterLog('update downloaded: ' + (updaterState.version || 'unknown') + ' - will install on quit');
       markPendingUpdate();
@@ -505,6 +512,7 @@ function setupSilentAutoUpdate() {
     autoUpdater.on('error', (err) => {
       const msg = err && err.message ? err.message : String(err);
       updaterState.error = msg;
+      updaterState.downloading = false;
       updaterLog('updater ERROR: ' + msg);
     });
     // Expose the check + status to the local server so the Settings UI
