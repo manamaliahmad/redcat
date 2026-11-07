@@ -61,11 +61,22 @@ function buildInventoryText(connectorStates) {
   let servers = [];
   try { servers = mcp.catalogForUi() || []; } catch (e) { servers = []; }
   for (const s of servers) {
-    const state = s.connected
-      ? 'connected (' + s.toolCount + ' tools)'
-      : (s.hasToken ? 'token saved, not connected' : 'not connected');
-    const kind = s.tier === 1 ? 'one-click' : 'setup-required';
-    out += '- ' + s.name + ' [mcp:' + s.id + '] — ' + state + ' · ' + (s.category || '') + ' · ' + kind + (s.community ? ' · community' : '') + '\n';
+    // TOKENOPT (v1.0.15) MCP COMPACT INDEX - name + id + short state only.
+    // Tier-2 setup entries that are not connected and have no token list as
+    // name + id + 'setup' (full details live on the Connectors page /
+    // catalog and load on demand). All 145 entries stay listed; only the
+    // per-line wording is shorter. Connected / token-saved entries keep
+    // their state and category so the model can still answer and emit
+    // [CONNECT:mcp:<id>] markers correctly.
+    const kind = s.tier === 1 ? 'one-click' : 'setup';
+    if (s.tier !== 1 && !s.connected && !s.hasToken) {
+      out += '- ' + s.name + ' [mcp:' + s.id + '] - setup\n';
+    } else {
+      const state = s.connected
+        ? 'connected' + (s.toolCount ? ' (' + s.toolCount + ' tools)' : '')
+        : (s.hasToken ? 'token saved' : 'not connected');
+      out += '- ' + s.name + ' [mcp:' + s.id + '] - ' + state + ' - ' + (s.category || '') + ' - ' + kind + '\n';
+    }
   }
   out += 'CONNECTORS (token cards on the Connectors page; the button opens the same authorize dialog as the page):\n';
   for (const c of CONNECTORS) {
@@ -79,7 +90,7 @@ function buildInventoryText(connectorStates) {
   }
   out += 'RULES: (1) When the user asks what you have, answer ONLY from this list — names plus connected state, never invent an entry. '
     + '(2) When the user asks to connect one, or picks one after you list them, end your reply with one marker line per entry, exactly in this form and nothing else on that line: [CONNECT:mcp:<id>] for a one-click MCP entry, [CONNECT:connector:<id>] for a connector, [CONNECT:social:<id>] for a social entry. Use ONLY ids listed above. '
-    + 'NEVER emit a marker for a setup-required (tier 2) MCP entry — for those, tell the user to open its section on the Connectors page and follow its Setup steps. '
+    + 'NEVER emit a marker for a setup (tier 2) MCP entry — for those, tell the user to open its section on the Connectors page and follow its Setup steps. '
     + 'The app turns each marker into a real button in the chat; clicking it runs the SAME Connect flow as the Connectors page (same endpoint, same OAuth sign-in + Allow by the user, one at a time). '
     + 'NEVER claim an entry is connected until the user has clicked and signed in — the button, not your words, performs the connection. '
     + 'DISCORD: Discord is the shared RedCat bot — a one-click MCP entry [mcp:discord], NOT a social token flow. When the user asks how to connect Discord, your reply MUST end with this exact line, alone on its own line, with nothing else on that line: [CONNECT:mcp:discord] — the app turns that line into a real Connect button. Write the explanation first, then that marker line last. Your explanation MUST include these three sentences: (1) "Click Connect, sign in with Discord, and authorize — the RedCat bot appears in your Discord and you chat with it in a direct message (DM)." (2) "The bot is shared and already set up — no token, no app, no Developer Portal work is needed." (3) "You and the PC do NOT need to be on the same network — from anywhere, just the PC needs to be ON, and you can command it through Discord." Never ask the user to create a Discord app or bot, enable an intent, or paste a token.\n';

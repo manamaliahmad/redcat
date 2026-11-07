@@ -4,6 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
 const mcp = require('./mcp.js');
+// TOKENOPT (v1.0.15) — token optimizations: fast-path router, lazy skills,
+// history compaction, prompt-cache markers. Pure helpers, no prompt wording.
+const tokenopt = require('./tokenopt.js');
 const skillAdd = require('./skill-add.js');
 
 const PORT = process.env.PORT || 3000;
@@ -219,9 +222,13 @@ async function callChatModel(provider, model, key, systemText, messages, usageSi
       headers['HTTP-Referer'] = 'http://localhost:3000';
       headers['X-Title'] = 'RedCat';
     }
+    // TOKENOPT (v1.0.15): Claude-family models get cache_control breakpoints
+    // (system prompt + rolling last 3 messages, Hermes "system_and_3").
+    // Other providers get their inputs back unchanged.
+    const cachedReq = tokenopt.applyCacheControl(provider, model, systemText, messages);
     const bodyObj = {
       model: apiModel,
-      messages: [{ role: 'system', content: systemText }].concat(messages),
+      messages: [{ role: 'system', content: cachedReq.system }].concat(cachedReq.messages),
       temperature: 0.7
     };
     // K3 thinking is always on and temperature/top_p are FIXED (1.0/0.95) —
@@ -255,8 +262,8 @@ async function callChatModel(provider, model, key, systemText, messages, usageSi
     }, JSON.stringify({
       model: model,
       max_tokens: 8000,
-      system: systemText,
-      messages: messages
+      system: tokenopt.applyCacheControl(provider, model, systemText, messages).system,
+      messages: tokenopt.applyCacheControl(provider, model, systemText, messages).messages
     }), 0);
     let parsed;
     try { parsed = JSON.parse(r.body); } catch (e) { throw new Error('Provider returned an unreadable response (HTTP ' + r.status + ').'); }
@@ -731,7 +738,7 @@ function agentSystemText(lang, memoryText, skillIndex, skillContent, goalText, i
   const adoptText = loadAdoptText();
   // INVENTORY-HOOK: load live inventory fresh per model call (same pattern as ADOPT).
   const inventoryText = inventoryStore.buildInventoryText(connectorStates);
-  return "You are RedCat, a helpful AI assistant running on the user's own Windows PC. " + langLine + " " + currentTimeLine() + " Be direct, specific, and helpful.\n\n" +
+  return "You are RedCat, a helpful AI assistant running on the user's own Windows PC. " + langLine + " Be direct, specific, and helpful.\n\n" +
     (characterText ? ("CHARACTER GUIDANCE (guidance only - NOT a safety mechanism; safety is enforced by the hardblock list and approval code, never by this text):\n" + characterText + "\n\n") : "") +
     // ADOPT-HOOK: adopted learnings, mirroring the character term above.
     (adoptText ? ("ADOPTED LEARNINGS (adopted rules + rejected patterns - apply the Adopted rules, never repeat the Rejected patterns; the user may amend any entry): " + adoptText + " ") : "") +
@@ -816,7 +823,7 @@ function agentSystemText(lang, memoryText, skillIndex, skillContent, goalText, i
     'SCHEDULED TASKS: when the user asks for a reminder, a repeated check, or anything "every day / every hour / tomorrow at 9", use schedule_create - never promise to remember it yourself. Say the title and the next run time back to the user so they can confirm it. When a scheduled prompt arrives in chat (it will look like a normal user message), run it like any other request. To show or cancel schedules, use schedule_list and schedule_delete. If a schedule time has passed while the app was closed, it is delivered once when the chat opens - never run it twice for the missed slots.\n\n' +
     'FINAL REPLY RULE: end every task with the primary results first, then a brief explanation, then sources - so the reply is enjoyable to read. Results = what was made, found, or changed. Explanation = short, in the user language, no filler. Sources = a clickable link for every file you created or changed (sites/ or videos/ link), the site link for website work, and the names of the pages you read for web facts. Never present a bare claim without its source when a source exists, and never invent a source.\n\n' +
     'TOKEN USAGE (the server reports it, never you): after your final reply, the server appends a real token-usage line from the provider response (input/output counts). Do NOT write token numbers, token counts, or a usage line yourself — you do not know them, and inventing one would be fake. If the user asks about tokens, say only that the usage line after each reply comes from the provider, and that you do not know their remaining balance.\n\n' +
-    "Rules: use tools only when the task truly needs them. Prefer safe, read-only commands for inspection. Never run destructive commands (format, disk tools, registry writes, shutdown, user changes) - they are blocked. If a command is denied by the user, respect it and suggest another way. For website or anything-visual tasks, build under the project sites folder (sites/<short-name>/index.html, assets next to it) and end your final reply with the direct link: http://localhost:" + PORT + "/sites/<short-name>/ \u2014 the user clicks the link in chat and sees it in their browser. Never ask the user to open files by hand or to use Code view. Keep final answers concise.";
+    "Rules: use tools only when the task truly needs them. Prefer safe, read-only commands for inspection. Never run destructive commands (format, disk tools, registry writes, shutdown, user changes) - they are blocked. If a command is denied by the user, respect it and suggest another way. For website or anything-visual tasks, build under the project sites folder (sites/<short-name>/index.html, assets next to it) and end your final reply with the direct link: http://localhost:" + PORT + "/sites/<short-name>/ \u2014 the user clicks the link in chat and sees it in their browser. Never ask the user to open files by hand or to use Code view. Keep final answers concise." + (currentTimeLine() ? ("\n\n" + currentTimeLine()) : ""); // TOKENOPT (v1.0.15): timestamp moved to the END (volatile tier) so the stable prefix stays byte-identical for provider prefix-cache. Wording unchanged.
 }
 
 function parseAgentReply(text) {
@@ -2325,13 +2332,46 @@ async function runAgentLoopInner(run, onProgress) {
   for (let step = 0; step < maxSteps; step++) {
     if (run.cancelled) return { status: 'cancelled' };
     run.step = step; run.status = 'active'; saveRun(run);
-    const history = normalizeAgentMessages(run.history);
+    let history = normalizeAgentMessages(run.history);
+    // TOKENOPT (v1.0.15): compact older history only when it is large.
+    // Disk history is never touched - only what is SENT this turn changes.
+    // On any failure compactHistory returns the full history (safe fallback).
+    try {
+      const comp = tokenopt.compactHistory(history);
+      if (comp.compacted) {
+        history = comp.messages;
+        appendLogEvent(run, 'loop/note', { step: step, content: 'History compacted for this request: ' + comp.droppedCount + ' older messages summarized (' + comp.originalTokens + ' est. tokens -> ' + comp.compactedTokens + ' est. tokens). Full history stays saved on disk.' });
+      }
+    } catch (e) { try { console.log('[tokenopt] compaction skipped: ' + (e && e.message ? String(e.message).slice(0, 120) : 'error')); } catch (e2) {} }
     // VISION: attach validated images for vision-capable providers only;
     // for all other providers callHistory is identical to history.
     const visionLoop = require('./vision.js');
     const callHistory = visionLoop.applyToMessages(history, run.provider, run.model, visionStore[run.id] || run.visionImages || []);
     if (!history.length) return { status: 'done', text: 'No messages to answer.' };
     resolveSlashSkill(run);
+    // TOKENOPT (v1.0.15): lazy skill preload - if the latest user message
+    // clearly matches a skill (keyword match on the index), load that full
+    // SKILL.md now so the model follows it; otherwise the index stays and
+    // the model loads via skill_read as before (safe fallback). Side-effect
+    // skills are never preloaded - they keep the approval gate.
+    if (step === 0 && !run.tokenoptPreloadDone && !run.skillContent && !run.loadedSkillName) {
+      run.tokenoptPreloadDone = true;
+      try {
+        const lastUser = history.filter(m => m && m.role === 'user').pop();
+        const matched = tokenopt.matchSkillsForTask(lastUser ? lastUser.content : '', run.skillIndex || '');
+        const loaded = [];
+        for (const m of matched.slice(0, 2)) {
+          if (skillSideEffects(m.name)) continue;
+          const s = readSkill(m.name);
+          if (s.ok) loaded.push({ name: m.name, text: s.text });
+        }
+        if (loaded.length) {
+          run.loadedSkillName = loaded[0].name;
+          run.skillContent = loaded.map(x => '<skill_content name="' + x.name + '">\n' + x.text + '\n</skill_content>').join('\n');
+          appendLogEvent(run, 'loop/note', { step: step, content: 'Preloaded skill(s) by keyword match: ' + loaded.map(x => x.name).join(', ') + ' (full text in system prompt this turn).' });
+        }
+      } catch (e) { try { console.log('[tokenopt] skill preload skipped: ' + (e && e.message ? String(e.message).slice(0, 120) : 'error')); } catch (e2) {} }
+    }
     let text;
     let modelError = null;
     appendLogEvent(run, 'model/call', { step: step });
@@ -3597,6 +3637,36 @@ async function fetchProviderModels(provider, key) {
         res.writeHead(200, { 'Content-Type': 'application/x-ndjson; charset=utf-8' });
         const progress = (tool, args, thought) => { try { const s = activityStep(tool, args); res.write(JSON.stringify({ type: 'progress', step: run.step, tool: tool, label: s.label, detail: s.detail, thought: thought || '' }) + '\n'); } catch (e) {} };
         res.on('close', () => { if (!run.waitingForApproval && !run.waitingForPlan) run.cancelled = true; });
+        // TOKENOPT (v1.0.15) FAST PATH - greetings / small-talk skip the full
+        // agent context (no tools, no skills, no MCP list, no long history).
+        // Same provider/model the user picked (never a silent model swap);
+        // minimal prompt + last 4 messages only. ANY doubt routes to the
+        // full agent below. A failed fast call falls through to the full
+        // agent - a greeting must never fail the chat.
+        {
+          const lastUserMsg = (messages || []).filter(m => m && m.role === 'user').pop();
+          const prevAssistantMsg = (messages || []).filter(m => m && m.role === 'assistant').pop();
+          const fastDecision = tokenopt.classifyFastPath(lastUserMsg ? lastUserMsg.content : '', { hasAttachments: (visionImages && visionImages.length > 0) || (rawAtt && rawAtt.length > 0), lastAssistantEndsWithQuestion: !!(prevAssistantMsg && typeof prevAssistantMsg.content === 'string' && prevAssistantMsg.content.trim().endsWith('?')) });
+          if (fastDecision.route === 'fast') {
+            try {
+              const fastHistory = normalizeAgentMessages(run.history).slice(-4);
+              const fastText = await callChatModel(run.provider, run.model, run.key, chatSystemText(run.lang || 'en'), fastHistory, run.usage);
+              const fastClean = cleanFinalText(fastText);
+              console.log('[tokenopt-fast] route=fast reason=' + fastDecision.reason + ' text=' + JSON.stringify(String(lastUserMsg.content || '').slice(0, 60)));
+              appendLogEvent(run, 'model/call', { step: 0, fastPath: true, reason: fastDecision.reason });
+              appendLogEvent(run, 'model/reply', { step: 0, kind: 'final', final: fastClean });
+              appendLogEvent(run, 'turn/end', { status: 'done', reason: 'done' });
+              run.history.push({ role: 'assistant', content: fastClean });
+              run.status = 'done'; saveRun(run);
+              logAgentRun(memoryDir(), run.history[0] ? run.history[0].content : '', fastClean);
+              delete agentRuns[run.id]; delete visionStore[run.id];
+              res.end(JSON.stringify({ ok: true, status: 'done', text: fastClean, thought: '' }) + '\n');
+              return;
+            } catch (e) { try { console.log('[tokenopt-fast] failed, falling back to full agent: ' + (e && e.message ? String(e.message).slice(0, 120) : 'error')); } catch (e2) {} }
+          } else {
+            try { console.log('[tokenopt-fast] route=full reason=' + fastDecision.reason + ' text=' + JSON.stringify(String(lastUserMsg ? lastUserMsg.content : '').slice(0, 60))); } catch (e2) {}
+          }
+        }
         const outcome = await runAgentLoop(run, progress);
         if (outcome.status === 'cancelled') { delete agentRuns[run.id]; delete visionStore[run.id]; try { fs.unlinkSync(runFilePath(run.id)); } catch (e) {} try { fs.unlinkSync(runLogPath(run.id)); } catch (e) {} return; }
         if (outcome.status === 'need_approval') {
