@@ -1629,6 +1629,96 @@ body {
   border-radius: 8px;
   padding: 8px 14px;
 }
+/* THEME COLOR SCHEMES (2026-11-07, v1.0.13): per-theme home-page colors.
+   When a theme with a scheme is active, body carries .has-theme-scheme
+   (+ .theme-light for light palettes) and JS sets --theme-panel /
+   --theme-panel2 / --theme-accent / --theme-accent2 / --theme-text /
+   --theme-subtext on :root. The left sidebar + right panel take the
+   image's palette; message cards stay opaque (unchanged), so chat text
+   stays readable. Default + themes 01-14 remove the class (plain look). */
+body.has-theme-scheme .sidebar-chats {
+  background: var(--theme-panel);
+  background-size: auto;
+  animation: none;
+  color: var(--theme-text);
+}
+body.has-theme-scheme .sidebar-chats .sidebar-chats-note {
+  color: var(--theme-subtext);
+}
+body.has-theme-scheme .sidebar-new-chat-btn {
+  background: var(--theme-accent);
+  color: #ffffff;
+}
+body.has-theme-scheme .sidebar-new-chat-btn:hover {
+  background: var(--theme-accent2);
+  color: #ffffff;
+}
+body.has-theme-scheme .right-panel {
+  background: var(--theme-panel2);
+  color: var(--theme-text);
+}
+/* Dark schemes: light hairlines + translucent search input. */
+body.has-theme-scheme:not(.theme-light) .sidebar-chats {
+  border-right-color: rgba(255, 255, 255, 0.14);
+}
+body.has-theme-scheme:not(.theme-light) .right-panel {
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+body.has-theme-scheme:not(.theme-light) .sidebar-search-box input {
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--theme-text);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+/* Light schemes: dark hairlines + translucent search input. */
+body.has-theme-scheme.theme-light .sidebar-chats {
+  border-right-color: rgba(0, 0, 0, 0.10);
+}
+body.has-theme-scheme.theme-light .right-panel {
+  border-left-color: rgba(0, 0, 0, 0.10);
+}
+body.has-theme-scheme.theme-light .sidebar-search-box input {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--theme-text);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+/* Theme decor (v1.0.13): subtle accent SVGs on the home page. The container
+   is pointer-events none and sits behind interactive content; the shapes
+   are low-opacity so they never cover text. Hidden unless a scheme is on. */
+#themeDecor {
+  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+#themeDecor svg { position: absolute; }
+#themeDecor .theme-decor-blob {
+  top: -80px;
+  right: -50px;
+  width: 360px;
+  height: 360px;
+  opacity: 0.10;
+  fill: var(--theme-accent);
+}
+#themeDecor .theme-decor-ring {
+  bottom: 30px;
+  left: 230px;
+  width: 150px;
+  height: 150px;
+  opacity: 0.16;
+  fill: none;
+  stroke: var(--theme-accent2);
+  stroke-width: 10;
+}
+#themeDecor .theme-decor-dot {
+  bottom: 140px;
+  right: 330px;
+  width: 54px;
+  height: 54px;
+  opacity: 0.18;
+  fill: var(--theme-accent2);
+}
 .settings-account-card {
   display: flex;
   align-items: center;

@@ -14,6 +14,16 @@
 
 <body>
 
+  <!-- Theme decor (2026-11-07, v1.0.13): subtle accent SVGs for per-theme
+       home-page schemes. Hidden by default; JS shows it when a theme with
+       a color scheme is active. pointer-events none, low opacity — never
+       covers text or blocks clicks. Fills come from the CSS variables. -->
+  <div id="themeDecor" aria-hidden="true">
+    <svg class="theme-decor-blob" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" /></svg>
+    <svg class="theme-decor-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" /></svg>
+    <svg class="theme-decor-dot" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" /></svg>
+  </div>
+
   <!-- Container for Full Web App -->
   <div id="appContainer" class="app-container app-mode">
 
@@ -911,17 +921,19 @@
               </div>
             </div>
           </div>
-          <!-- TAB: Theme (2026-11-07, v1.0.11): chat background themes.
-               The grid is built by JS (renderChatThemeGrid) from the 14
+          <!-- TAB: Theme (2026-11-07, v1.0.11 + v1.0.13): chat background themes.
+               The grid is built by JS (renderChatThemeGrid) from the 34
                bundled images in /themes/ plus the Default (plain) option.
-               Clicking a thumbnail applies it immediately and persists it. -->
+               Clicking a thumbnail applies it immediately and persists it.
+               The 20 new themes (15-34) also recolor the home page panels
+               to match the image (per-theme scheme in app.js). -->
           <div class="settings-tab-panel" id="tabPanelTheme">
             <div class="settings-card">
               <div class="ai-form-group">
                 <div class="ai-label-row">
                   <label class="ai-field-label">Chat theme</label>
                 </div>
-                <p style="font-size: 13px; color: #4b5563; line-height: 1.6; margin: 0 0 12px;">Pick a background for the chat area. Click a theme to apply it right away — it stays even after you restart RedCat. Default is the plain white background.</p>
+                <p style="font-size: 13px; color: #4b5563; line-height: 1.6; margin: 0 0 12px;">Pick a background for the chat area. Click a theme to apply it right away — it stays even after you restart RedCat. Themes 15–34 also recolor the home page panels to match the image. Default is the plain white background.</p>
                 <div class="chat-theme-grid" id="chatThemeGrid"></div>
                 <div id="chatThemeStatus" style="font-size: 12px; color: #6b7280; margin-top: 8px;"></div>
               </div>

@@ -227,14 +227,75 @@ document.addEventListener('DOMContentLoaded', () => {
   // Readability: message cards are opaque (agent = solid red, user =
   // solid black), so text stays readable over any image.
   const CHAT_THEME_KEY = 'redcat_chat_theme';
-  const CHAT_THEMES = ['default', 'theme-01', 'theme-02', 'theme-03', 'theme-04', 'theme-05', 'theme-06', 'theme-07', 'theme-08', 'theme-09', 'theme-10', 'theme-11', 'theme-12', 'theme-13', 'theme-14'];
+  const CHAT_THEMES = ['default', 'theme-01', 'theme-02', 'theme-03', 'theme-04', 'theme-05', 'theme-06', 'theme-07', 'theme-08', 'theme-09', 'theme-10', 'theme-11', 'theme-12', 'theme-13', 'theme-14', 'theme-15', 'theme-16', 'theme-17', 'theme-18', 'theme-19', 'theme-20', 'theme-21', 'theme-22', 'theme-23', 'theme-24', 'theme-25', 'theme-26', 'theme-27', 'theme-28', 'theme-29', 'theme-30', 'theme-31', 'theme-32', 'theme-33', 'theme-34'];
+  // Names for the 20 Pinterest themes (v1.0.13). Themes 01-14 keep "Theme N".
+  const CHAT_THEME_NAMES = {
+    'theme-15': 'Naruto Smile', 'theme-16': 'Kurama Night', 'theme-17': 'Naruto Blaze',
+    'theme-18': 'Minato Ink', 'theme-19': 'Pain Shards', 'theme-20': 'Sasuke Glass',
+    'theme-21': 'Itachi Night', 'theme-22': 'Shikamaru Day', 'theme-23': 'Rinnegan Eye',
+    'theme-24': 'Madara Chakra', 'theme-25': 'Red Moon', 'theme-26': 'Sage Mode',
+    'theme-27': 'Konoha Aerial', 'theme-28': 'Pain Ascends', 'theme-29': 'Rinnegan Gaze',
+    'theme-30': 'Konan Paper', 'theme-31': 'Akatsuki Trio', 'theme-32': 'Kakashi Reads',
+    'theme-33': 'Tobirama Ink', 'theme-34': 'Naruto & Kurama'
+  };
+  // Per-theme HOME-page color schemes (v1.0.13). Palettes extracted from each
+  // image (PIL dominant colors). Only the 20 new themes carry a scheme; the
+  // 14 v1.0.11 themes keep the default home look (only the chat background
+  // changes). panel = left sidebar, panel2 = right panel, accent/accent2 =
+  // buttons + highlights, text/subtext = sidebar text colors.
+  const CHAT_THEME_SCHEMES = {
+    'theme-15': { panel: '#2f2725', panel2: '#443d3b', accent: '#e26f30', accent2: '#d6375a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-16': { panel: '#261816', panel2: '#3c2f2d', accent: '#e15a02', accent2: '#1a4a6b', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-17': { panel: '#ecb66b', panel2: '#d9a762', accent: '#fc7f04', accent2: '#2a1a12', text: '#1f2937', subtext: '#4b5563', light: true },
+    'theme-18': { panel: '#beb09b', panel2: '#afa28f', accent: '#d2532b', accent2: '#e8a457', text: '#1f2937', subtext: '#4b5563', light: true },
+    'theme-19': { panel: '#570c80', panel2: '#68248d', accent: '#ac0cfe', accent2: '#e34f5a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-20': { panel: '#140f1a', panel2: '#2c2731', accent: '#4389d8', accent2: '#9b3b3a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-21': { panel: '#142222', panel2: '#2c3838', accent: '#3a6ea5', accent2: '#8c1f1f', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-22': { panel: '#e0d3c4', panel2: '#cec2b4', accent: '#185d8b', accent2: '#a96038', text: '#1f2937', subtext: '#4b5563', light: true },
+    'theme-23': { panel: '#571b4a', panel2: '#68325c', accent: '#ae3693', accent2: '#41146d', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-24': { panel: '#06130b', panel2: '#1f2b23', accent: '#b8f55d', accent2: '#156f34', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-25': { panel: '#1c2529', panel2: '#333b3e', accent: '#f63738', accent2: '#7a1f24', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-26': { panel: '#e9e4d7', panel2: '#d6d2c6', accent: '#c66328', accent2: '#0b355b', text: '#1f2937', subtext: '#4b5563', light: true },
+    'theme-27': { panel: '#343229', panel2: '#48463e', accent: '#c97a2e', accent2: '#5e6b4a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-28': { panel: '#f0f0f0', panel2: '#dddddd', accent: '#17161a', accent2: '#8a8a8e', text: '#1f2937', subtext: '#4b5563', light: true },
+    'theme-29': { panel: '#1b1b1d', panel2: '#323234', accent: '#a86fd6', accent2: '#7a5aa8', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-30': { panel: '#0a0a12', panel2: '#22222a', accent: '#5b7fd4', accent2: '#e8e8e8', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-31': { panel: '#191b27', panel2: '#30323d', accent: '#a855f7', accent2: '#e5484d', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-32': { panel: '#0b0e14', panel2: '#23262c', accent: '#e8541e', accent2: '#2f6db3', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-33': { panel: '#1b1a1d', panel2: '#323134', accent: '#c9c9c9', accent2: '#6e6e72', text: '#f3f4f6', subtext: '#d1d5db', light: false },
+    'theme-34': { panel: '#332422', panel2: '#473a38', accent: '#d55925', accent2: '#348c73', text: '#f3f4f6', subtext: '#d1d5db', light: false }
+  };
   function getChatTheme() {
     try { const v = localStorage.getItem(CHAT_THEME_KEY); return CHAT_THEMES.indexOf(v) >= 0 ? v : 'default'; } catch (e) { return 'default'; }
   }
   function chatThemeLabel(id) {
     if (id === 'default') return 'Default';
+    if (CHAT_THEME_NAMES[id]) return CHAT_THEME_NAMES[id];
     const n = parseInt(String(id).replace('theme-', ''), 10);
     return 'Theme ' + (isNaN(n) ? id : n);
+  }
+  // Apply (or clear) the home-page color scheme for a theme. The scheme is
+  // derived from the theme id, so the persisted theme key is the only state.
+  function applyThemeScheme(id) {
+    const scheme = CHAT_THEME_SCHEMES[id] || null;
+    const root = document.documentElement;
+    const body = document.body;
+    const decor = document.getElementById('themeDecor');
+    if (!scheme) {
+      body.classList.remove('has-theme-scheme', 'theme-light');
+      ['--theme-panel', '--theme-panel2', '--theme-accent', '--theme-accent2', '--theme-text', '--theme-subtext'].forEach(v => root.style.removeProperty(v));
+      if (decor) decor.style.display = 'none';
+      return;
+    }
+    root.style.setProperty('--theme-panel', scheme.panel);
+    root.style.setProperty('--theme-panel2', scheme.panel2);
+    root.style.setProperty('--theme-accent', scheme.accent);
+    root.style.setProperty('--theme-accent2', scheme.accent2);
+    root.style.setProperty('--theme-text', scheme.text);
+    root.style.setProperty('--theme-subtext', scheme.subtext);
+    body.classList.add('has-theme-scheme');
+    body.classList.toggle('theme-light', !!scheme.light);
+    if (decor) decor.style.display = 'block';
   }
   function applyChatTheme(id) {
     const theme = CHAT_THEMES.indexOf(id) >= 0 ? id : 'default';
@@ -248,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scroll.style.backgroundImage = 'url(/themes/' + theme + '.webp)';
       }
     }
+    applyThemeScheme(theme);
     try { localStorage.setItem(CHAT_THEME_KEY, theme); } catch (e) {}
     document.querySelectorAll('.chat-theme-thumb').forEach(el => el.classList.toggle('selected', el.getAttribute('data-theme') === theme));
     const status = document.getElementById('chatThemeStatus');
