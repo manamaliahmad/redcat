@@ -4332,11 +4332,22 @@ async function fetchProviderModels(provider, key) {
     }
     return deviceToken;
   }
-  if (req.url === '/api/discord/connect-url' && req.method === 'GET') {
+  // DISCORD CONNECT v2.1 (2026-11-07, v1.0.10): ?mode=dm (DEFAULT) or
+  // ?mode=server. DM-only uses scope=identify ONLY (no bot scope, so
+  // Discord shows NO server selection - for users who have no server and
+  // only want the mobile/DM connection). The server mode keeps the old
+  // scope=bot identify + permissions (adds the bot to a server). The
+  // relay callback works with either scope (it only exchanges the code
+  // and stores the binding/profile via /users/@me), so no relay change.
+  if (req.url.split('?')[0] === '/api/discord/connect-url' && req.method === 'GET') {
     let deviceToken = discordDeviceToken();
     if (!deviceToken) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Discord device token is not available yet. Restart RedCat and try again.' })); return; }
-    const url = 'https://discord.com/oauth2/authorize?client_id=1567612015000686744&redirect_uri=' + encodeURIComponent('https://discord-relay.arexora.com/discord/callback') + '&response_type=code&scope=' + encodeURIComponent('bot identify') + '&permissions=117760&state=' + encodeURIComponent(deviceToken);
-    res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, url })); return;
+    const q = new URL(req.url, 'http://localhost');
+    const mode = (q.searchParams.get('mode') || 'dm').toLowerCase() === 'server' ? 'server' : 'dm';
+    const scope = mode === 'server' ? 'bot identify' : 'identify';
+    const perms = mode === 'server' ? '&permissions=117760' : '';
+    const url = 'https://discord.com/oauth2/authorize?client_id=1567612015000686744&redirect_uri=' + encodeURIComponent('https://discord-relay.arexora.com/discord/callback') + '&response_type=code&scope=' + encodeURIComponent(scope) + perms + '&state=' + encodeURIComponent(deviceToken);
+    res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, url, mode })); return;
   }
   // DISCORD WHOAMI (2026-11-07, v1.0.8): GET /api/discord/whoami ->
   // { ok, bound, id, username, global_name }. Proxies the relay's

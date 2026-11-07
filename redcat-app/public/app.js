@@ -1351,13 +1351,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+    // JOIN-SERVER GUIDANCE (2026-11-07, v1.0.10): after a DM-only connect
+    // (identify scope) the bot shares NO server with the user yet, so a DM
+    // is not possible until they join a shared server. Show the guidance
+    // (Join the RedCat server / Add the bot to my server) exactly then -
+    // bound but no DM chat yet. Hidden once a DM exists (they already have
+    // a shared server) and hidden when not bound at all.
+    const discordJoinGuide = document.getElementById('discordJoinGuide');
+    if (discordJoinGuide) discordJoinGuide.style.display = (!discordEntries.length && discordBoundProfile) ? '' : 'none';
     if (discordSection) discordSection.style.display = '';
   }
   // The + connect icon opens the shared RedCat bot authorize page in a new
   // tab (same link as the Connectors card). Bound once here, not per render.
+  // Default (no argument) is the DM-only identify authorize - no server
+  // needed. The "Add the bot to my server" button (in the join-server
+  // guidance) passes 'server' for the bot-identify flow.
   if (discordConnectBtn) {
     discordConnectBtn.addEventListener('click', () => {
       openDiscordConnect();
+    });
+  }
+  const discordAddBotBtn = document.getElementById('discordAddBotBtn');
+  if (discordAddBotBtn) {
+    discordAddBotBtn.addEventListener('click', () => {
+      openDiscordConnect('server');
     });
   }
   // Disconnect confirm popup buttons (bound once here, not per render).
@@ -5405,8 +5422,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // state = this install's device token. The relay binds the user's
   // Discord ID to the device token so DMs are routed to this PC.
   // Falls back to the old bot-invite URL if the endpoint is unavailable.
-  function openDiscordConnect() {
-    fetch('/api/discord/connect-url').then(function (r) { return r.json(); }).then(function (j) {
+  // DISCORD CONNECT v2.1 (2026-11-07, v1.0.10): mode 'dm' (DEFAULT) opens
+  // the identify-only authorize URL (no server selection - for users with
+  // no server); mode 'server' opens the bot-identify URL (adds the bot to
+  // a server). The + button and the Connectors card call this with no
+  // argument, so they get the DM-only default. The fallback (endpoint
+  // down) is the old bot-invite URL - a working path, not a silent fail.
+  function openDiscordConnect(mode) {
+    var m = (mode === 'server') ? 'server' : 'dm';
+    fetch('/api/discord/connect-url?mode=' + m).then(function (r) { return r.json(); }).then(function (j) {
       if (j && j.ok && j.url) { window.open(j.url, '_blank', 'noopener'); }
       else { window.open(DISCORD_BOT_AUTH_URL, '_blank', 'noopener'); }
     }).catch(function () { window.open(DISCORD_BOT_AUTH_URL, '_blank', 'noopener'); });
@@ -5418,7 +5442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return '<a class="mcp-dash-link" href="' + DISCORD_BOT_PROFILE_URL + '" target="_blank" rel="noopener">Chat on Discord</a>';
   }
   function mcpDiscordHintHtml() {
-    return '<div class="mcp-note-line">After authorizing, RedCat joins your server. Open a DM with RedCat from its profile to start chatting.</div>';
+    return '<div class="mcp-note-line">No server needed - this connects RedCat for DMs. To DM the bot, join the <a href="https://discord.gg/4r8NwtnFB" target="_blank" rel="noopener">RedCat server</a> or add the bot to your own server.</div>';
   }
   function mcpGridActionBtn(server) {
     if (server.connected) return '<button class="connector-disconnect-btn mcp-grid-btn" data-mcp-disconnect="' + mcpEsc(server.id) + '">Disconnect</button>';
