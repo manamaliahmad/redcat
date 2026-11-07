@@ -156,8 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
       settingsModal.classList.add('active');
     });
   }
-  if (btnCloseSettingsModal) btnCloseSettingsModal.addEventListener('click', () => settingsModal.classList.remove('active'));
-  if (btnSaveSettings) btnSaveSettings.addEventListener('click', () => settingsModal.classList.remove('active'));
+  if (btnCloseSettingsModal) btnCloseSettingsModal.addEventListener('click', () => { settingsModal.classList.remove('active'); stopUpdateStatusPolling(); });
+  if (btnSaveSettings) btnSaveSettings.addEventListener('click', () => { settingsModal.classList.remove('active'); stopUpdateStatusPolling(); });
 
   // Settings Tabs Switching Logic
   const settingsNavItems = document.querySelectorAll('.settings-nav-item[data-tab]');
@@ -208,6 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetPanel) {
         targetPanel.classList.add('active');
       }
+      // Updates status: poll live while the Updates tab is open so the
+      // status text follows the real download state (progress %, downloaded,
+      // error); stop polling when leaving the tab.
+      if (tab === 'updates') startUpdateStatusPolling();
+      else stopUpdateStatusPolling();
     });
   });
 
@@ -277,6 +282,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const updatesVersionText = document.getElementById('updatesVersionText');
   const updatesStatus = document.getElementById('updatesStatus');
   const btnCheckUpdates = document.getElementById('btnCheckUpdates');
+  let updateStatusTimer = null;
+  function startUpdateStatusPolling() {
+    stopUpdateStatusPolling();
+    loadUpdateStatus();
+    updateStatusTimer = setInterval(loadUpdateStatus, 3000);
+  }
+  function stopUpdateStatusPolling() {
+    if (updateStatusTimer) { clearInterval(updateStatusTimer); updateStatusTimer = null; }
+  }
+  // Formats live download progress for the Updates status line:
+  // " 45% (64.2 MB / 142.8 MB)". Returns '' when nothing is known yet.
+  function updateDownloadProgressText(st) {
+    const pct = (st && typeof st.downloadPercent === 'number') ? st.downloadPercent : null;
+    const done = (st && typeof st.bytesTransferred === 'number') ? st.bytesTransferred : null;
+    const total = (st && typeof st.bytesTotal === 'number' && st.bytesTotal > 0) ? st.bytesTotal : null;
+    let out = '';
+    if (pct !== null) out += ' ' + pct + '%';
+    if (done !== null && total !== null) out += ' (' + (done / 1000000).toFixed(1) + ' MB / ' + (total / 1000000).toFixed(1) + ' MB)';
+    else if (total !== null) out += ' (' + (total / 1000000).toFixed(1) + ' MB)';
+    return out;
+  }
   async function loadUpdateStatus() {
     try {
       const r = await fetch('/api/updates/status');
@@ -286,10 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const st = j.status || {};
         if (updatesStatus) {
           if (st.error) updatesStatus.textContent = 'Last check failed: ' + st.error;
-          else if (st.downloaded) updatesStatus.textContent = 'Update v' + (st.version || '') + ' downloaded - it will install when you quit the app.';
-          else if (st.downloading) updatesStatus.textContent = 'Downloading update v' + (st.version || '') + ' in the background...';
+          else if (st.downloaded) updatesStatus.textContent = 'Update v' + (st.version || '') + ' downloaded \u2014 it will install when you quit the app.';
+          else if (st.downloading) updatesStatus.textContent = 'Downloading update v' + (st.version || '') + '\u2026' + updateDownloadProgressText(st);
           else if (st.updateAvailable) updatesStatus.textContent = 'Update v' + (st.version || '') + ' available - downloading in the background.';
-          else updatesStatus.textContent = st.lastCheck ? 'Last checked: ' + new Date(st.lastCheck).toLocaleString() + '. You are up to date.' : 'Automatic updates are on. No check has run yet.';
+          else if (st.lastCheck) updatesStatus.textContent = "You're on the latest version.";
+          else updatesStatus.textContent = 'Automatic updates are on. No check has run yet.';
         }
       }
     } catch (e) {}
@@ -314,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   // Load the update status when the Updates tab is opened, and when Settings opens.
   settingsNavItems.forEach(item => {
-    item.addEventListener('click', () => { if (item.getAttribute('data-tab') === 'updates') loadUpdateStatus(); });
+    item.addEventListener('click', () => { if (item.getAttribute('data-tab') === 'updates') startUpdateStatusPolling(); });
   });
   if (btnNavSettings) btnNavSettings.addEventListener('click', () => loadUpdateStatus());
   // FLOATING TOP BAR (v1.0.6): Settings toggle - show the quick bar when
@@ -883,7 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCloseDownloadModal) btnCloseDownloadModal.addEventListener('click', () => downloadModal.classList.remove('active'));
 
   window.addEventListener('click', (e) => {
-    if (e.target === settingsModal) settingsModal.classList.remove('active');
+    if (e.target === settingsModal) { settingsModal.classList.remove('active'); stopUpdateStatusPolling(); }
     if (e.target === reportModal) reportModal.classList.remove('active');
     if (e.target === downloadModal) downloadModal.classList.remove('active');
   });
