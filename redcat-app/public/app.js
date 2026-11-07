@@ -238,32 +238,48 @@ document.addEventListener('DOMContentLoaded', () => {
     'theme-30': 'Konan Paper', 'theme-31': 'Akatsuki Trio', 'theme-32': 'Kakashi Reads',
     'theme-33': 'Tobirama Ink', 'theme-34': 'Naruto & Kurama'
   };
-  // Per-theme HOME-page color schemes (v1.0.13). Palettes extracted from each
-  // image (PIL dominant colors). Only the 20 new themes carry a scheme; the
-  // 14 v1.0.11 themes keep the default home look (only the chat background
-  // changes). panel = left sidebar, panel2 = right panel, accent/accent2 =
-  // buttons + highlights, text/subtext = sidebar text colors.
+  // Per-theme color schemes (v1.0.14). All 34 themes carry a scheme now:
+  // the 14 v1.0.11 themes (01-14) got schemes in v1.0.14, and every scheme
+  // also carries bubble + top/bottom colors. Palettes extracted from each
+  // image (PIL dominant colors). panel = left sidebar, panel2 = right
+  // panel, accent/accent2 = buttons + highlights, text/subtext = sidebar
+  // text colors, userBubble/userText + botBubble/botText = message bubbles,
+  // topBar/topText = top header strip, bottomBar/bottomText = input area.
   const CHAT_THEME_SCHEMES = {
-    'theme-15': { panel: '#2f2725', panel2: '#443d3b', accent: '#e26f30', accent2: '#d6375a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-16': { panel: '#261816', panel2: '#3c2f2d', accent: '#e15a02', accent2: '#1a4a6b', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-17': { panel: '#ecb66b', panel2: '#d9a762', accent: '#fc7f04', accent2: '#2a1a12', text: '#1f2937', subtext: '#4b5563', light: true },
-    'theme-18': { panel: '#beb09b', panel2: '#afa28f', accent: '#d2532b', accent2: '#e8a457', text: '#1f2937', subtext: '#4b5563', light: true },
-    'theme-19': { panel: '#570c80', panel2: '#68248d', accent: '#ac0cfe', accent2: '#e34f5a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-20': { panel: '#140f1a', panel2: '#2c2731', accent: '#4389d8', accent2: '#9b3b3a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-21': { panel: '#142222', panel2: '#2c3838', accent: '#3a6ea5', accent2: '#8c1f1f', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-22': { panel: '#e0d3c4', panel2: '#cec2b4', accent: '#185d8b', accent2: '#a96038', text: '#1f2937', subtext: '#4b5563', light: true },
-    'theme-23': { panel: '#571b4a', panel2: '#68325c', accent: '#ae3693', accent2: '#41146d', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-24': { panel: '#06130b', panel2: '#1f2b23', accent: '#b8f55d', accent2: '#156f34', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-25': { panel: '#1c2529', panel2: '#333b3e', accent: '#f63738', accent2: '#7a1f24', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-26': { panel: '#e9e4d7', panel2: '#d6d2c6', accent: '#c66328', accent2: '#0b355b', text: '#1f2937', subtext: '#4b5563', light: true },
-    'theme-27': { panel: '#343229', panel2: '#48463e', accent: '#c97a2e', accent2: '#5e6b4a', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-28': { panel: '#f0f0f0', panel2: '#dddddd', accent: '#17161a', accent2: '#8a8a8e', text: '#1f2937', subtext: '#4b5563', light: true },
-    'theme-29': { panel: '#1b1b1d', panel2: '#323234', accent: '#a86fd6', accent2: '#7a5aa8', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-30': { panel: '#0a0a12', panel2: '#22222a', accent: '#5b7fd4', accent2: '#e8e8e8', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-31': { panel: '#191b27', panel2: '#30323d', accent: '#a855f7', accent2: '#e5484d', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-32': { panel: '#0b0e14', panel2: '#23262c', accent: '#e8541e', accent2: '#2f6db3', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-33': { panel: '#1b1a1d', panel2: '#323134', accent: '#c9c9c9', accent2: '#6e6e72', text: '#f3f4f6', subtext: '#d1d5db', light: false },
-    'theme-34': { panel: '#332422', panel2: '#473a38', accent: '#d55925', accent2: '#348c73', text: '#f3f4f6', subtext: '#d1d5db', light: false }
+    'theme-01': { name: 'Spider-Gwen White', panel: '#e3e8e8', panel2: '#d3d8db', accent: '#c16ca6', accent2: '#a3e2e4', text: '#1f2937', subtext: '#4b5563', light: true, userBubble: '#9d5887', userText: '#ffffff', botBubble: '#f9f0f6', botText: '#1f2937', topBar: '#e3e8e8', topText: '#1f2937', bottomBar: '#e0e5e8', bottomText: '#1f2937' },
+    'theme-02': { name: 'Deadpool Yellow', panel: '#fdd92f', panel2: '#e8c428', accent: '#bf1a06', accent2: '#660d06', text: '#1f2937', subtext: '#4b5563', light: true, userBubble: '#bf1a06', userText: '#ffffff', botBubble: '#f9e8e6', botText: '#1f2937', topBar: '#fdd92f', topText: '#1f2937', bottomBar: '#f6d02a', bottomText: '#1f2937' },
+    'theme-03': { name: 'Spidey & Gwen Blueprint', panel: '#471a34', panel2: '#603e3e', accent: '#ce202f', accent2: '#eaa63b', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#ce202f', userText: '#ffffff', botBubble: '#fae9ea', botText: '#1f2937', topBar: '#471a34', topText: '#f3f4f6', bottomBar: '#583939', bottomText: '#f3f4f6' },
+    'theme-04': { name: 'Comic Mono', panel: '#545454', panel2: '#6e6e6e', accent: '#d9d9d9', accent2: '#8f8f8f', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#6e6e6e', userText: '#ffffff', botBubble: '#fbfbfb', botText: '#1f2937', topBar: '#545454', topText: '#f3f4f6', bottomBar: '#656565', bottomText: '#f3f4f6' },
+    'theme-05': { name: 'Itachi Sharingan', panel: '#0c0b0f', panel2: '#272229', accent: '#b53b42', accent2: '#757783', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#b53b42', userText: '#ffffff', botBubble: '#f8ebec', botText: '#1f2937', topBar: '#0c0b0f', topText: '#f3f4f6', bottomBar: '#241f26', bottomText: '#f3f4f6' },
+    'theme-06': { name: 'Eyes in the Dark', panel: '#0c0a08', panel2: '#362e2c', accent: '#807c7b', accent2: '#62574e', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#716d6c', userText: '#ffffff', botBubble: '#f2f2f2', botText: '#1f2937', topBar: '#0c0a08', topText: '#f3f4f6', bottomBar: '#322a28', bottomText: '#f3f4f6' },
+    'theme-07': { name: 'Steins;Gate Divergence', panel: '#2d0405', panel2: '#421010', accent: '#a5393d', accent2: '#691e21', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#a5393d', userText: '#ffffff', botBubble: '#f6ebec', botText: '#1f2937', topBar: '#2d0405', topText: '#f3f4f6', bottomBar: '#3d0f0f', bottomText: '#f3f4f6' },
+    'theme-08': { name: 'Code Girl Glitch', panel: '#0f1112', panel2: '#242525', accent: '#ffed5b', accent2: '#6d9ac6', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#756d2a', userText: '#ffffff', botBubble: '#fffdef', botText: '#1f2937', topBar: '#0f1112', topText: '#f3f4f6', bottomBar: '#212222', bottomText: '#f3f4f6' },
+    'theme-09': { name: 'Eye Scan Terminal', panel: '#101210', panel2: '#222b24', accent: '#4a8865', accent2: '#8c958e', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#42795a', userText: '#ffffff', botBubble: '#edf3f0', botText: '#1f2937', topBar: '#101210', topText: '#f3f4f6', bottomBar: '#1f2821', bottomText: '#f3f4f6' },
+    'theme-10': { name: 'Retro Desk Signal Lost', panel: '#0f0f0f', panel2: '#463928', accent: '#e2413d', accent2: '#b48a60', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#c83a36', userText: '#ffffff', botBubble: '#fcecec', botText: '#1f2937', topBar: '#0f0f0f', topText: '#f3f4f6', bottomBar: '#403425', bottomText: '#f3f4f6' },
+    'theme-11': { name: 'Pink Panther Boba', panel: '#fec9ce', panel2: '#eab3bd', accent: '#ff86a5', accent2: '#17161a', text: '#1f2937', subtext: '#4b5563', light: true, userBubble: '#a3566a', userText: '#ffffff', botBubble: '#fff3f6', botText: '#1f2937', topBar: '#fec9ce', topText: '#1f2937', bottomBar: '#f8bec8', bottomText: '#1f2937' },
+    'theme-12': { name: 'Snowball Bunny', panel: '#1a1217', panel2: '#382727', accent: '#e67988', accent2: '#566580', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#a45661', userText: '#ffffff', botBubble: '#fcf2f3', botText: '#1f2937', topBar: '#1a1217', topText: '#f3f4f6', bottomBar: '#342424', bottomText: '#f3f4f6' },
+    'theme-13': { name: 'Spider-Gwen Glitch', panel: '#1f0214', panel2: '#43032d', accent: '#bd5197', accent2: '#533c62', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#ae4a8b', userText: '#ffffff', botBubble: '#f8eef5', botText: '#1f2937', topBar: '#1f0214', topText: '#f3f4f6', bottomBar: '#3e0329', bottomText: '#f3f4f6' },
+    'theme-14': { name: 'Iron Man Blueprint', panel: '#16223a', panel2: '#2c3045', accent: '#bb5c62', accent2: '#c1946a', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#ac545a', userText: '#ffffff', botBubble: '#f8efef', botText: '#1f2937', topBar: '#16223a', topText: '#f3f4f6', bottomBar: '#282c3f', bottomText: '#f3f4f6' },
+    'theme-15': { name: 'Naruto Smile', panel: '#2f2725', panel2: '#443d3b', accent: '#e26f30', accent2: '#d6375a', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#af5625', userText: '#ffffff', botBubble: '#fcf1ea', botText: '#1f2937', topBar: '#2f2725', topText: '#f3f4f6', bottomBar: '#3f3836', bottomText: '#f3f4f6' },
+    'theme-16': { name: 'Kurama Night', panel: '#261816', panel2: '#3c2f2d', accent: '#e15a02', accent2: '#1a4a6b', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#bd4c02', userText: '#ffffff', botBubble: '#fceee6', botText: '#1f2937', topBar: '#261816', topText: '#f3f4f6', bottomBar: '#372b29', bottomText: '#f3f4f6' },
+    'theme-17': { name: 'Naruto Blaze', panel: '#ecb66b', panel2: '#d9a762', accent: '#fc7f04', accent2: '#2a1a12', text: '#1f2937', subtext: '#3f4854', light: true, userBubble: '#aa5603', userText: '#ffffff', botBubble: '#fff2e6', botText: '#1f2937', topBar: '#ecb66b', topText: '#1f2937', bottomBar: '#e6b168', bottomText: '#1f2937' },
+    'theme-18': { name: 'Minato Ink', panel: '#beb09b', panel2: '#afa28f', accent: '#d2532b', accent2: '#e8a457', text: '#1f2937', subtext: '#383f49', light: true, userBubble: '#b84926', userText: '#ffffff', botBubble: '#faeeea', botText: '#1f2937', topBar: '#beb09b', topText: '#1f2937', bottomBar: '#baac98', bottomText: '#1f2937' },
+    'theme-19': { name: 'Pain Shards', panel: '#570c80', panel2: '#68248d', accent: '#ac0cfe', accent2: '#e34f5a', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#a90cf9', userText: '#ffffff', botBubble: '#f7e7ff', botText: '#1f2937', topBar: '#570c80', topText: '#f3f4f6', bottomBar: '#602182', bottomText: '#f3f4f6' },
+    'theme-20': { name: 'Sasuke Glass', panel: '#140f1a', panel2: '#2c2731', accent: '#4389d8', accent2: '#9b3b3a', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#366faf', userText: '#ffffff', botBubble: '#ecf3fb', botText: '#1f2937', topBar: '#140f1a', topText: '#f3f4f6', bottomBar: '#28242d', bottomText: '#f3f4f6' },
+    'theme-21': { name: 'Itachi Night', panel: '#142222', panel2: '#2c3838', accent: '#3a6ea5', accent2: '#8c1f1f', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#3a6ea5', userText: '#ffffff', botBubble: '#ebf0f6', botText: '#1f2937', topBar: '#142222', topText: '#f3f4f6', bottomBar: '#283434', bottomText: '#f3f4f6' },
+    'theme-22': { name: 'Shikamaru Day', panel: '#e0d3c4', panel2: '#cec2b4', accent: '#185d8b', accent2: '#a96038', text: '#1f2937', subtext: '#4b5563', light: true, userBubble: '#185d8b', userText: '#ffffff', botBubble: '#e8eff3', botText: '#1f2937', topBar: '#e0d3c4', topText: '#1f2937', bottomBar: '#dacebf', bottomText: '#1f2937' },
+    'theme-23': { name: 'Rinnegan Eye', panel: '#571b4a', panel2: '#68325c', accent: '#ae3693', accent2: '#41146d', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#ae3693', userText: '#ffffff', botBubble: '#f7ebf4', botText: '#1f2937', topBar: '#571b4a', topText: '#f3f4f6', bottomBar: '#602e55', bottomText: '#f3f4f6' },
+    'theme-24': { name: 'Madara Chakra', panel: '#06130b', panel2: '#1f2b23', accent: '#b8f55d', accent2: '#156f34', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#156f34', userText: '#ffffff', botBubble: '#f8feef', botText: '#1f2937', topBar: '#06130b', topText: '#f3f4f6', bottomBar: '#1d2820', bottomText: '#f3f4f6' },
+    'theme-25': { name: 'Red Moon', panel: '#1c2529', panel2: '#333b3e', accent: '#f63738', accent2: '#7a1f24', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#d22f30', userText: '#ffffff', botBubble: '#feebeb', botText: '#1f2937', topBar: '#1c2529', topText: '#f3f4f6', bottomBar: '#2f3639', bottomText: '#f3f4f6' },
+    'theme-26': { name: 'Sage Mode', panel: '#e9e4d7', panel2: '#d6d2c6', accent: '#c66328', accent2: '#0b355b', text: '#1f2937', subtext: '#4b5563', light: true, userBubble: '#ac5623', userText: '#ffffff', botBubble: '#f9efea', botText: '#1f2937', topBar: '#e9e4d7', topText: '#1f2937', bottomBar: '#e3dfd2', bottomText: '#1f2937' },
+    'theme-27': { name: 'Konoha Aerial', panel: '#343229', panel2: '#48463e', accent: '#c97a2e', accent2: '#5e6b4a', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#9b5e23', userText: '#ffffff', botBubble: '#faf2ea', botText: '#1f2937', topBar: '#343229', topText: '#f3f4f6', bottomBar: '#424039', bottomText: '#f3f4f6' },
+    'theme-28': { name: 'Pain Ascends', panel: '#f0f0f0', panel2: '#dddddd', accent: '#17161a', accent2: '#8a8a8e', text: '#1f2937', subtext: '#4b5563', light: true, userBubble: '#17161a', userText: '#ffffff', botBubble: '#e8e8e8', botText: '#1f2937', topBar: '#f0f0f0', topText: '#1f2937', bottomBar: '#eaeaea', bottomText: '#1f2937' },
+    'theme-29': { name: 'Rinnegan Gaze', panel: '#1b1b1d', panel2: '#323234', accent: '#a86fd6', accent2: '#7a5aa8', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#885aad', userText: '#ffffff', botBubble: '#f6f1fb', botText: '#1f2937', topBar: '#1b1b1d', topText: '#f3f4f6', bottomBar: '#2e2e30', bottomText: '#f3f4f6' },
+    'theme-30': { name: 'Konan Paper', panel: '#0a0a12', panel2: '#22222a', accent: '#5b7fd4', accent2: '#e8e8e8', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#4e6db5', userText: '#ffffff', botBubble: '#eff2fb', botText: '#1f2937', topBar: '#0a0a12', topText: '#f3f4f6', bottomBar: '#1f1f27', bottomText: '#f3f4f6' },
+    'theme-31': { name: 'Akatsuki Trio', panel: '#191b27', panel2: '#30323d', accent: '#a855f7', accent2: '#e5484d', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#9049d3', userText: '#ffffff', botBubble: '#f6eefe', botText: '#1f2937', topBar: '#191b27', topText: '#f3f4f6', bottomBar: '#2c2e38', bottomText: '#f3f4f6' },
+    'theme-32': { name: 'Kakashi Reads', panel: '#0b0e14', panel2: '#23262c', accent: '#e8541e', accent2: '#2f6db3', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#bf4519', userText: '#ffffff', botBubble: '#fdeee8', botText: '#1f2937', topBar: '#0b0e14', topText: '#f3f4f6', bottomBar: '#202328', bottomText: '#f3f4f6' },
+    'theme-33': { name: 'Tobirama Ink', panel: '#1b1a1d', panel2: '#323134', accent: '#c9c9c9', accent2: '#6e6e72', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#6e6e72', userText: '#ffffff', botBubble: '#fafafa', botText: '#1f2937', topBar: '#1b1a1d', topText: '#f3f4f6', bottomBar: '#2e2d30', bottomText: '#f3f4f6' },
+    'theme-34': { name: 'Naruto & Kurama', panel: '#332422', panel2: '#473a38', accent: '#d55925', accent2: '#348c73', text: '#f3f4f6', subtext: '#d1d5db', light: false, userBubble: '#b64c20', userText: '#ffffff', botBubble: '#fbeee9', botText: '#1f2937', topBar: '#332422', topText: '#f3f4f6', bottomBar: '#413534', bottomText: '#f3f4f6' },
   };
   function getChatTheme() {
     try { const v = localStorage.getItem(CHAT_THEME_KEY); return CHAT_THEMES.indexOf(v) >= 0 ? v : 'default'; } catch (e) { return 'default'; }
@@ -274,7 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const n = parseInt(String(id).replace('theme-', ''), 10);
     return 'Theme ' + (isNaN(n) ? id : n);
   }
-  // Apply (or clear) the home-page color scheme for a theme. The scheme is
+  // Apply (or clear) the color scheme for a theme: home-page panels plus
+  // message bubbles and the top/bottom strips (v1.0.14). The scheme is
   // derived from the theme id, so the persisted theme key is the only state.
   function applyThemeScheme(id) {
     const scheme = CHAT_THEME_SCHEMES[id] || null;
@@ -283,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const decor = document.getElementById('themeDecor');
     if (!scheme) {
       body.classList.remove('has-theme-scheme', 'theme-light');
-      ['--theme-panel', '--theme-panel2', '--theme-accent', '--theme-accent2', '--theme-text', '--theme-subtext'].forEach(v => root.style.removeProperty(v));
+      ['--theme-panel', '--theme-panel2', '--theme-accent', '--theme-accent2', '--theme-text', '--theme-subtext', '--theme-user-bubble', '--theme-user-text', '--theme-bot-bubble', '--theme-bot-text', '--theme-topbar', '--theme-toptext', '--theme-bottombar', '--theme-bottomtext'].forEach(v => root.style.removeProperty(v));
       if (decor) decor.style.display = 'none';
       return;
     }
@@ -293,6 +310,14 @@ document.addEventListener('DOMContentLoaded', () => {
     root.style.setProperty('--theme-accent2', scheme.accent2);
     root.style.setProperty('--theme-text', scheme.text);
     root.style.setProperty('--theme-subtext', scheme.subtext);
+    root.style.setProperty('--theme-user-bubble', scheme.userBubble);
+    root.style.setProperty('--theme-user-text', scheme.userText);
+    root.style.setProperty('--theme-bot-bubble', scheme.botBubble);
+    root.style.setProperty('--theme-bot-text', scheme.botText);
+    root.style.setProperty('--theme-topbar', scheme.topBar);
+    root.style.setProperty('--theme-toptext', scheme.topText);
+    root.style.setProperty('--theme-bottombar', scheme.bottomBar);
+    root.style.setProperty('--theme-bottomtext', scheme.bottomText);
     body.classList.add('has-theme-scheme');
     body.classList.toggle('theme-light', !!scheme.light);
     if (decor) decor.style.display = 'block';
