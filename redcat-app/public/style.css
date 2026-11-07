@@ -3280,6 +3280,36 @@ body {
   padding: 4px 10px 8px 10px;
   line-height: 1.45;
 }
+/* CHAT LOAD ERROR (2026-11-07, v1.0.8): visible Retry state when the
+   server could not be reached on load. The old list stays on screen. */
+.chat-load-error {
+  font-size: 12px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 8px 10px 4px 10px;
+  line-height: 1.45;
+}
+.chat-load-retry-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #e5484d;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 10px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+/* CHATS LOCATION NOTE (2026-11-07, v1.0.8): where chats live, always visible. */
+.sidebar-chats-note {
+  font-size: 11px;
+  color: #9ca3af;
+  padding: 8px 10px 4px 10px;
+  line-height: 1.45;
+}
 /* Centre header: Discord + RedCat icons together, shown only for Discord chats. */
 .discord-chat-header {
   display: flex;
