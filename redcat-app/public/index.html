@@ -99,15 +99,11 @@
         <!-- Chat List Navigation -->
         <div class="sidebar-nav-list">
 
-          <!-- All chats, one list: Main first, then side chats in creation order -->
-          <button class="nav-chat-item active" data-chat-id="main">
-            <span class="chat-item-text">Main chat</span>
-            <span class="chat-item-time" id="mainChatTime"></span>
-          </button>
-
-          <!-- Discord chats (PINNED, 2026-11-05): directly below Main chat and
-               above "+ Create agent". It is a static section, never inside a
-               list container, so new agents or re-renders can never push it down. -->
+          <!-- DISCORD SECTION (v1.0.11, Bug 1): Discord sits at the TOP of
+               the sidebar, above Main chat — the Discord chat is the first
+               thing visible after authorize. It is a static section, never
+               inside a list container, so new agents or re-renders can
+               never push it down. -->
           <div id="discordSection" class="discord-section">
             <div class="discord-section-header">
               <img src="/assets/mcp-logos/discord.svg" class="discord-section-icon" alt="Discord">
@@ -123,6 +119,12 @@
               <div class="discord-join-guide-note">Joining the RedCat server is the easiest way - no server of your own needed.</div>
             </div>
           </div>
+
+          <!-- All chats, one list: Main below Discord, then side chats in creation order -->
+          <button class="nav-chat-item active" data-chat-id="main">
+            <span class="chat-item-text">Main chat</span>
+            <span class="chat-item-time" id="mainChatTime"></span>
+          </button>
 
           <button type="button" class="sidebar-new-chat-btn" id="btnCreateUserAgent" title="Create agent">＋ Create agent</button>
 

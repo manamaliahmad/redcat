@@ -1179,6 +1179,21 @@ document.addEventListener('DOMContentLoaded', () => {
     try { localStorage.setItem(DISCORD_SEEN_KEYS_KEY, JSON.stringify(discordSeenKeys)); } catch (err) {}
   }
   function isDiscordChatId(id) { return typeof id === 'string' && id.indexOf('discord-') === 0; }
+  // DISCORD MIRROR (2026-11-07, v1.0.11, Bug 3a): forward a message typed
+  // in a PC Discord chat (and the agent's reply to it) to the Discord DM,
+  // so the DM and the PC chat stay in sync. Fire-and-forget — a failed
+  // forward never breaks the local chat. The bot sends it, so it appears
+  // in the DM from RedCat (bots cannot send as the user — Discord
+  // limitation). No double-send: the poller's /complete path (Discord ->
+  // PC) is separate and never calls this.
+  function forwardDiscordMirror(chatId, text) {
+    try {
+      if (!isDiscordChatId(chatId)) return;
+      const t = String(text || '').trim();
+      if (!t) return;
+      fetch('/api/discord/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chatId: chatId, text: t }) }).catch(() => {});
+    } catch (e) {}
+  }
   // The mirror title is "Discord — <username>"; the profile row shows just
   // the username (e.g. "manamaliahmad").
   function discordUsernameFromTitle(title) {
@@ -1272,6 +1287,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (seenChanged) saveDiscordDisconnectState();
     const discordEntries = rawEntries.filter(e => !isChatDeleted(e.id) && !discordDisconnectedIds.has(e.id));
+    // DISCORD ORDER (2026-11-07, v1.0.11, Bug 1): the currently-bound
+    // account FIRST, then newest first by updatedAt. Bound-first is
+    // required, not just updatedAt: the old account's chat has a NEWER
+    // updatedAt than the newly-bound one (62 msgs vs 0), so a pure
+    // updatedAt sort would still put the OLD account first.
+    const boundChatId = discordBoundProfile ? 'discord-' + discordBoundProfile.id : '';
+    const discordUpdatedAt = (e) => (typeof e.updatedAt === 'number' && e.updatedAt > 0) ? e.updatedAt : (chatUpdatedAt[e.id] || 0);
+    discordEntries.sort((a, b) => {
+      const aBound = a.id === boundChatId ? 1 : 0;
+      const bBound = b.id === boundChatId ? 1 : 0;
+      if (aBound !== bBound) return bBound - aBound;
+      return discordUpdatedAt(b) - discordUpdatedAt(a);
+    });
     discordChatsList.innerHTML = '';
     discordEntries.forEach(entry => {
       try {
@@ -1351,14 +1379,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
-    // JOIN-SERVER GUIDANCE (2026-11-07, v1.0.10): after a DM-only connect
-    // (identify scope) the bot shares NO server with the user yet, so a DM
-    // is not possible until they join a shared server. Show the guidance
-    // (Join the RedCat server / Add the bot to my server) exactly then -
-    // bound but no DM chat yet. Hidden once a DM exists (they already have
-    // a shared server) and hidden when not bound at all.
+    // JOIN-SERVER GUIDANCE (2026-11-07, v1.0.10 + v1.0.11 fix, Bug 3b):
+    // after a DM-only connect (identify scope) the bot shares NO server
+    // with the user yet, so a DM is not possible until they join a shared
+    // server. Show the guidance (Join the RedCat server / Add the bot to
+    // my server) until the user has an actual DM conversation — a Discord
+    // chat with NON-EMPTY history (or messageCount > 0 from the server
+    // poll, which carries messageCount but no history array). The old
+    // condition hid it as soon as ANY Discord entry existed, even though
+    // the user had not joined a server yet — so they never saw it and
+    // DMs stayed impossible. A non-empty history proves a shared server
+    // exists, so the guidance hides only then.
+    const hasDiscordDm = discordEntries.some(e => {
+      if (Array.isArray(e.history)) return e.history.length > 0;
+      return (typeof e.messageCount === 'number' ? e.messageCount : 0) > 0;
+    });
     const discordJoinGuide = document.getElementById('discordJoinGuide');
-    if (discordJoinGuide) discordJoinGuide.style.display = (!discordEntries.length && discordBoundProfile) ? '' : 'none';
+    if (discordJoinGuide) discordJoinGuide.style.display = (discordBoundProfile && !hasDiscordDm) ? '' : 'none';
     if (discordSection) discordSection.style.display = '';
   }
   // The + connect icon opens the shared RedCat bot authorize page in a new
@@ -3674,6 +3711,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.ok && data.status === 'done' && data.text) {
           if (!chatHistories[currentChatId]) chatHistories[currentChatId] = [];
           chatHistories[currentChatId].push({ role: 'assistant', content: data.text, ts: Date.now() });
+          forwardDiscordMirror(currentChatId, data.text);
           finishWithReply(data.text, currentChatId, p, undefined, data.thought || '');
         } else if (data.ok && data.status === 'need_approval' && data.runId && data.approval) {
           p.agentRunId = data.runId; p.stage = 'waiting';
@@ -3719,6 +3757,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (data.ok && data.status === 'done' && data.text) {
           chatHistories[currentChatId].push({ role: 'assistant', content: data.text, ts: Date.now() });
+          forwardDiscordMirror(currentChatId, data.text);
           finishWithReply(data.text, currentChatId, p, undefined, data.thought || '');
         } else if (data.ok && data.status === 'need_approval' && data.runId && data.approval) {
           if (p) { p.agentRunId = data.runId; p.stage = 'waiting'; }
@@ -3783,6 +3822,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (data.ok && data.status === 'done' && data.text) {
         chatHistories[currentChatId].push({ role: 'assistant', content: data.text, ts: Date.now() });
+        forwardDiscordMirror(currentChatId, data.text);
         finishWithReply(data.text, currentChatId, p, undefined, data.thought || '');
       } else if (data.ok && data.status === 'need_approval' && data.runId && data.approval) {
         if (p) { p.agentRunId = data.runId; p.stage = 'waiting'; }
@@ -4873,6 +4913,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fastReply = getFastReply(message, msgLang);
     if (fastReply) {
       chatHistories[sendChatId].push({ role: 'assistant', content: fastReply, ts: Date.now() });
+      forwardDiscordMirror(sendChatId, message);
+      forwardDiscordMirror(sendChatId, fastReply);
       finishWithReply(fastReply, sendChatId, pipeline, 800);
       return;
     }
@@ -4924,6 +4966,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const rawHistory = chatHistories[sendChatId].slice(-20);
+    // DISCORD MIRROR (v1.0.11, Bug 3a): the user message goes to the DM
+    // too. Placed here — after the slash / fast-reply / no-key early
+    // returns — so only real agent-bound messages are mirrored, never
+    // slash commands or local notices.
+    forwardDiscordMirror(sendChatId, message);
     while (rawHistory.length && rawHistory[0].role !== 'user') rawHistory.shift();
     const history = [];
     rawHistory.forEach(m => {
@@ -4945,6 +4992,7 @@ document.addEventListener('DOMContentLoaded', () => {
         finalizeLiveSteps(sendChatId, 'done');
         finalizeBuildingCard(sendChatId, 'done');
         chatHistories[sendChatId].push({ role: 'assistant', content: stripConnectMarkers(data.text), ts: Date.now() });
+        forwardDiscordMirror(sendChatId, stripConnectMarkers(data.text));
         finishWithReply(data.text, sendChatId, pipeline, undefined, data.thought || '');
       } else if (data && data.ok && data.status === 'need_approval' && data.runId && data.approval) {
         pipeline.agentRunId = data.runId;
