@@ -4312,7 +4312,12 @@ async function fetchProviderModels(provider, key) {
   // routed to this PC. The device token is set by main.js in the env
   // (DISCORD_DEVICE_TOKEN); for a standalone server, fall back to
   // reading the token file from the Electron userData folder.
-  if (req.url === '/api/discord/connect-url' && req.method === 'GET') {
+  // DISCORD DEVICE TOKEN (shared by /api/discord/connect-url and
+  // /api/discord/whoami): set by main.js in the env; for a standalone
+  // server, fall back to reading the token file from userData. The token
+  // itself is NEVER sent to the frontend — it only authenticates this
+  // server to the relay.
+  function discordDeviceToken() {
     let deviceToken = process.env.DISCORD_DEVICE_TOKEN ? String(process.env.DISCORD_DEVICE_TOKEN).trim() : '';
     if (!deviceToken) {
       const candidates = [];
@@ -4325,9 +4330,44 @@ async function fetchProviderModels(provider, key) {
         try { const t = fs.readFileSync(f, 'utf8').trim(); if (t) { deviceToken = t; break; } } catch (e) {}
       }
     }
+    return deviceToken;
+  }
+  if (req.url === '/api/discord/connect-url' && req.method === 'GET') {
+    let deviceToken = discordDeviceToken();
     if (!deviceToken) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Discord device token is not available yet. Restart RedCat and try again.' })); return; }
     const url = 'https://discord.com/oauth2/authorize?client_id=1567612015000686744&redirect_uri=' + encodeURIComponent('https://discord-relay.arexora.com/discord/callback') + '&response_type=code&scope=' + encodeURIComponent('bot identify') + '&permissions=117760&state=' + encodeURIComponent(deviceToken);
     res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, url })); return;
+  }
+  // DISCORD WHOAMI (2026-11-07, v1.0.8): GET /api/discord/whoami ->
+  // { ok, bound, id, username, global_name }. Proxies the relay's
+  // /discord/whoami with this install's device token (same token the
+  // connect-url uses). Lets the app tell "Not connected — click + to
+  // connect" apart from "Connected — send a DM to start chatting", and
+  // lets the profile row show the real username + display name (the
+  // authorize page shows the DISPLAY name, e.g. "Ali Ahmad", while the
+  // username is "manamaliahmad" — same account, normal Discord
+  // behaviour). The device token is never exposed to the frontend.
+  if (req.url === '/api/discord/whoami' && req.method === 'GET') {
+    (async () => {
+      const sendWhoami = (obj) => { try { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); } catch (e) {} };
+      try {
+        const deviceToken = discordDeviceToken();
+        if (!deviceToken) { sendWhoami({ ok: false, bound: false, error: 'Discord device token is not available yet.' }); return; }
+        const ctl = new AbortController();
+        const timer = setTimeout(() => { try { ctl.abort(); } catch (e) {} }, 5000);
+        let r;
+        try {
+          r = await fetch('https://discord-relay.arexora.com/discord/whoami', { headers: { Authorization: 'Bearer ' + deviceToken }, signal: ctl.signal });
+        } finally { clearTimeout(timer); }
+        if (r.status === 401) { sendWhoami({ ok: true, bound: false }); return; }
+        if (!r.ok) { sendWhoami({ ok: false, bound: false, error: 'relay error ' + r.status }); return; }
+        const j = await r.json();
+        sendWhoami({ ok: true, bound: !!j.bound, id: j.id || '', username: j.username || '', global_name: j.global_name || '' });
+      } catch (e) {
+        sendWhoami({ ok: false, bound: false, error: 'relay unreachable' });
+      }
+    })();
+    return;
   }
   // SILENT AUTO-UPDATE (2026-11-06, v1.0.5): the Settings "Check for
   // Updates" button calls these. GET /api/updates/check runs the same
@@ -5439,4 +5479,16 @@ server.listen(PORT, () => {
   console.log(`👉 URL: http://localhost:${PORT}`);
   console.log(`👉 Web Interface & API ready for live interaction`);
   console.log(`=======================================================`);
+  // CHAT BACKUP (2026-11-07, v1.0.8): export all chats to
+  // <userData>/backups/chats-YYYY-MM-DD.jsonl on startup and daily
+  // (chatstore keeps the last 7). The user's chats are their memory —
+  // there must always be a copy outside the live files.
+  try {
+    const out = require('./chatstore.js').backupChats();
+    if (out && out.ok) console.log('Chat backup written:', out.file, '(' + out.chats + ' chats)');
+  } catch (e) { console.log('Chat backup failed:', e && e.message ? e.message : e); }
+  try {
+    const t = setInterval(() => { try { require('./chatstore.js').backupChats(); } catch (e) {} }, 24 * 60 * 60 * 1000);
+    if (t && t.unref) t.unref();
+  } catch (e) {}
 });

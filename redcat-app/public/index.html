@@ -115,7 +115,7 @@
               <button type="button" class="discord-connect-btn" id="discordConnectBtn" title="Connect Discord">+</button>
             </div>
             <div id="discordChatsList"></div>
-            <div id="discordChatsEmpty" class="discord-section-empty" style="display:none;">No Discord chats yet — send a DM to RedCat on Discord.</div>
+            <div id="discordChatsEmpty" class="discord-section-empty" style="display:none;">No Discord chats yet — click + to connect Discord.</div>
           </div>
 
           <button type="button" class="sidebar-new-chat-btn" id="btnCreateUserAgent" title="Create agent">＋ Create agent</button>
@@ -128,6 +128,15 @@
 
           <!-- DISCORD SECTION FIX (2026-11-05): this container was hidden by display:none, so the sidebar looked empty on refresh even though the data was on the server. It must stay visible. -->
           <div id="sideChatsContainer"></div>
+
+          <!-- CHAT LOAD ERROR (2026-11-07, v1.0.8): shown only when the
+               server could not be reached at all on load. The previous
+               list (or the saved copy) stays on screen; Retry re-loads. -->
+          <div id="chatLoadError" class="chat-load-error" style="display:none;">Couldn&apos;t load chats from the PC — showing the saved copy. <button type="button" id="chatLoadRetryBtn" class="chat-load-retry-btn">Retry</button></div>
+
+          <!-- CHATS LOCATION (2026-11-07, v1.0.8): so the user can SEE
+               where chats live and that they are backed up daily. -->
+          <div class="sidebar-chats-note">Chats live in %APPDATA%\RedCat\chats — backed up daily.</div>
 
           <button type="button" class="sidebar-new-chat-btn" id="btnNewSideChat" title="New chat" style="display:none;">+ New chat</button>
 

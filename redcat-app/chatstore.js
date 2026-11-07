@@ -10,6 +10,7 @@
 // purge it from localStorage too. The tombstone survives server restarts.
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 // CHATS IN userData (2026-11-07, v1.0.6): chats must live in userData so an
 // app update/reinstall never touches them. The packaged app sets
 // REDCAT_USER_DATA (main.js) to app.getPath('userData'); the dev server
@@ -48,45 +49,102 @@ function writeMeta(counter, agentCounter, deleted) {
     fs.writeFileSync(META_FILE, JSON.stringify({ counter: counter, agentCounter: agentCounter, deleted: d }));
   } catch (e) {}
 }
-// MIGRATION (2026-11-07, v1.0.6): on first run after the move to userData,
-// copy any chats that still live in the old location (chats/ next to
-// server.js, under the install dir) into userData/chats/ so NO user's old
-// chat is lost. Idempotent and safe: never overwrites an existing file in
-// userData; merges __meta__.json (tombstones + counters) instead of
-// replacing it; leaves the old files in place as a backup; deletes nothing.
-// Runs once when this module loads. The dev server (DIR === old location)
-// is a no-op.
-let LEGACY_DIR = path.join(__dirname, 'chats');
-if (process.env.REDCAT_USER_DATA && process.execPath) {
-  try { LEGACY_DIR = path.join(path.dirname(process.execPath), 'resources', 'app.asar.unpacked', 'redcat-app', 'chats'); } catch (e) {}
+// MIGRATION (2026-11-07, v1.0.6; REWRITTEN 2026-11-07, v1.0.8): on first
+// run after the move to userData, adopt chats that still live in an old
+// location into userData/chats/ so NO user's old chat is lost. The v1.0.6
+// migration only checked app.asar.unpacked/redcat-app/chats — which never
+// had chats (the old code wrote inside app.asar, which is unwritable) —
+// so it found nothing and the user's real chats stayed invisible. v1.0.8
+// checks ALL legacy locations:
+//   (a) <install>/resources/app.asar.unpacked/redcat-app/chats
+//   (b) the dev/workshop dir ~/Desktop/redcat/chats (where ali's real
+//       chats live — adopted when userData is empty/fresh)
+//   (c) chats/ next to server.js (dev-server layout)
+// Rules (Hermes principles: disk is truth, never delete, never overwrite
+// good data): a legacy file is copied only when the userData file is
+// MISSING or has ZERO messages and the legacy copy has >0 messages; a
+// userData file with >0 messages is NEVER overwritten. __meta__.json is
+// merged (max counters, union of tombstones) across all sources. Legacy
+// files are left in place as a backup; nothing is ever deleted. Deleted
+// (tombstoned) chats are never migrated back. Runs when this module loads
+// and on list/get/save; after the first successful pass it is a no-op.
+function legacyDirs() {
+  const dirs = [];
+  if (process.env.REDCAT_USER_DATA && process.execPath) {
+    try { dirs.push(path.join(path.dirname(process.execPath), 'resources', 'app.asar.unpacked', 'redcat-app', 'chats')); } catch (e) {}
+  }
+  try { dirs.push(path.join(os.homedir(), 'Desktop', 'redcat', 'chats')); } catch (e) {}
+  dirs.push(path.join(__dirname, 'chats'));
+  const out = [];
+  dirs.forEach(function (d) { if (d && d !== DIR && out.indexOf(d) === -1) out.push(d); });
+  return out;
+}
+function readChatFile(file) {
+  try {
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!data || typeof data !== 'object') return null;
+    return data;
+  } catch (e) { return null; }
+}
+function messageCount(data) {
+  return data && Array.isArray(data.history) ? data.history.length : 0;
+}
+function readMetaFrom(file) {
+  try {
+    const m = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const deleted = Array.isArray(m.deleted) ? m.deleted.filter(function (x) { return typeof x === 'string' && x; }) : [];
+    return { counter: typeof m.counter === 'number' ? m.counter : 0, agentCounter: typeof m.agentCounter === 'number' ? m.agentCounter : 0, deleted: deleted };
+  } catch (e) { return { counter: 0, agentCounter: 0, deleted: [] }; }
 }
 let migrationDone = false;
 function migrateLegacyChats() {
   if (migrationDone) return;
   try {
-    if (LEGACY_DIR === DIR) { migrationDone = true; return; }
-    if (!fs.existsSync(LEGACY_DIR)) return;
-    ensureDir();
-    let files = [];
-    try { files = fs.readdirSync(LEGACY_DIR); } catch (e) { files = []; }
-    files.forEach(function (f) {
-      if (!f.endsWith('.json') || f === '__meta__.json') return;
-      const src = path.join(LEGACY_DIR, f);
-      const dst = path.join(DIR, f);
-      if (fs.existsSync(dst)) return;
-      try { fs.copyFileSync(src, dst); } catch (e) {}
+    const sources = legacyDirs();
+    if (!sources.length) { migrationDone = true; return; }
+    // Merge __meta__.json across userData + all legacy sources FIRST, so
+    // tombstones are known before any file is copied (a deleted chat must
+    // never come back through migration).
+    let merged = readMeta();
+    let metaChanged = false;
+    sources.forEach(function (dir) {
+      try {
+        const lm = path.join(dir, '__meta__.json');
+        if (!fs.existsSync(lm)) return;
+        const legacy = readMetaFrom(lm);
+        const before = JSON.stringify(merged);
+        merged.counter = Math.max(merged.counter, legacy.counter);
+        merged.agentCounter = Math.max(merged.agentCounter, legacy.agentCounter);
+        merged.deleted = Array.from(new Set([].concat(merged.deleted || [], legacy.deleted || []).filter(function (x) { return typeof x === 'string' && x; }))).slice(0, MAX_DELETED);
+        if (JSON.stringify(merged) !== before) metaChanged = true;
+      } catch (e) {}
     });
-    try {
-      const legacyMetaFile = path.join(LEGACY_DIR, '__meta__.json');
-      if (fs.existsSync(legacyMetaFile)) {
-        const legacy = JSON.parse(fs.readFileSync(legacyMetaFile, 'utf8'));
-        const current = readMeta();
-        const mergedDeleted = Array.from(new Set([].concat(current.deleted || [], Array.isArray(legacy.deleted) ? legacy.deleted : []).filter(function (x) { return typeof x === 'string' && x; }))).slice(0, MAX_DELETED);
-        const mergedCounter = Math.max(typeof current.counter === 'number' ? current.counter : 0, typeof legacy.counter === 'number' ? legacy.counter : 0);
-        const mergedAgentCounter = Math.max(typeof current.agentCounter === 'number' ? current.agentCounter : 0, typeof legacy.agentCounter === 'number' ? legacy.agentCounter : 0);
-        writeMeta(mergedCounter, mergedAgentCounter, mergedDeleted);
-      }
-    } catch (e) {}
+    const deletedSet = new Set(merged.deleted || []);
+    let anySource = false;
+    sources.forEach(function (dir) {
+      if (!fs.existsSync(dir)) return;
+      anySource = true;
+      let files = [];
+      try { files = fs.readdirSync(dir); } catch (e) { files = []; }
+      files.forEach(function (f) {
+        if (!f.endsWith('.json') || f === '__meta__.json') return;
+        const id = f.slice(0, -5);
+        if (!safeId(id) || deletedSet.has(id)) return;
+        const src = path.join(dir, f);
+        const dst = path.join(DIR, f);
+        const legacyData = readChatFile(src);
+        if (!legacyData || messageCount(legacyData) === 0) return;
+        if (fs.existsSync(dst)) {
+          // Empty-file-doesn't-block: a 0-message userData file is replaced
+          // by the legacy copy. A userData file with >0 messages is NEVER
+          // overwritten (the user's newer data always wins).
+          const currentData = readChatFile(dst);
+          if (currentData && messageCount(currentData) > 0) return;
+        }
+        try { ensureDir(); fs.copyFileSync(src, dst); } catch (e) {}
+      });
+    });
+    if (anySource && metaChanged) writeMeta(merged.counter, merged.agentCounter, merged.deleted);
     migrationDone = true;
   } catch (e) {}
 }
@@ -164,6 +222,21 @@ function save(id, data) {
       return { ok: false, error: 'EMPTY_OVERWRITE' };
     }
   } catch (e) {}
+  // EMPTY-NEW (2026-11-07, v1.0.8): never CREATE a file with an empty
+  // history. A fresh load pushes an empty Main chat to the server; if no
+  // file exists yet that empty save CREATED an empty main.json (08:12 on
+  // 7 Nov), which then blocked future migration. A chat file is only
+  // created when it has >=1 message. Exception: a Discord profile row
+  // (id discord-*, data.profile === true, sent ONLY by the PC poller when
+  // the relay reports a bound user) may be created empty, so the profile
+  // shows in the sidebar before the first DM. The anti-wipe above still
+  // blocks an empty overwrite of a non-empty file.
+  const targetFile = fileFor(safe);
+  if (targetFile && !fs.existsSync(targetFile) && data.history.length === 0) {
+    if (!(data.profile === true && safe.indexOf('discord-') === 0)) {
+      return { ok: false, error: 'EMPTY_NEW' };
+    }
+  }
   const entry = { id: safe, title: deriveTitle({ id: safe, title: data.title, history: data.history }), html: typeof data.html === 'string' ? data.html : '', history: data.history, updatedAt: Date.now() };
   if (data.kind === 'agent') {
     entry.kind = 'agent';
@@ -196,4 +269,37 @@ function remove(id) {
   try { fs.unlinkSync(f); return { ok: true, deleted: true }; }
   catch (e) { return { ok: false, error: 'CHATSTORE_ERROR' }; }
 }
-module.exports = { list, get, save, remove };
+// BACKUP (2026-11-07, v1.0.8): automatic JSONL export of every chat
+// (one JSON object per line: a {type:'meta'} line, then one full chat
+// object per line) to <userData>/backups/chats-YYYY-MM-DD.jsonl. Called
+// on server startup and daily (see server.js). Keeps the last 7 daily
+// files. Never deletes chat files — only prunes old backup files.
+function backupChats() {
+  try {
+    migrateLegacyChats();
+    const backupDir = path.join(path.dirname(DIR), 'backups');
+    fs.mkdirSync(backupDir, { recursive: true });
+    const now = new Date();
+    const stamp = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const file = path.join(backupDir, 'chats-' + stamp + '.jsonl');
+    const meta = readMeta();
+    const lines = [JSON.stringify({ type: 'meta', exportedAt: now.toISOString(), counter: meta.counter, agentCounter: meta.agentCounter, deleted: meta.deleted })];
+    const listing = list();
+    (listing.chats || []).forEach(function (item) {
+      try {
+        const got = get(item.id);
+        if (got && got.ok && got.chat) lines.push(JSON.stringify(got.chat));
+      } catch (e) {}
+    });
+    fs.writeFileSync(file + '.tmp', lines.join('\n') + '\n', 'utf8');
+    fs.renameSync(file + '.tmp', file);
+    try {
+      const kept = fs.readdirSync(backupDir).filter(function (f) { return /^chats-\d{4}-\d{2}-\d{2}\.jsonl$/.test(f); }).sort();
+      while (kept.length > 7) { const old = kept.shift(); try { fs.unlinkSync(path.join(backupDir, old)); } catch (e) {} }
+    } catch (e) {}
+    return { ok: true, file: file, chats: lines.length - 1 };
+  } catch (e) {
+    return { ok: false, error: 'BACKUP_FAILED' };
+  }
+}
+module.exports = { list, get, save, remove, backupChats };

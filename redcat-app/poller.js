@@ -413,6 +413,25 @@ async function getDesktopChat(chatId) {
   } catch (e) { log('getDesktopChat failed:', e.message); }
   return null;
 }
+// DISCORD PROFILE (2026-11-07, v1.0.8): create the empty profile chat
+// for a bound Discord user (title "Discord — <username>", no messages
+// yet) so the profile row appears in the sidebar within ~5s of Connect,
+// before the first DM. The server only allows creating an empty-history
+// file for a discord-* id with profile:true (chatstore EMPTY_NEW guard);
+// this is the ONLY caller that sends that flag.
+async function saveDesktopChatProfile(chatId, title) {
+  try {
+    const r = await fetch(REDCAT_URL + '/api/chats/' + encodeURIComponent(chatId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(10000),
+      body: JSON.stringify({ id: chatId, title, html: '', history: [], profile: true }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!d.ok) log('saveDesktopChatProfile failed:', d.error || r.status);
+    return !!d.ok;
+  } catch (e) { log('saveDesktopChatProfile error:', e.message); return false; }
+}
 async function saveDesktopChat(chatId, title, history) {
   const kept = history.slice(-100);
   try {
@@ -572,6 +591,31 @@ async function processJob(job) {
   }
 }
 
+// DISCORD PROFILE (2026-11-07, v1.0.8): ask the relay who this device
+// token is bound to (GET /discord/whoami) and, if a user is bound and no
+// desktop chat exists for them yet, create the empty profile chat. The
+// check is throttled to once every 30s; a bound user whose chat already
+// exists is remembered so no work repeats. Runs on every loop iteration
+// (throttled) so the row appears within ~5s of Connect.
+let lastWhoamiCheck = 0;
+let profileEnsuredFor = null;
+async function ensureDiscordProfile() {
+  if (!DEVICE_TOKEN) return;
+  const now = Date.now();
+  if (now - lastWhoamiCheck < 30000) return;
+  lastWhoamiCheck = now;
+  let who;
+  try { who = await relay('/discord/whoami', 'GET', null, 8000); } catch (e) { return; }
+  if (!who || !who.bound || !who.id) return;
+  const chatId = 'discord-' + who.id;
+  if (profileEnsuredFor === chatId) return;
+  const existing = await getDesktopChat(chatId);
+  if (existing) { profileEnsuredFor = chatId; return; }
+  const username = who.username || who.id;
+  const title = 'Discord — ' + username;
+  const ok = await saveDesktopChatProfile(chatId, title);
+  if (ok) { profileEnsuredFor = chatId; log('discord profile row created for', username, '(' + who.id + ')'); }
+}
 async function main() {
   log('RedCat Discord poller starting (bundled). Relay', RELAY_URL, 'mode', transportMode, 'RedCat', REDCAT_URL, 'device token', DEVICE_TOKEN ? 'set' : 'MISSING');
   if (!DEVICE_TOKEN) log('WARNING: DISCORD_DEVICE_TOKEN is not set — the relay will reject /next and /complete (401).');
@@ -586,6 +630,7 @@ async function main() {
         }
         if (!(await ensureTunnel())) { await sleep(10000); continue; }
       }
+      await ensureDiscordProfile();
       const job = await relay('/next', 'GET', null, 8000);
       if (!job) { await sleep(POLL_MS); continue; }
       // A 401/403 (device not linked) or other relay error is not a job —

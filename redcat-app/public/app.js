@@ -1203,6 +1203,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('discordDisconnectModal');
     if (modal) modal.style.display = 'none';
   }
+  // DISCORD BOUND PROFILE (2026-11-07, v1.0.8): who this install is
+  // linked to on Discord (from GET /api/discord/whoami, which proxies
+  // the relay). Lets the empty state tell "Not connected — click + to
+  // connect" apart from "Connected — send a DM to start chatting", and
+  // lets the profile row show the username + the display name (the
+  // authorize page shows the display name, e.g. "Ali Ahmad", while the
+  // username is "manamaliahmad" — same account, normal Discord).
+  let discordBoundProfile = null;
+  let discordBoundCheckedAt = 0;
+  async function refreshDiscordBound(force) {
+    const now = Date.now();
+    if (!force && now - discordBoundCheckedAt < 30000) return;
+    discordBoundCheckedAt = now;
+    try {
+      const r = await fetch('/api/discord/whoami');
+      if (!r.ok) return;
+      const j = await r.json();
+      const next = (j && j.ok && j.bound && j.id) ? { id: String(j.id), username: String(j.username || ''), global_name: String(j.global_name || '') } : null;
+      const changed = JSON.stringify(next) !== JSON.stringify(discordBoundProfile);
+      discordBoundProfile = next;
+      if (changed) { try { renderDiscordSection(getDiscordEntries()); } catch (e) {} }
+    } catch (e) {}
+  }
   function renderDiscordSection(entries) {
     if (!discordChatsList || !Array.isArray(entries)) return;
     // Only a valid snapshot re-renders the section. An empty or failed load
@@ -1240,7 +1263,14 @@ document.addEventListener('DOMContentLoaded', () => {
         icon.alt = 'Discord';
         const label = document.createElement('span');
         label.className = 'chat-item-text';
-        label.textContent = discordUsernameFromTitle(title);
+        // Show the username, plus the display name in brackets when it
+        // differs (e.g. "manamaliahmad (Ali Ahmad)") — the authorize page
+        // shows the display name, which caused the "wrong account" scare.
+        const boundHere = discordBoundProfile && entry.id === 'discord-' + discordBoundProfile.id;
+        const uname = boundHere && discordBoundProfile.username ? discordBoundProfile.username : discordUsernameFromTitle(title);
+        const disp = boundHere ? (discordBoundProfile.global_name || '') : '';
+        label.textContent = (disp && disp.toLowerCase() !== String(uname).toLowerCase()) ? uname + ' (' + disp + ')' : uname;
+        label.title = disp ? ('Discord username ' + uname + ', display name ' + disp) : ('Discord username ' + uname);
         btn.appendChild(icon);
         btn.appendChild(label);
         // TIMESTAMPS (2026-11-05, v2.45): small last-activity time on the
@@ -1279,7 +1309,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // (first time, or after disconnecting). Clicking it opens the shared-bot
     // authorize page so the user connects from here.
     if (discordConnectBtn) discordConnectBtn.style.display = discordEntries.length ? 'none' : '';
-    if (discordChatsEmpty) discordChatsEmpty.style.display = discordEntries.length ? 'none' : '';
+    if (discordChatsEmpty) {
+      discordChatsEmpty.style.display = discordEntries.length ? 'none' : '';
+      if (!discordEntries.length) {
+        // Distinguish "not connected" from "connected, no DM yet" — the
+        // old text always said "send a DM", even when Discord was never
+        // connected at all.
+        if (discordBoundProfile) {
+          const u = discordBoundProfile.username || '';
+          const g = discordBoundProfile.global_name || '';
+          discordChatsEmpty.textContent = 'Connected as @' + u + ((g && g.toLowerCase() !== String(u).toLowerCase()) ? ' (' + g + ')' : '') + ' — send a DM to RedCat on Discord to start chatting.';
+        } else {
+          discordChatsEmpty.textContent = 'No Discord chats yet — click + to connect Discord.';
+        }
+      }
+    }
     if (discordSection) discordSection.style.display = '';
   }
   // The + connect icon opens the shared RedCat bot authorize page in a new
@@ -1303,6 +1347,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const discordDisconnectCancel = document.getElementById('discordDisconnectCancel');
   if (discordDisconnectCancel) {
     discordDisconnectCancel.addEventListener('click', () => { closeDiscordDisconnectConfirm(); });
+  }
+  // LOAD-ERROR RETRY (2026-11-07, v1.0.8): the banner's Retry button
+  // re-runs the server load; a success hides the banner again.
+  const chatLoadRetryBtn = document.getElementById('chatLoadRetryBtn');
+  if (chatLoadRetryBtn) {
+    chatLoadRetryBtn.addEventListener('click', () => { setChatLoadError(false); restoreChatsFromServer(); });
   }
   const discordDisconnectModal = document.getElementById('discordDisconnectModal');
   if (discordDisconnectModal) {
@@ -1970,6 +2020,13 @@ document.addEventListener('DOMContentLoaded', () => {
     snap.chats.forEach(entry => {
       try {
         if (!entry || !entry.id || isChatDeleted(entry.id)) return;
+        // EMPTY-SYNC GUARD (2026-11-07, v1.0.8): never POST an empty
+        // history. A fresh load pushes an empty Main chat; if no file
+        // exists yet that empty save would CREATE an empty main.json on
+        // the server (and block future migration). The server refuses
+        // such saves too (chatstore EMPTY_NEW) — this stops the request
+        // at the source. A file is created only when a message exists.
+        if (!Array.isArray(entry.history) || !entry.history.length) return;
         const body = JSON.stringify({ id: entry.id, title: entry.title || 'New chat', html: entry.html || '', history: Array.isArray(entry.history) ? entry.history : [], kind: entry.kind, colorIndex: entry.colorIndex, providerId: entry.providerId, chatModel: entry.chatModel, customChatModel: entry.customChatModel, browser: entry.browser, counter: snap.counter, agentCounter: snap.agentCounter });
         if (serverChatLastSent[entry.id] === body) return;
         serverChatLastSent[entry.id] = body;
@@ -1995,9 +2052,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // PERSISTENCE (2026-11-05): load chat bodies in parallel with a longer
   // timeout, so one slow chat on a busy PC cannot starve the whole list.
+  // LOAD-ERROR STATE (2026-11-07, v1.0.8): whether the last server list
+  // fetch actually reached the server. An empty list from a REACHED
+  // server is a genuine fresh user (no error); a failed fetch is not.
+  let serverChatReachable = false;
+  function setChatLoadError(show) {
+    const el = document.getElementById('chatLoadError');
+    if (!el) return;
+    el.style.display = show ? '' : 'none';
+  }
   async function fetchServerChats() {
     const listRes = await serverChatFetch('/api/chats', {}, 8000);
-    if (!listRes.ok) return null;
+    if (!listRes.ok) { serverChatReachable = false; return null; }
+    serverChatReachable = true;
     const list = await listRes.json();
     // TOMBSTONE (2026-11-05): the server returns its deleted-chat list; keep
     // it (and persist it) so a deleted chat is never re-synced or rendered.
@@ -2044,10 +2111,20 @@ document.addEventListener('DOMContentLoaded', () => {
       serverSaved.chats = serverSaved.chats.filter(e => e && e.id && !isChatDeleted(e.id));
       purgeDeletedFromLocalStorage();
       restoreChats(serverSaved);
+      // LOAD-ERROR STATE (2026-11-07, v1.0.8): the server answered, so
+      // any earlier load error is over — hide the banner.
+      setChatLoadError(false);
       return;
     }
     purgeDeletedFromLocalStorage();
     restoreChats();
+    // LOAD-ERROR STATE (2026-11-07, v1.0.8): the server could not be
+    // reached at all (both attempts failed). The previous list — or the
+    // localStorage fallback above — stays on screen; show the Retry
+    // banner instead of silently showing an empty sidebar. If the
+    // server WAS reached but simply has no chats yet, this is a fresh
+    // user, not an error — no banner.
+    if (!serverChatReachable) setChatLoadError(true);
     try { persistChats(); } catch (e) {}
   }
   // LIVE SIDEBAR (2026-11-05): poll the server for new chats (for example a
@@ -2131,6 +2208,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // from this poll so a new Discord message shows up live, no reload.
       renderDiscordSection(snapshot.chats);
       updateDiscordChatHeader();
+      // LOAD-ERROR STATE (2026-11-07, v1.0.8): a good poll means the
+      // server is reachable again — hide the banner. A failed poll
+      // changes nothing (the next poll retries).
+      setChatLoadError(false);
+      try { refreshDiscordBound(false); } catch (e) {}
     } catch (e) {
       // A failed poll changes nothing; the next poll retries.
     } finally {
@@ -2310,7 +2392,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // actual startup load (server chats). When it resolves the home page is
   // ready, so the card hides. No timer, no fake delay.
   setCodeLoadingProgress(25, 'Connecting to server');
-  restoreChatsFromServer().then(() => { try { loadInterruptedRuns(); } catch (e) {} try { startLiveChatPolling(); } catch (e) {} try { startQuickPromptPolling(); } catch (e) {} hideCodeLoading(); }).catch(() => { hideCodeLoading(); });
+  restoreChatsFromServer().then(() => { try { loadInterruptedRuns(); } catch (e) {} try { refreshDiscordBound(true); } catch (e) {} try { startLiveChatPolling(); } catch (e) {} try { startQuickPromptPolling(); } catch (e) {} hideCodeLoading(); }).catch(() => { hideCodeLoading(); });
 
   function switchChat(chatId) {
     if (!chatStream || !chatId || chatId === currentChatId) return;
