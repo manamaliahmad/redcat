@@ -3280,6 +3280,54 @@ body {
   padding: 4px 10px 8px 10px;
   line-height: 1.45;
 }
+/* JOIN-SERVER GUIDANCE (2026-11-07, v1.0.10): shown after a DM-only
+   connect (identify scope) when the user is bound but has no DM yet -
+   the bot shares no server with them, so a DM is not possible until they
+   join a shared server. Two buttons: Join the RedCat server (the easy
+   path, no server of their own needed) and Add the bot to my server. */
+.discord-join-guide {
+  padding: 2px 10px 8px 10px;
+}
+.discord-join-guide-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+  line-height: 1.45;
+}
+.discord-join-guide-btn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #111827;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 7px 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.discord-join-guide-btn:hover {
+  background: #e5e7eb;
+}
+.discord-join-guide-primary {
+  background: #5865F2;
+  border-color: #5865F2;
+  color: #ffffff;
+}
+.discord-join-guide-primary:hover {
+  background: #4752c4;
+}
+.discord-join-guide-note {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.45;
+}
 /* CHAT LOAD ERROR (2026-11-07, v1.0.8): visible Retry state when the
    server could not be reached on load. The old list stays on screen. */
 .chat-load-error {
