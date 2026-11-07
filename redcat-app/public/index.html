@@ -662,6 +662,15 @@
             </svg>
             <span>Personality</span>
           </button>
+          <button class="settings-nav-item" data-tab="theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+            <span>Theme</span>
+          </button>
           <button class="settings-nav-item" data-tab="updates">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
               stroke-linecap="round" stroke-linejoin="round">
@@ -861,6 +870,22 @@
               <div class="ai-card-footer" style="margin-top: 14px;">
                 <div class="ai-footer-hint" id="personalityFooterHint"></div>
                 <button type="button" class="ai-action-btn danger" id="btnResetPersonality" title="Restore the default style profile">Reset</button>
+              </div>
+            </div>
+          </div>
+          <!-- TAB: Theme (2026-11-07, v1.0.11): chat background themes.
+               The grid is built by JS (renderChatThemeGrid) from the 14
+               bundled images in /themes/ plus the Default (plain) option.
+               Clicking a thumbnail applies it immediately and persists it. -->
+          <div class="settings-tab-panel" id="tabPanelTheme">
+            <div class="settings-card">
+              <div class="ai-form-group">
+                <div class="ai-label-row">
+                  <label class="ai-field-label">Chat theme</label>
+                </div>
+                <p style="font-size: 13px; color: #4b5563; line-height: 1.6; margin: 0 0 12px;">Pick a background for the chat area. Click a theme to apply it right away — it stays even after you restart RedCat. Default is the plain white background.</p>
+                <div class="chat-theme-grid" id="chatThemeGrid"></div>
+                <div id="chatThemeStatus" style="font-size: 12px; color: #6b7280; margin-top: 8px;"></div>
               </div>
             </div>
           </div>

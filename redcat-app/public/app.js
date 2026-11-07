@@ -178,12 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabTitleMap = {
     'ai-models': 'AI Models',
     'personality': 'Personality',
+    'theme': 'Theme',
     'updates': 'Updates',
   };
 
   const tabPanelMap = {
     'ai-models': 'tabPanelAiModels',
     'personality': 'tabPanelPersonality',
+    'theme': 'tabPanelTheme',
     'updates': 'tabPanelUpdates',
   };
 
@@ -215,6 +217,63 @@ document.addEventListener('DOMContentLoaded', () => {
       else stopUpdateStatusPolling();
     });
   });
+
+  // CHAT THEMES (2026-11-07, v1.0.11): 14 bundled background images in
+  // /themes/ (theme-01.webp .. theme-14.webp, 1920x1080, ali's Canva
+  // designs, compressed to ~20-196KB each) + Default (plain white).
+  // Click a thumbnail to apply it IMMEDIATELY to the chat area
+  // (#chatScroll background); the choice persists in localStorage
+  // (same pattern as the approval policy) and is re-applied on startup.
+  // Readability: message cards are opaque (agent = solid red, user =
+  // solid black), so text stays readable over any image.
+  const CHAT_THEME_KEY = 'redcat_chat_theme';
+  const CHAT_THEMES = ['default', 'theme-01', 'theme-02', 'theme-03', 'theme-04', 'theme-05', 'theme-06', 'theme-07', 'theme-08', 'theme-09', 'theme-10', 'theme-11', 'theme-12', 'theme-13', 'theme-14'];
+  function getChatTheme() {
+    try { const v = localStorage.getItem(CHAT_THEME_KEY); return CHAT_THEMES.indexOf(v) >= 0 ? v : 'default'; } catch (e) { return 'default'; }
+  }
+  function chatThemeLabel(id) {
+    if (id === 'default') return 'Default';
+    const n = parseInt(String(id).replace('theme-', ''), 10);
+    return 'Theme ' + (isNaN(n) ? id : n);
+  }
+  function applyChatTheme(id) {
+    const theme = CHAT_THEMES.indexOf(id) >= 0 ? id : 'default';
+    const scroll = document.getElementById('chatScroll');
+    if (scroll) {
+      if (theme === 'default') {
+        scroll.classList.remove('chat-themed');
+        scroll.style.backgroundImage = '';
+      } else {
+        scroll.classList.add('chat-themed');
+        scroll.style.backgroundImage = 'url(/themes/' + theme + '.webp)';
+      }
+    }
+    try { localStorage.setItem(CHAT_THEME_KEY, theme); } catch (e) {}
+    document.querySelectorAll('.chat-theme-thumb').forEach(el => el.classList.toggle('selected', el.getAttribute('data-theme') === theme));
+    const status = document.getElementById('chatThemeStatus');
+    if (status) status.textContent = theme === 'default' ? 'Default theme — plain white background.' : chatThemeLabel(theme) + ' applied.';
+  }
+  function renderChatThemeGrid() {
+    const grid = document.getElementById('chatThemeGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    CHAT_THEMES.forEach(id => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chat-theme-thumb' + (id === 'default' ? ' chat-theme-default' : '');
+      btn.setAttribute('data-theme', id);
+      btn.title = chatThemeLabel(id) + ' — click to apply';
+      if (id !== 'default') btn.style.backgroundImage = 'url(/themes/' + id + '.webp)';
+      const label = document.createElement('span');
+      label.className = 'chat-theme-thumb-label';
+      label.textContent = chatThemeLabel(id);
+      btn.appendChild(label);
+      btn.addEventListener('click', () => applyChatTheme(id));
+      grid.appendChild(btn);
+    });
+  }
+  renderChatThemeGrid();
+  applyChatTheme(getChatTheme());
 
   // Personality (your style) — view/edit/reset/toggle/scope/forget-one-trait.
   // No explanation/onboarding here by design (ali explains it via video).
