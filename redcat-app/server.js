@@ -1044,15 +1044,20 @@ function saveMemoryFact(dir, fact) {
   } catch (e) { return { ok: false, error: 'could not write memory file' }; }
 }
 
-// Default PERSONALITY.md template (English only). Seeded traits are grounded in
-// the user's own messages: Roman Urdu, short and direct, blunt corrections, no
-// filler. The NEVER mirror block is part of the template and is never changed
-// by a learned update — only the user can edit it, explicitly.
+// Default PERSONALITY.md template (English only, 2026-11-07, v1.0.11,
+// Bug 4). The old template defaulted the model to Roman Urdu even for
+// English messages. This matches the English PERSONALITY.md live on the
+// PC: default language English; reply in the user's language ONLY when
+// the user writes in that language (real detection). NO Roman Urdu
+// anywhere in this template. The per-message conditional "Respond in
+// Roman Urdu" instructions (chatSystemText / agentSystemText) only fire
+// when detectLang returns 'roman_urdu' — those are correct and stay.
 function defaultPersonalityTemplate() {
   return '# PERSONALITY — how this user talks (mirror the STYLE, never the opinions)\n' +
 '\n' +
 '## Language\n' +
-'- Primary: Roman Urdu (Urdu written in Latin script). English for technical terms.\n' +
+'- Primary: English.\n' +
+'- Reply in the user\'s language ONLY when the user writes in that language. Otherwise, always use English (the model\'s natural language).\n' +
 '- Never reply in Urdu script unless the user writes in Urdu script.\n' +
 '\n' +
 '## Tone & style\n' +
@@ -1069,8 +1074,8 @@ function defaultPersonalityTemplate() {
 '- Never help with illegal or wrong work. The safety rules always win over this profile.\n' +
 '\n' +
 '## Style examples (2–3 short exchanges)\n' +
-'- User: "Bruh jwab" → Good reply: short, direct, in Roman Urdu, result first.\n' +
-'- User: "bhai yeh kya hai" → Good reply: short, direct, in Roman Urdu, result first.\n' +
+'- User: "What is this?" → Good reply: short, direct, in English, result first.\n' +
+'- User: "Explain it" → Good reply: short, direct, in English, result first.\n' +
 '\n' +
 '## Likes & dislikes (from feedback)\n' +
 '- (none yet — added from the user\'s reactions)\n';
@@ -4377,6 +4382,46 @@ async function fetchProviderModels(provider, key) {
       } catch (e) {
         sendWhoami({ ok: false, bound: false, error: 'relay unreachable' });
       }
+    })();
+    return;
+  }
+  // DISCORD SEND (2026-11-07, v1.0.11, Bug 3a): POST /api/discord/send
+  // { chatId, text } — forwards a message typed in a PC Discord chat to
+  // the Discord DM, so the DM and the PC chat stay in sync. Forwards to
+  // the relay's POST /send-dm with this install's device token; the relay
+  // derives the userId from the binding (per-user isolation — a PC can
+  // only send to its OWN bound Discord user). The bot sends it, so it
+  // appears in the DM from RedCat (bots cannot send as the user).
+  if (req.url === '/api/discord/send' && req.method === 'POST') {
+    (async () => {
+      const send = (obj) => { try { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); } catch (e) {} };
+      let raw = '';
+      try {
+        raw = await new Promise((resolve, reject) => {
+          let b = '';
+          req.on('data', c => { b += c; if (b.length > 65536) req.destroy(); });
+          req.on('end', () => resolve(b));
+          req.on('error', reject);
+        });
+      } catch (e) { send({ ok: false, error: 'could not read request' }); return; }
+      let body = {};
+      try { body = JSON.parse(raw || '{}'); } catch (e) { send({ ok: false, error: 'bad json' }); return; }
+      const chatId = String(body.chatId || '');
+      const text = String(body.text || '').slice(0, 4000).trim();
+      if (!/^discord-\d+$/.test(chatId)) { send({ ok: false, error: 'not a Discord chat' }); return; }
+      if (!text) { send({ ok: false, error: 'empty text' }); return; }
+      const deviceToken = discordDeviceToken();
+      if (!deviceToken) { send({ ok: false, error: 'Discord device token is not available yet.' }); return; }
+      try {
+        const ctl = new AbortController();
+        const timer = setTimeout(() => { try { ctl.abort(); } catch (e) {} }, 8000);
+        let r;
+        try {
+          r = await fetch('https://discord-relay.arexora.com/send-dm', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + deviceToken }, body: JSON.stringify({ text }), signal: ctl.signal });
+        } finally { clearTimeout(timer); }
+        if (!r.ok) { send({ ok: false, error: 'relay error ' + r.status }); return; }
+        send({ ok: true });
+      } catch (e) { send({ ok: false, error: 'relay unreachable' }); }
     })();
     return;
   }
