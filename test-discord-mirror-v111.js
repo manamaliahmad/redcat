@@ -97,6 +97,28 @@ check('Bug3: app.js forwards in sendChatMessage', appSrc.indexOf('forwardDiscord
 check('Bug3: server.js has POST /api/discord/send', serverSrc.indexOf("req.url === '/api/discord/send'") >= 0);
 check('Bug3: server.js /send-dm forwards to relay /send-dm', serverSrc.indexOf("https://discord-relay.arexora.com/send-dm") >= 0);
 
+// ---- Themes (v1.0.11, ali 7 Nov ~19:02): 14 Canva images, Settings Theme tab ----
+const themesDir = path.join(__dirname, 'redcat-app', 'public', 'themes');
+const themeFiles = [];
+for (let n = 1; n <= 14; n++) themeFiles.push('theme-' + String(n).padStart(2, '0') + '.webp');
+check('Themes: 14 webp files bundled in public/themes/', themeFiles.every(f => fs.existsSync(path.join(themesDir, f))));
+let themeTotal = 0, themeMax = 0;
+themeFiles.forEach(f => { const s = fs.statSync(path.join(themesDir, f)).size; themeTotal += s; if (s > themeMax) themeMax = s; });
+check('Themes: every file under 200KB (max ' + (themeMax / 1024).toFixed(1) + 'KB)', themeMax < 200 * 1024);
+check('Themes: total under 1.5MB (' + (themeTotal / 1024).toFixed(1) + 'KB)', themeTotal < 1.5 * 1024 * 1024);
+check('Themes: index.html has Theme nav + panel + grid',
+  indexSrc.indexOf('data-tab="theme"') >= 0 && indexSrc.indexOf('id="tabPanelTheme"') >= 0 && indexSrc.indexOf('id="chatThemeGrid"') >= 0);
+check('Themes: app.js has theme list + apply + render + localStorage key',
+  appSrc.indexOf("const CHAT_THEME_KEY = 'redcat_chat_theme'") >= 0 &&
+  appSrc.indexOf('function applyChatTheme') >= 0 &&
+  appSrc.indexOf('function renderChatThemeGrid') >= 0 &&
+  appSrc.indexOf("'theme': 'tabPanelTheme'") >= 0);
+check('Themes: app.js applies theme to #chatScroll immediately',
+  appSrc.indexOf("document.getElementById('chatScroll')") >= 0 && appSrc.indexOf("scroll.classList.add('chat-themed')") >= 0);
+const styleSrc = fs.readFileSync(path.join(__dirname, 'redcat-app', 'public', 'style.css'), 'utf8');
+check('Themes: style.css has grid + thumb + themed-scroll styles',
+  styleSrc.indexOf('.chat-theme-grid') >= 0 && styleSrc.indexOf('.chat-theme-thumb.selected') >= 0 && styleSrc.indexOf('.chat-messages-scroll.chat-themed') >= 0);
+
 // ---- Bug 3 live: real server.js on :3123, /api/discord/send validation ----
 function post(port, pathName, body, headers) {
   return new Promise((resolve, reject) => {
@@ -120,6 +142,17 @@ function waitPort(port, ms) {
     })();
   });
 }
+function getFile(port, pathName) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port: port, path: pathName, method: 'GET' }, (res) => {
+      let n = 0;
+      res.on('data', c => { n += c.length; });
+      res.on('end', () => resolve({ status: res.statusCode, type: res.headers['content-type'] || '', bytes: n }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 async function live() {
   // Start 1: no device token -> endpoint must refuse with the token error.
   const env1 = Object.assign({}, process.env, { PORT: '3123' });
@@ -134,6 +167,13 @@ async function live() {
     check('Bug3 live: empty text rejected', r2.json && r2.json.ok === false && r2.json.error === 'empty text', JSON.stringify(r2.json));
     const r3 = await post(3123, '/api/discord/send', { chatId: 'discord-1399069586174902363', text: 'hello' });
     check('Bug3 live: no device token -> token error', r3.json && r3.json.ok === false && /device token/i.test(r3.json.error || ''), JSON.stringify(r3.json));
+    // Themes live: the real server must serve the bundled webp files.
+    const t1 = await getFile(3123, '/themes/theme-01.webp');
+    check('Themes live: /themes/theme-01.webp serves 200 image/webp', t1.status === 200 && /image\/webp/.test(t1.type) && t1.bytes > 10000, JSON.stringify(t1));
+    const t14 = await getFile(3123, '/themes/theme-14.webp');
+    check('Themes live: /themes/theme-14.webp serves 200 image/webp', t14.status === 200 && /image\/webp/.test(t14.type) && t14.bytes > 10000, JSON.stringify(t14));
+    const t0 = await getFile(3123, '/themes/nope.webp');
+    check('Themes live: missing theme -> 404', t0.status === 404, JSON.stringify(t0));
   }
   child1.kill('SIGTERM');
   await new Promise(r => setTimeout(r, 1200));

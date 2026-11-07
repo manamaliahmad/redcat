@@ -1567,7 +1567,69 @@ body {
   background-color: #f4f5f7;
   border-radius: 14px;
   padding: 14px 16px;
-}.settings-account-card {
+}
+/* CHAT THEMES (2026-11-07, v1.0.11): Theme tab grid in Settings + the
+   themed chat area. The image is set inline on #chatScroll by JS; the
+   class only carries the sizing. Message cards are opaque (agent =
+   solid red, user = solid black) so text stays readable over any
+   image; the empty-state hint gets a translucent pill so it stays
+   readable too. */
+.chat-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.chat-theme-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.chat-theme-thumb:hover {
+  transform: scale(1.03);
+}
+.chat-theme-thumb.selected {
+  border-color: #8b0a1a;
+  box-shadow: 0 0 0 2px rgba(139, 10, 26, 0.25);
+}
+.chat-theme-thumb.chat-theme-default {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+}
+.chat-theme-thumb-label {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+.chat-theme-thumb.chat-theme-default .chat-theme-thumb-label {
+  color: #374151;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e5e7eb;
+}
+.chat-messages-scroll.chat-themed {
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.chat-messages-scroll.chat-themed .empty-chat-hint {
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+.settings-account-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
