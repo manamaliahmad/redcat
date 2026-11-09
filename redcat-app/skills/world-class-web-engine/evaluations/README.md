@@ -62,6 +62,6 @@ Kisi bhi website skill mein change ke baad purane 8 tests dobara chalao.
 - Rubric internal benchmark hai, universal industry standard nahi.
 - T6 ka reference URL har run mein wahi hona chahiye — pehle run se pehle aik stable public demo site choose kar ke `test-cases.json` mein note karo.
 
-## Agla step
+## Location
 
-Ye lab abhi workspace mein hai. RedCat ke skill system mein install karna (world-class-web-engine skill ke `evaluations/` folder ke tor par) agla step hai — jab ali kahe, RedCat khud install karega, Muse sirf test karega.
+Ye lab RedCat ke skill system mein install hai: `skills/world-class-web-engine/evaluations/` (ali ke PC par, master skill consolidation 9 Nov 2026 — pehle `skills/world-class-website/evaluations/` mein tha). Is file ki VM copy (`~/workspace/redcat-eval-lab/`) source of truth hai — move ke baad hashes match kiye gaye hain.
