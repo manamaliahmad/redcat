@@ -249,6 +249,14 @@ async function startBrowser(opts) {
   refreshState();
   if (context) {
     await syncMeta();
+    // URL-DROP FIX (2026-11-10): already running + a URL was passed — navigate
+    // to it instead of silently ignoring it (typing a URL + Enter did nothing).
+    const alreadyUrl = opts && typeof opts.url === 'string' ? opts.url.trim() : '';
+    if (alreadyUrl && /^https?:\/\//.test(alreadyUrl)) {
+      try { await gotoWithSearchFallback(activePage(), alreadyUrl); }
+      catch (e) { pushLog('start-navigate-failed', alreadyUrl); }
+      await syncMeta();
+    }
     return publicStatus({ already: true });
   }
   state = 'starting';

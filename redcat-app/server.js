@@ -417,8 +417,10 @@ function terminalTimeout(args) {
 
 function runTerminal(command, cwd, timeoutMs) {
   return new Promise((resolve) => {
-    const workdir = (cwd && typeof cwd === 'string' && cwd) ? cwd : __dirname;
-    execFile('cmd.exe', ['/c', command], { cwd: workdir, timeout: (timeoutMs || AGENT_CMD_TIMEOUT_MS), maxBuffer: 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
+    let workdir = (cwd && typeof cwd === 'string' && cwd) ? cwd : __dirname;
+    if (workdir.indexOf('app.asar') !== -1) { try { workdir = process.cwd(); } catch (e) { try { workdir = require('os').homedir(); } catch (e2) { workdir = 'C:\\Users\\HOME'; } } }
+    const cmdExe = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+    execFile(cmdExe, ['/c', command], { cwd: workdir, timeout: (timeoutMs || AGENT_CMD_TIMEOUT_MS), maxBuffer: 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
       if (err && err.killed) { resolve({ ok: false, error: 'Command timed out.' }); return; }
       let out = String(stdout || '') + (stderr ? ('\n' + stderr) : '');
       if (!out.trim()) out = '[no output, exit code ' + ((err && typeof err.code === 'number') ? err.code : 0) + ']';

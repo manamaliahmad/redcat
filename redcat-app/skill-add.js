@@ -37,7 +37,15 @@ function parseSkillMeta(text) {
   for (let i = 0; i < Math.min(lines.length, 12); i++) {
     const ln = lines[i].trim();
     let m = /^name:\s*(.+)$/i.exec(ln);
-    if (m && !name) name = m[1].replace(/^['"]|['"]$/g, '').trim();
+    if (m && !name) {
+      let v = m[1].replace(/^['"]|['"]$/g, '').trim();
+      // FRONTMATTER-ON-ONE-LINE FIX (2026-11-10): a Skill.md may carry
+      // name + version + description on a single line. Stop the name at
+      // the next frontmatter key so we don't get a garbled folder name.
+      const cut = v.search(/\s+(version|description)\s*:/i);
+      if (cut !== -1) v = v.slice(0, cut).trim();
+      name = v;
+    }
     m = /^description:\s*(.+)$/i.exec(ln);
     if (m && !description) description = m[1].replace(/^['"]|['"]$/g, '').trim();
     if (description === '>') description = '';

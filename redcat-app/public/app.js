@@ -2256,8 +2256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!Array.isArray(entry.history) || !entry.history.length) return;
         const body = JSON.stringify({ id: entry.id, title: entry.title || 'New chat', html: entry.html || '', history: Array.isArray(entry.history) ? entry.history : [], kind: entry.kind, colorIndex: entry.colorIndex, providerId: entry.providerId, chatModel: entry.chatModel, customChatModel: entry.customChatModel, browser: entry.browser, counter: snap.counter, agentCounter: snap.agentCounter });
         if (serverChatLastSent[entry.id] === body) return;
-        serverChatLastSent[entry.id] = body;
-        fetch('/api/chats/' + encodeURIComponent(entry.id), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true }).catch(() => {});
+        fetch('/api/chats/' + encodeURIComponent(entry.id), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true }).then(r => { if (r && r.ok) serverChatLastSent[entry.id] = body; }).catch(() => {});
       } catch (e) {}
     });
     deletedChatIds.forEach(id => {
@@ -2329,6 +2328,21 @@ document.addEventListener('DOMContentLoaded', () => {
           const missing = local.chats.filter(e => e && e.id && !have.has(e.id) && !isChatDeleted(e.id));
           if (missing.length) {
             serverSaved.chats = serverSaved.chats.concat(missing);
+          }
+          // RECONCILE (2026-11-10, chat-loss fix): same chat id on both sides —
+          // keep the version with MORE history. A stale server file must never
+          // clobber a newer local chat. If local wins for any id, push it back.
+          let localWon = false;
+          serverSaved.chats = serverSaved.chats.map(srv => {
+            if (!srv || !srv.id || isChatDeleted(srv.id)) return srv;
+            const loc = local.chats.find(e => e && e.id === srv.id);
+            if (!loc) return srv;
+            const srvLen = Array.isArray(srv.history) ? srv.history.length : 0;
+            const locLen = Array.isArray(loc.history) ? loc.history.length : 0;
+            if (locLen > srvLen) { localWon = true; return loc; }
+            return srv;
+          });
+          if (missing.length || localWon) {
             try { queueServerChatSync(serverSaved.chats, serverSaved.counter, serverSaved.agentCounter); } catch (e2) {}
           }
         }
@@ -6862,7 +6876,7 @@ document.addEventListener('DOMContentLoaded', () => {
     docsSelectBtn.textContent = docsSelected.size ? docsSelected.size + ' selected' : 'Select';
     docsSelectBtn.classList.toggle('active', docsSelecting);
     if (docsDeleteBtn) {
-      const showDelete = docsPage === 'artefacts' && docsSelected.size > 0;
+      const showDelete = (docsPage === 'artefacts' || docsPage === 'skills') && docsSelected.size > 0;
       docsDeleteBtn.style.display = showDelete ? '' : 'none';
       docsDeleteBtn.textContent = 'Delete (' + docsSelected.size + ')';
     }
@@ -7248,7 +7262,28 @@ document.addEventListener('DOMContentLoaded', () => {
     docsRender();
   });
   if (docsDeleteBtn) docsDeleteBtn.addEventListener('click', async () => {
-    if (docsPage !== 'artefacts' || !docsSelected.size) return;
+    if (!docsSelected.size) return;
+    if (docsPage === 'skills') {
+      const names = Array.from(docsSelected).map(k => k.replace(/^skill:/, ''));
+      if (!names.length) return;
+      const bundled = names.filter(n => { const s = (docsData.skills || []).find(x => x.name === n); return s && s.origin !== 'user'; });
+      const warn = bundled.length ? '\nNote: ' + bundled.length + ' of these are built-in RedCat skills.' : '';
+      if (!confirm('Delete ' + names.length + ' skill(s)?\n' + names.join(', ') + warn + '\nThis removes the skill folder(s) and cannot be undone.')) return;
+      let deleted = 0; const failed = [];
+      for (const name of names) {
+        try {
+          const r = await fetch('/api/skills/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name }) });
+          const j = await r.json();
+          if (j && j.ok) deleted++; else failed.push(name);
+        } catch (e) { failed.push(name); }
+      }
+      docsSelected.clear();
+      docsSelecting = false;
+      await docsLoad();
+      docsShowNotice(failed.length ? ('Deleted ' + deleted + ' skill(s). Failed: ' + failed.join(', ')) : ('Deleted ' + deleted + ' skill(s).'));
+      return;
+    }
+    if (docsPage !== 'artefacts') return;
     const names = Array.from(docsSelected).map(k => k.replace(/^site:/, ''));
     if (!confirm('Delete ' + names.length + ' artefact(s)?\n' + names.join(', ') + '\nThis removes the built site folders and cannot be undone.')) return;
     try {
