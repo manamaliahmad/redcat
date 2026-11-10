@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - name: Build macOS app
         run: npm run dist-mac
         env:
@@ -49,6 +51,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - name: Build Linux app
         run: npm run dist-linux
         env:
