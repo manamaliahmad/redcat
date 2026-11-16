@@ -8,6 +8,10 @@
 
 > RedCat is free and open source. Your chats, your memory, and your API keys stay on your PC. A new user starts from zero — no data is ever shared between users.
 
+![RedCat chat](docs/images/chat.jpg)
+*Thinks first, then answers.*
+
+
 ---
 
 ## What RedCat is
@@ -83,6 +87,28 @@ Your chats, your memory, your personality profile, and your API keys live on you
 ### Approval-first security
 
 RedCat asks before it acts. Running a command, changing a file, posting somewhere, or installing something all wait for your approval. You can reject any action, and a rejection stops the work — it is never retried silently. API keys and tokens are kept on your PC and never written into code, chat, or logs.
+
+---
+
+## Screenshots
+
+![Skills](docs/images/skills.jpg)
+*Add Skills*
+
+![Connectors and MCP](docs/images/connectors.jpg)
+*One-click connectors & MCP*
+
+![Discord connection](docs/images/discord-connect.jpg)
+*One-click Discord connection*
+
+![AI Models settings](docs/images/ai-models.jpg)
+*Bring your own API key*
+
+![Themes](docs/images/themes.jpg)
+*Make it yours — custom themes*
+
+![RedCat landing page](docs/images/landing.jpg)
+*redcat.arexora.com*
 
 ---
 
